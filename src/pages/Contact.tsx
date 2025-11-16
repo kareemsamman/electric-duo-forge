@@ -1,0 +1,142 @@
+import { useLanguage } from "@/contexts/LanguageContext";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Phone, Mail, MapPin, Clock, Facebook, Instagram, Linkedin, Youtube } from "lucide-react";
+
+const Contact = () => {
+  const { t, language } = useLanguage();
+
+  return (
+    <div className="min-h-screen pt-32 pb-20">
+      <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-[1360px]">
+        <h1 className="text-4xl md:text-5xl font-bold mb-16 text-center">
+          {t("contact.title")}
+        </h1>
+
+        <div className="grid md:grid-cols-2 gap-12 mb-16">
+          {/* Contact Form */}
+          <Card>
+            <CardContent className="pt-8 pb-8">
+              <form className="space-y-6">
+                <div>
+                  <Input placeholder={t("contact.form.name")} />
+                </div>
+                <div>
+                  <Input type="email" placeholder={t("contact.form.email")} />
+                </div>
+                <div>
+                  <Input type="tel" placeholder={t("contact.form.phone")} />
+                </div>
+                <div>
+                  <Textarea placeholder={t("contact.form.message")} rows={5} />
+                </div>
+                <div>
+                  <Input type="file" />
+                </div>
+                <div className="flex gap-4">
+                  <Button className="flex-1">{t("contact.form.submit")}</Button>
+                  <Button variant="outline" className="flex-1">
+                    {t("contact.form.whatsapp")}
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+
+          {/* Contact Info */}
+          <div className="space-y-6">
+            <Card>
+              <CardContent className="pt-6 pb-6">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <Phone className="text-accent" />
+                    <div>
+                      <p className="font-medium">{t("contact.info.phone")}</p>
+                      <p className="text-muted-foreground">+972-50-123-4567</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Mail className="text-accent" />
+                    <div>
+                      <p className="font-medium">{t("contact.info.email")}</p>
+                      <p className="text-muted-foreground">info@globalelectric.co.il</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <MapPin className="text-accent" />
+                    <div>
+                      <p className="font-medium">{t("contact.info.address")}</p>
+                      <p className="text-muted-foreground">
+                        {language === "he" ? "רחוב התעשייה 1, תל אביב" : "1 Industry St, Tel Aviv"}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Clock className="text-accent" />
+                    <div>
+                      <p className="font-medium">{t("contact.info.hours")}</p>
+                      <p className="text-muted-foreground">
+                        {language === "he" ? "א׳-ה׳: 08:00-17:00" : "Sun-Thu: 08:00-17:00"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="pt-6 pb-6">
+                <h3 className="font-semibold mb-4">{t("contact.bank.title")}</h3>
+                <div className="space-y-2 text-sm">
+                  <p><span className="text-muted-foreground">{t("contact.bank.name")}:</span> Bank Leumi</p>
+                  <p><span className="text-muted-foreground">{t("contact.bank.branch")}:</span> 123</p>
+                  <p><span className="text-muted-foreground">{t("contact.bank.account")}:</span> 456789</p>
+                  <p><span className="text-muted-foreground">{t("contact.bank.holder")}:</span> Global Electric Ltd</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="pt-6 pb-6">
+                <div className="flex gap-4 justify-center">
+                  <a href="#" className="w-10 h-10 rounded-full bg-secondary hover:bg-accent hover:text-white flex items-center justify-center transition-colors">
+                    <Facebook size={20} />
+                  </a>
+                  <a href="#" className="w-10 h-10 rounded-full bg-secondary hover:bg-accent hover:text-white flex items-center justify-center transition-colors">
+                    <Instagram size={20} />
+                  </a>
+                  <a href="#" className="w-10 h-10 rounded-full bg-secondary hover:bg-accent hover:text-white flex items-center justify-center transition-colors">
+                    <Linkedin size={20} />
+                  </a>
+                  <a href="#" className="w-10 h-10 rounded-full bg-secondary hover:bg-accent hover:text-white flex items-center justify-center transition-colors">
+                    <Youtube size={20} />
+                  </a>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {/* Map */}
+        <Card>
+          <CardContent className="p-0">
+            <div className="h-96 bg-secondary rounded-lg overflow-hidden">
+              <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3380.8296739569724!2d34.78057831516893!3d32.06494098119056!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzLCsDAzJzUzLjgiTiAzNMKwNDYnNTcuNiJF!5e0!3m2!1sen!2sil!4v1234567890"
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                allowFullScreen
+                loading="lazy"
+              />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+};
+
+export default Contact;
