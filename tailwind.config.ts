@@ -39,6 +39,9 @@ export default {
           DEFAULT: "hsl(var(--accent))",
           foreground: "hsl(var(--accent-foreground))",
         },
+        electric: "hsl(var(--electric-blue))",
+        "gradient-cyan": "hsl(var(--gradient-cyan))",
+        "gradient-violet": "hsl(var(--gradient-violet))",
         popover: {
           DEFAULT: "hsl(var(--popover))",
           foreground: "hsl(var(--popover-foreground))",
@@ -57,6 +60,10 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+      },
+      fontFamily: {
+        sans: ["Inter", "Assistant", "system-ui", "sans-serif"],
+        hebrew: ["Assistant", "Rubik", "system-ui", "sans-serif"],
       },
       borderRadius: {
         lg: "var(--radius)",
