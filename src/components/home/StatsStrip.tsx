@@ -57,13 +57,13 @@ const StatsStrip = () => {
             <StaggerItem key={index}>
               <motion.div
                 animate={{
-                  y: [0, -6, 0],
+                  y: [0, -8, 0],
                 }}
                 transition={{
-                  duration: 4 + index * 0.3,
+                  duration: 2.5,
                   repeat: Infinity,
                   ease: "easeInOut",
-                  delay: index * 0.2,
+                  delay: index * 0.15,
                 }}
               >
                 <Card className="text-center transition-shadow duration-300 bg-gradient-to-br from-white to-gray-50/50 shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
