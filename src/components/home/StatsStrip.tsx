@@ -2,8 +2,8 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { StaggerContainer } from "@/components/animations/StaggerContainer";
 import { StaggerItem } from "@/components/animations/StaggerItem";
-import { AnimatedCard } from "@/components/animations/AnimatedCard";
 import { FadeIn } from "@/components/animations/FadeIn";
+import { motion } from "framer-motion";
 
 const stats = [
   { 
@@ -55,8 +55,18 @@ const StatsStrip = () => {
         <StaggerContainer className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10" staggerDelay={0.1}>
           {stats.map((stat, index) => (
             <StaggerItem key={index}>
-              <AnimatedCard>
-                <Card className="text-center transition-all duration-300 hover:shadow-[0_20px_60px_rgba(0,0,0,0.15)] hover:-translate-y-1 hover:scale-[1.02] bg-gradient-to-br from-white to-gray-50/50">
+              <motion.div
+                animate={{
+                  y: [0, -6, 0],
+                }}
+                transition={{
+                  duration: 4 + index * 0.3,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  delay: index * 0.2,
+                }}
+              >
+                <Card className="text-center transition-shadow duration-300 bg-gradient-to-br from-white to-gray-50/50 shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
                   <CardContent className="pt-10 pb-10 px-6">
                     <div className="text-5xl md:text-6xl font-bold text-[#1A73E8] mb-4 tracking-tight">
                       {stat.value}
@@ -69,7 +79,7 @@ const StatsStrip = () => {
                     </p>
                   </CardContent>
                 </Card>
-              </AnimatedCard>
+              </motion.div>
             </StaggerItem>
           ))}
         </StaggerContainer>
