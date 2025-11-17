@@ -16,8 +16,8 @@ const Home = () => {
       <HeroSection />
       <FeaturedProducts />
       <StatsStrip />
-      <ServicesSection />
       <WhyUsSection />
+      <ServicesSection />
       <VideoSection />
       <TeamPreview />
       <ProjectsPreview />
