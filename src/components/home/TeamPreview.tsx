@@ -31,19 +31,22 @@ const TeamPreview = () => {
   if (!team || team.length === 0) return null;
 
   return (
-    <section className="py-20 md:py-28 bg-secondary/30">
+    <section className="py-32 md:py-40 bg-secondary/30">
       <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-[1360px]">
         <FadeIn>
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-16">
-            {t("team.preview.title")}
-          </h2>
+          <div className="text-center mb-20">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight">
+              {t("team.preview.title")}
+            </h2>
+            <div className="w-20 h-1 bg-accent/30 mx-auto mt-6" />
+          </div>
         </FadeIn>
 
-        <StaggerContainer className="grid md:grid-cols-3 gap-8 mb-12" staggerDelay={0.15}>
+        <StaggerContainer className="grid md:grid-cols-3 gap-10 lg:gap-12 mb-16" staggerDelay={0.15}>
           {team.map((member) => (
             <StaggerItem key={member.id}>
               <AnimatedCard>
-                <Card className="overflow-hidden hover:shadow-xl transition-shadow">
+                <Card className="overflow-hidden transition-all duration-300 hover:shadow-[var(--shadow-card-hover)]">
                   <div className="aspect-square bg-secondary">
                     <img 
                       src={member.photo} 
@@ -51,12 +54,12 @@ const TeamPreview = () => {
                       className="w-full h-full object-cover"
                     />
                   </div>
-                  <CardContent className="pt-6 pb-6 text-center">
-                    <h3 className="text-xl font-semibold mb-2">{member.name}</h3>
-                    <p className="text-sm text-accent mb-3">
+                  <CardContent className="pt-8 pb-8 text-center">
+                    <h3 className="text-2xl font-bold mb-2 tracking-tight">{member.name}</h3>
+                    <p className="text-sm text-accent font-semibold mb-4">
                       {language === "he" ? member.role : member.role_en || member.role}
                     </p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-muted-foreground leading-relaxed">
                       {language === "he" ? member.description : member.description_en || member.description}
                     </p>
                   </CardContent>
@@ -70,7 +73,11 @@ const TeamPreview = () => {
           <div className="text-center">
             <Link to="/about">
               <AnimatedButton>
-                <Button variant="outline" size="lg" className="group">
+                <Button 
+                  variant="outline" 
+                  size="lg" 
+                  className="h-14 px-8 rounded-xl text-base font-semibold hover:shadow-md transition-all group"
+                >
                   {t("team.preview.viewAll")}
                   {language === "he" ? (
                     <ArrowLeft className="group-hover:-translate-x-1 transition-transform" size={20} />

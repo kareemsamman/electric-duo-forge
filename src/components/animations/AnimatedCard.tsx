@@ -7,16 +7,10 @@ interface AnimatedCardProps {
 }
 
 export const AnimatedCard = ({ children, className = "" }: AnimatedCardProps) => {
+  // Removed hover animations - cards are not clickable
   return (
-    <motion.div
-      whileHover={{ 
-        scale: 1.02,
-        y: -4,
-        transition: { duration: 0.2 }
-      }}
-      className={className}
-    >
+    <div className={className}>
       {children}
-    </motion.div>
+    </div>
   );
 };
