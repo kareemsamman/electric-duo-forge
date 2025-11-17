@@ -10,45 +10,60 @@ const HeroSection = () => {
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Video Background */}
+      {/* Animated Background Layers */}
       <div className="absolute inset-0 z-0">
+        {/* Video Background */}
         <video
           autoPlay
           loop
           muted
           playsInline
-          className="w-full h-full object-cover opacity-40"
+          className="w-full h-full object-cover opacity-35"
         >
           <source src="https://assets.mixkit.co/videos/preview/mixkit-engineer-working-on-electrical-panel-28342-large.mp4" type="video/mp4" />
         </video>
+        
+        {/* Premium Gradient Overlay */}
         <div className="absolute inset-0 bg-[image:var(--gradient-hero)]" />
-        <div className="absolute inset-0 opacity-30" style={{ backgroundImage: 'var(--texture-noise)' }} />
+        
+        {/* Industrial Texture */}
+        <div className="absolute inset-0 opacity-25" style={{ backgroundImage: 'var(--texture-noise)' }} />
+        
+        {/* Animated Light Streaks */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute top-1/4 -left-1/4 w-1/2 h-1/2 bg-gradient-to-r from-transparent via-accent/10 to-transparent blur-3xl animate-[pulse_8s_ease-in-out_infinite]" />
+          <div className="absolute bottom-1/4 -right-1/4 w-1/2 h-1/2 bg-gradient-to-l from-transparent via-electric/10 to-transparent blur-3xl animate-[pulse_10s_ease-in-out_infinite_2s]" />
+        </div>
+        
+        {/* Radial Spotlight */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(11,27,43,0.4)_100%)]" />
       </div>
 
       {/* Content */}
-      <div className="container relative z-10 mx-auto px-4 md:px-6 lg:px-8 max-w-[1360px] py-40 md:py-48">
-        <div className="max-w-4xl">
+      <div className="container relative z-10 mx-auto px-4 md:px-6 lg:px-8 max-w-[1400px] py-48 md:py-56">
+        <div className="max-w-5xl">
           <FadeIn delay={0.2}>
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-8 text-white leading-tight tracking-tight">
+            <h1 className="text-6xl md:text-7xl lg:text-8xl font-bold mb-12 text-white leading-[1.1] tracking-tight">
               {t("hero.title")}
             </h1>
           </FadeIn>
           <FadeIn delay={0.4}>
-            <p className="text-xl md:text-2xl mb-12 text-white/90 leading-relaxed max-w-2xl">
+            <p className="text-2xl md:text-3xl mb-16 text-white/95 leading-relaxed max-w-3xl font-light">
               {t("hero.subtitle")}
             </p>
           </FadeIn>
           <FadeIn delay={0.6}>
-            <div className="flex flex-col sm:flex-row gap-5">
+            <div className="flex flex-col sm:flex-row gap-6">
               <AnimatedButton>
                 <Button 
                   asChild 
                   size="lg" 
-                  className="h-14 px-8 bg-gradient-to-r from-accent to-accent/90 hover:from-accent/90 hover:to-accent/80 text-white shadow-lg shadow-accent/20 rounded-xl text-lg font-semibold w-full sm:w-auto"
+                  className="h-16 px-10 bg-gradient-to-br from-accent via-accent to-accent/90 hover:from-accent/95 hover:via-accent/90 hover:to-accent/85 text-white shadow-2xl shadow-accent/30 rounded-2xl text-lg font-bold w-full sm:w-auto relative overflow-hidden group"
                 >
-                  <Link to="/contact">
+                  <Link to="/contact" className="relative z-10">
+                    <span className="absolute inset-0 bg-gradient-to-t from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                     {t("hero.cta.primary")}
-                    <ArrowRight className={`${language === "he" ? "mr-2 rotate-180" : "ml-2"}`} size={20} />
+                    <ArrowRight className={`${language === "he" ? "mr-2 rotate-180" : "ml-2"}`} size={22} />
                   </Link>
                 </Button>
               </AnimatedButton>
@@ -57,7 +72,7 @@ const HeroSection = () => {
                   asChild 
                   size="lg" 
                   variant="outline" 
-                  className="h-14 px-8 bg-white/10 backdrop-blur-sm border-white/30 text-white hover:bg-white/20 hover:border-white/40 rounded-xl text-lg font-semibold w-full sm:w-auto"
+                  className="h-16 px-10 bg-white/15 backdrop-blur-md border-2 border-white/40 text-white hover:bg-white/25 hover:border-white/60 rounded-2xl text-lg font-bold w-full sm:w-auto transition-all duration-300"
                 >
                   <Link to="/projects">{t("hero.cta.secondary")}</Link>
                 </Button>
@@ -67,8 +82,8 @@ const HeroSection = () => {
         </div>
       </div>
 
-      {/* Bottom Gradient */}
-      <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-background to-transparent z-10" />
+      {/* Bottom Gradient Fade */}
+      <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-background via-background/50 to-transparent z-10" />
     </section>
   );
 };
