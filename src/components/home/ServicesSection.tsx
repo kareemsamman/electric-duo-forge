@@ -41,9 +41,9 @@ const ServicesSection = () => {
     <section className="py-20 md:py-28 bg-gradient-to-b from-secondary/20 to-background" dir="rtl">
       <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-[1360px]">
         <div className="grid lg:grid-cols-2 gap-16 lg:gap-20 items-start">
-          {/* Right Column - Text */}
+          {/* Right Column - Text (Sticky on desktop) */}
           <FadeIn>
-            <div>
+            <div className="lg:sticky lg:top-28">
               <h2 className="text-4xl md:text-5xl font-bold mb-6 tracking-tight">
                 {t("services.title")}
               </h2>
