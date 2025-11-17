@@ -32,7 +32,11 @@ const Projects = () => {
         
         <div className="grid md:grid-cols-3 gap-8 mt-12">
           {mockProjects.map((project, index) => (
-            <Card key={index} className="overflow-hidden hover:shadow-xl transition-shadow">
+            <Card 
+              key={index} 
+              className="overflow-hidden hover:shadow-xl hover:scale-[1.02] transition-all duration-300 animate-fade-in"
+              style={{ animationDelay: `${index * 100}ms` }}
+            >
               <div className="h-48 bg-secondary" />
               <CardContent className="pt-6 pb-6">
                 <h3 className="text-xl font-semibold mb-2">{project.title}</h3>

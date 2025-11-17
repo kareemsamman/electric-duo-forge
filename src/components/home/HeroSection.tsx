@@ -15,30 +15,30 @@ const HeroSection = () => {
           loop
           muted
           playsInline
-          className="w-full h-full object-cover opacity-40"
+          className="w-full h-full object-cover opacity-30"
         >
           <source src="https://assets.mixkit.co/videos/preview/mixkit-engineer-working-on-electrical-panel-28342-large.mp4" type="video/mp4" />
         </video>
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/80 via-primary/60 to-background" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[hsl(210,100%,8%)] via-[hsl(210,80%,15%)] to-[hsl(210,50%,25%)]" />
       </div>
 
       {/* Content */}
-      <div className="container relative z-10 mx-auto px-4 md:px-6 lg:px-8 max-w-[1360px] py-32 md:py-40">
+      <div className="container relative z-10 mx-auto px-4 md:px-6 lg:px-8 max-w-[1360px] py-32 md:py-40 animate-fade-in">
         <div className="max-w-3xl">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-primary-foreground leading-tight">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-white leading-tight">
             {t("hero.title")}
           </h1>
-          <p className="text-xl md:text-2xl mb-10 text-primary-foreground/90">
+          <p className="text-xl md:text-2xl mb-10 text-white/90">
             {t("hero.subtitle")}
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
-            <Button asChild size="lg" className="bg-accent hover:bg-accent/90 text-white">
+            <Button asChild size="lg" className="bg-accent hover:bg-accent/90 hover:scale-105 transition-all text-white">
               <Link to="/contact">
                 {t("hero.cta.primary")}
                 <ArrowRight className={`${language === "he" ? "mr-2 rotate-180" : "ml-2"}`} size={20} />
               </Link>
             </Button>
-            <Button asChild size="lg" variant="outline" className="bg-white/10 border-white/20 text-white hover:bg-white/20">
+            <Button asChild size="lg" variant="outline" className="bg-white/10 border-white/20 text-white hover:bg-white/20 hover:scale-105 transition-all">
               <Link to="/projects">{t("hero.cta.secondary")}</Link>
             </Button>
           </div>

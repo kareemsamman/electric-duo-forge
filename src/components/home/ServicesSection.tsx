@@ -34,7 +34,11 @@ const ServicesSection = () => {
           {services.map((service, index) => {
             const Icon = service.icon;
             return (
-              <Card key={index} className="border-border hover:border-accent transition-all duration-300 group">
+              <Card 
+                key={index} 
+                className="border-border hover:border-accent hover:scale-[1.02] hover:shadow-xl transition-all duration-300 group animate-fade-in"
+                style={{ animationDelay: `${index * 100}ms` }}
+              >
                 <CardContent className="pt-8 pb-8 text-center">
                   <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-accent group-hover:scale-110 transition-all duration-300">
                     <Icon className="text-accent group-hover:text-white transition-colors" size={32} />
