@@ -66,9 +66,13 @@ const translations = {
     // Why Us
     "whyus.title": "למה לעבוד איתנו",
     "whyus.iso": "מפעל מוסמך ISO",
+    "whyus.isoDesc": "מתקן ייצור מאושר לפי תקני איכות בינלאומיים ISO ו-IQNet",
     "whyus.delivery": "זמני אספקה מהירים",
+    "whyus.deliveryDesc": "עמידה בלוחות זמנים מחמירים ואספקה יעילה לכל פרויקט",
     "whyus.quality": "איכות בלתי מתפשרת",
+    "whyus.qualityDesc": "בקרת איכות קפדנית בכל שלב מתכנון ועד התקנה סופית",
     "whyus.service": "שירות אישי",
+    "whyus.serviceDesc": "ליווי צמוד ותמיכה מקצועית לאורך כל חיי הפרויקט",
     "whyus.design": "תכנון עד ביצוע",
     "whyus.testing": "בדיקות איכות מקיפות",
     
@@ -185,9 +189,13 @@ const translations = {
     // Why Us
     "whyus.title": "Why Work With Us",
     "whyus.iso": "ISO Certified Facility",
+    "whyus.isoDesc": "Production facility certified according to international ISO and IQNet quality standards",
     "whyus.delivery": "Fast Delivery Times",
+    "whyus.deliveryDesc": "Meeting strict schedules and efficient delivery for every project",
     "whyus.quality": "Uncompromising Quality",
+    "whyus.qualityDesc": "Rigorous quality control at every stage from design to final installation",
     "whyus.service": "Personal Service",
+    "whyus.serviceDesc": "Close support and professional assistance throughout the project lifecycle",
     "whyus.design": "Design to Execution",
     "whyus.testing": "Comprehensive Quality Testing",
     
