@@ -31,9 +31,17 @@ const translations = {
     // Stats
     "stats.title": "במספרים",
     "stats.experience": "שנות ניסיון",
+    "stats.experienceDesc": "ניסיון רב בתכנון וייצור לוחות חשמל",
     "stats.projects": "פרויקטים שבוצעו",
+    "stats.projectsDesc": "פרויקטים מוכחים בכל רחבי הארץ",
     "stats.facility": "מ״ר מפעל ייצור",
+    "stats.facilityDesc": "מתקן ייצור מודרני ומצויד",
     "stats.standards": "תקני איכות ISO ו־IQNet",
+    "stats.standardsDesc": "מוסמך לפי תקני איכות בינלאומיים",
+    "stats.countries": "מדינות פעילות",
+    "stats.countriesDesc": "לוחות ופתרונות חשמל לפרויקטים ברחבי העולם",
+    "stats.delivery": "עמידה בזמני אספקה",
+    "stats.deliveryDesc": "אספקת פרויקטים לפי לוחות זמנים מחמירים",
     
     // Services
     "services.title": "השירותים שלנו",
@@ -136,9 +144,17 @@ const translations = {
     // Stats
     "stats.title": "By the Numbers",
     "stats.experience": "Years of Experience",
+    "stats.experienceDesc": "Extensive experience in electrical panel design and manufacturing",
     "stats.projects": "Completed Projects",
+    "stats.projectsDesc": "Proven projects across the country",
     "stats.facility": "sqm Manufacturing Facility",
+    "stats.facilityDesc": "Modern and equipped production facility",
     "stats.standards": "ISO & IQNet Quality Standards",
+    "stats.standardsDesc": "Certified according to international quality standards",
+    "stats.countries": "Active Countries",
+    "stats.countriesDesc": "Electrical panels and solutions for projects worldwide",
+    "stats.delivery": "On-Time Delivery",
+    "stats.deliveryDesc": "Project delivery according to strict schedules",
     
     // Services
     "services.title": "Our Services",
