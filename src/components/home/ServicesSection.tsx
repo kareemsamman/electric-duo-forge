@@ -43,7 +43,7 @@ const ServicesSection = () => {
         <div className="grid lg:grid-cols-2 gap-16 lg:gap-20 items-start">
           {/* Right Column - Text (Sticky on desktop) */}
           <FadeIn>
-            <div className="lg:sticky lg:top-28">
+            <div className="lg:sticky lg:top-28 lg:pb-16 relative">
               <h2 className="text-4xl md:text-5xl font-bold mb-6 tracking-tight">
                 {t("services.title")}
               </h2>
@@ -61,6 +61,8 @@ const ServicesSection = () => {
                   <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                 )}
               </Link>
+              {/* Subtle fade indicator at bottom - desktop only */}
+              <div className="hidden lg:block absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-background/80 via-background/40 to-transparent pointer-events-none" />
             </div>
           </FadeIn>
 
