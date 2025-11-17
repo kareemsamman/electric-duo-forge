@@ -17,6 +17,8 @@ const translations = {
     "nav.about": "אודות",
     "nav.solutions": "פתרונות",
     "nav.projects": "פרויקטים",
+    "nav.store": "חנות",
+    "nav.gallery": "גלריה",
     "nav.certificates": "אישורים",
     "nav.contact": "צור קשר",
     
@@ -82,6 +84,31 @@ const translations = {
     "about.title": "מי אנחנו",
     "about.founder.name": "אסם עודה",
     "about.founder.title": "מהנדס חשמל, מייסד ומנכ״ל",
+    "about.team.title": "צוות הנהלה",
+    
+    // Store
+    "store.title": "חנות",
+    "store.description": "מבחר מוצרי חשמל ממותג גלובל אלקטריק",
+    "store.price": "מחיר",
+    
+    // Gallery
+    "gallery.title": "גלריה",
+    "gallery.description": "תמונות מתוך פרויקטים, המפעל והצוות שלנו",
+    
+    // Featured Products
+    "featured.products.title": "מוצרים נבחרים",
+    "featured.products.viewAll": "לכל המוצרים",
+    
+    // Video Section
+    "video.section.title": "הצצה למפעל",
+    
+    // Team Preview
+    "team.preview.title": "הצוות שלנו",
+    "team.preview.viewAll": "צוות מלא",
+    
+    // Gallery Preview
+    "gallery.preview.title": "מתוך הפרויקטים שלנו",
+    "gallery.preview.viewAll": "לכל הגלריה",
   },
   en: {
     // Navigation
@@ -89,6 +116,8 @@ const translations = {
     "nav.about": "About",
     "nav.solutions": "Solutions",
     "nav.projects": "Projects",
+    "nav.store": "Store",
+    "nav.gallery": "Gallery",
     "nav.certificates": "Certificates",
     "nav.contact": "Contact",
     
@@ -154,6 +183,31 @@ const translations = {
     "about.title": "About Us",
     "about.founder.name": "Assem Ouda",
     "about.founder.title": "Electrical Engineer, Founder & CEO",
+    "about.team.title": "Management Team",
+    
+    // Store
+    "store.title": "Store",
+    "store.description": "Selection of Global Electric branded electrical products",
+    "store.price": "Price",
+    
+    // Gallery
+    "gallery.title": "Gallery",
+    "gallery.description": "Photos from projects, our facility and team",
+    
+    // Featured Products
+    "featured.products.title": "Featured Products",
+    "featured.products.viewAll": "View All Products",
+    
+    // Video Section
+    "video.section.title": "Inside Our Facility",
+    
+    // Team Preview
+    "team.preview.title": "Our Team",
+    "team.preview.viewAll": "Full Team",
+    
+    // Gallery Preview
+    "gallery.preview.title": "From Our Projects",
+    "gallery.preview.viewAll": "Full Gallery",
   },
 };
 
