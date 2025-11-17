@@ -4,6 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Phone, Mail, MapPin, Clock, Facebook, Instagram, Linkedin, Youtube } from "lucide-react";
+import { FadeIn } from "@/components/animations/FadeIn";
+import { AnimatedButton } from "@/components/animations/AnimatedButton";
+import { motion } from "framer-motion";
 
 const Contact = () => {
   const { t, language } = useLanguage();

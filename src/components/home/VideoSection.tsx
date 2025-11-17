@@ -1,6 +1,7 @@
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { FadeIn } from "@/components/animations/FadeIn";
 import { Play } from "lucide-react";
 
 const VideoSection = () => {
@@ -39,13 +40,17 @@ const VideoSection = () => {
       </div>
 
       {/* Centered Content */}
-      <div className="container relative z-10 mx-auto px-4 md:px-6 lg:px-8 max-w-[1360px] text-center animate-fade-in">
-        <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">
-          {language === "he" ? videoSection.video_title : videoSection.video_title_en || videoSection.video_title}
-        </h2>
-        <p className="text-xl md:text-2xl text-white/90 leading-relaxed max-w-3xl mx-auto">
-          {language === "he" ? videoSection.video_description : videoSection.video_description_en || videoSection.video_description}
-        </p>
+      <div className="container relative z-10 mx-auto px-4 md:px-6 lg:px-8 max-w-[1360px] text-center">
+        <FadeIn delay={0.2}>
+          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">
+            {language === "he" ? videoSection.video_title : videoSection.video_title_en || videoSection.video_title}
+          </h2>
+        </FadeIn>
+        <FadeIn delay={0.4}>
+          <p className="text-xl md:text-2xl text-white/90 leading-relaxed max-w-3xl mx-auto">
+            {language === "he" ? videoSection.video_description : videoSection.video_description_en || videoSection.video_description}
+          </p>
+        </FadeIn>
       </div>
     </section>
   );

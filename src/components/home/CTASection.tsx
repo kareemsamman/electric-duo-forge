@@ -1,30 +1,44 @@
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
+import { FadeIn } from "@/components/animations/FadeIn";
+import { AnimatedButton } from "@/components/animations/AnimatedButton";
 
 const CTASection = () => {
   const { t, language } = useLanguage();
 
   return (
-    <section className="py-20 md:py-28 bg-gradient-to-br from-primary via-primary to-accent">
-      <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-[1360px] text-center animate-fade-in">
-        <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-          {t("cta.title")}
-        </h2>
-        <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
-          {t("cta.subtitle")}
-        </p>
-        <Button 
-          asChild 
-          size="lg" 
-          className="bg-white text-primary hover:bg-white/90 hover:scale-105 transition-all duration-300"
-        >
+    <section className="py-20 md:py-28 bg-accent">
+      <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-[1360px] text-center">
+        <FadeIn>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">
+            {t("cta.title")}
+          </h2>
+        </FadeIn>
+        <FadeIn delay={0.2}>
+          <p className="text-xl mb-8 text-white/90 max-w-2xl mx-auto">
+            {t("cta.subtitle")}
+          </p>
+        </FadeIn>
+        <FadeIn delay={0.4}>
           <Link to="/contact">
-            {t("cta.button")}
-            <ArrowRight className={`${language === "he" ? "mr-2 rotate-180" : "ml-2"}`} size={20} />
+            <AnimatedButton>
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="bg-white text-accent hover:bg-white/90 border-0"
+              >
+                {t("cta.button")}
+                {language === "he" ? (
+                  <ArrowLeft className="mr-2" size={20} />
+                ) : (
+                  <ArrowRight className="ml-2" size={20} />
+                )}
+              </Button>
+            </AnimatedButton>
           </Link>
-        </Button>
+        </FadeIn>
       </div>
     </section>
   );
