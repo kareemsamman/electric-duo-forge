@@ -42,7 +42,7 @@ const StatsStrip = () => {
   const { t } = useLanguage();
 
   return (
-    <section className="py-32 md:py-40 bg-secondary/50" dir="rtl">
+    <section className="py-20 md:py-28 bg-secondary/50" dir="rtl">
       <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-[1360px]">
         <FadeIn>
           <div className="text-center mb-20">
@@ -57,16 +57,20 @@ const StatsStrip = () => {
             <StaggerItem key={index}>
               <motion.div
                 animate={{
-                  y: [0, -8, 0],
+                  y: [0, -10, 0],
                 }}
                 transition={{
-                  duration: 2.5,
+                  duration: 3,
                   repeat: Infinity,
-                  ease: "easeInOut",
-                  delay: index * 0.15,
+                  ease: [0.45, 0.05, 0.55, 0.95],
+                  delay: index * 0.3,
+                  repeatType: "reverse"
+                }}
+                style={{
+                  willChange: "transform"
                 }}
               >
-                <Card className="text-center transition-shadow duration-300 bg-gradient-to-br from-white to-gray-50/50 shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
+                <Card className="text-center bg-gradient-to-br from-white to-gray-50/50 shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
                   <CardContent className="pt-10 pb-10 px-6">
                     <div className="text-5xl md:text-6xl font-bold text-[#1A73E8] mb-4 tracking-tight">
                       {stat.value}

@@ -33,7 +33,7 @@ const FeaturedProducts = () => {
   if (!products || products.length === 0) return null;
 
   return (
-    <section className="py-32 md:py-40 bg-secondary/30 overflow-visible">
+    <section className="py-20 md:py-28 bg-secondary/30 overflow-visible">
       <div className="w-full px-4 md:px-6">
         <FadeIn>
           <div className="text-center mb-20">
