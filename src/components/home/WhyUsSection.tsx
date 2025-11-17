@@ -5,10 +5,10 @@ import { StaggerItem } from "@/components/animations/StaggerItem";
 import whyUsBackground from "@/assets/why-us-background.jpg";
 
 const features = [
-  { icon: Award, key: "whyus.iso" },
-  { icon: Clock, key: "whyus.delivery" },
-  { icon: Shield, key: "whyus.quality" },
-  { icon: Users, key: "whyus.service" },
+  { icon: Award, titleKey: "whyus.iso", descKey: "whyus.isoDesc" },
+  { icon: Clock, titleKey: "whyus.delivery", descKey: "whyus.deliveryDesc" },
+  { icon: Shield, titleKey: "whyus.quality", descKey: "whyus.qualityDesc" },
+  { icon: Users, titleKey: "whyus.service", descKey: "whyus.serviceDesc" },
 ];
 
 const WhyUsSection = () => {
@@ -39,19 +39,22 @@ const WhyUsSection = () => {
 
         {/* Features Grid */}
         <StaggerContainer 
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10" 
+          className="grid grid-cols-1 sm:grid-cols-2 gap-10" 
           staggerDelay={0.12}
         >
           {features.map((feature, index) => {
             const Icon = feature.icon;
             return (
               <StaggerItem key={index}>
-                <div className="flex flex-col items-center text-center">
-                  <div className="w-16 h-16 mb-5 flex items-center justify-center">
-                    <Icon className="text-white/90" size={48} strokeWidth={1.5} />
+                <div className="flex flex-col items-center text-center p-8 rounded-2xl border border-white/25 bg-white/[0.08] backdrop-blur-lg shadow-[0_0_20px_rgba(0,0,0,0.25)]">
+                  <div className="w-16 h-16 mb-6 flex items-center justify-center">
+                    <Icon className="text-white" size={48} strokeWidth={1.5} />
                   </div>
-                  <p className="text-lg md:text-xl font-semibold text-white/95 leading-snug">
-                    {t(feature.key)}
+                  <h3 className="text-xl md:text-2xl font-bold text-white mb-3 leading-snug">
+                    {t(feature.titleKey)}
+                  </h3>
+                  <p className="text-base text-white/70 leading-relaxed">
+                    {t(feature.descKey)}
                   </p>
                 </div>
               </StaggerItem>
