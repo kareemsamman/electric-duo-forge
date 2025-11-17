@@ -34,7 +34,7 @@ const FeaturedProducts = () => {
 
   return (
     <section className="py-32 md:py-40 bg-secondary/30 overflow-visible">
-      <div className="w-full px-6 md:px-12 lg:px-16">
+      <div className="w-full px-4 md:px-6">
         <FadeIn>
           <div className="text-center mb-20">
             <h2 className="text-4xl md:text-5xl font-bold mb-6 tracking-tight">
@@ -55,7 +55,7 @@ const FeaturedProducts = () => {
           >
             <CarouselContent className="-ml-6 md:-ml-8">
               {products.map((product) => (
-                <CarouselItem key={product.id} className="pl-6 md:pl-8 md:basis-1/2 lg:basis-1/3">
+                <CarouselItem key={product.id} className="pl-6 md:pl-8 md:basis-1/2 lg:basis-1/4">
                   <Link to={`/store?product=${product.id}`} className="block group">
                     <div className="relative h-[480px] rounded-3xl overflow-hidden cursor-pointer shadow-[0_8px_30px_rgba(0,0,0,0.12)] hover:shadow-[0_20px_60px_rgba(0,0,0,0.2)] transition-all duration-500 hover:-translate-y-1.5 hover:scale-[1.01]">
                       <img 
