@@ -45,12 +45,18 @@ const translations = {
     
     // Services
     "services.title": "השירותים שלנו",
-    "services.manufacturing.title": "ייצור לוחות חשמל",
-    "services.manufacturing.desc": "לוחות פיקוד, בקרה, מתח נמוך ומתח גבוה",
-    "services.engineering.title": "תכנון הנדסי",
-    "services.engineering.desc": "שרטוטים, סכימות, חישובי עומסים ותיאום עם יועצים",
-    "services.execution.title": "עבודות ביצוע",
-    "services.execution.desc": "התקנות שטח, שדרוגים, חיבור והפעלה",
+    "services.subtitle": "פתרונות חשמל מקצה לקצה – משלב התכנון ועד ההפעלה באתר הלקוח.",
+    "services.viewAll": "לצפייה בכל הפתרונות שלנו",
+    "services.planning.title": "תכנון לוחות חשמל",
+    "services.planning.desc": "ליווי הנדסי מלא, התאמת לוחות סטנדרטיים ופתרונות מותאמים אישית לפי דרישות הפרויקט והתקנים.",
+    "services.manufacturing.title": "ייצור והרכבה במפעל",
+    "services.manufacturing.desc": "ייצור לוחות חשמל במפעל מאושר, עם בקרת איכות קפדנית בכל שלב של ההרכבה.",
+    "services.integration.title": "אינטגרציה באתר הלקוח",
+    "services.integration.desc": "שילוב הלוחות במערכות הקיימות, חיווט, בדיקות והרצה בשטח.",
+    "services.testing.title": "בדיקות, תקינה ואישור מעבדה",
+    "services.testing.desc": "בדיקות עומס ובטיחות, הכנת המסמכים הנדרשים ואישורי תקינה לפי ISO ותקנים מקומיים.",
+    "services.maintenance.title": "שירות ותחזוקה שוטפת",
+    "services.maintenance.desc": "מענה מהיר לתקלות, שדרוג מערכות קיימות ותמיכה טכנית שוטפת.",
     
     // Projects
     "projects.title": "פרויקטים נבחרים",
@@ -158,12 +164,18 @@ const translations = {
     
     // Services
     "services.title": "Our Services",
-    "services.manufacturing.title": "Electrical Panel Manufacturing",
-    "services.manufacturing.desc": "Control panels, low voltage and high voltage systems",
-    "services.engineering.title": "Engineering Design",
-    "services.engineering.desc": "Drawings, schematics, load calculations and coordination",
-    "services.execution.title": "Execution Works",
-    "services.execution.desc": "Field installations, upgrades, connection and commissioning",
+    "services.subtitle": "End-to-end electrical solutions – from planning stage to on-site implementation.",
+    "services.viewAll": "View All Solutions",
+    "services.planning.title": "Electrical Panel Planning",
+    "services.planning.desc": "Full engineering support, adaptation of standard panels and custom solutions according to project requirements and standards.",
+    "services.manufacturing.title": "Manufacturing & Assembly",
+    "services.manufacturing.desc": "Manufacturing electrical panels in a certified facility, with strict quality control at every stage of assembly.",
+    "services.integration.title": "On-Site Integration",
+    "services.integration.desc": "Integration of panels into existing systems, wiring, testing and on-site commissioning.",
+    "services.testing.title": "Testing, Standards & Lab Approval",
+    "services.testing.desc": "Load and safety testing, preparation of required documentation and compliance approvals according to ISO and local standards.",
+    "services.maintenance.title": "Service & Ongoing Maintenance",
+    "services.maintenance.desc": "Quick response to malfunctions, upgrading existing systems and ongoing technical support.",
     
     // Projects
     "projects.title": "Selected Projects",
