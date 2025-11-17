@@ -33,8 +33,8 @@ const FeaturedProducts = () => {
   if (!products || products.length === 0) return null;
 
   return (
-    <section className="py-32 md:py-40 bg-secondary/30 overflow-hidden">
-      <div className="w-full px-6">
+    <section className="py-32 md:py-40 bg-secondary/30 overflow-visible">
+      <div className="w-full px-6 md:px-12 lg:px-16">
         <FadeIn>
           <div className="text-center mb-20">
             <h2 className="text-4xl md:text-5xl font-bold mb-6 tracking-tight">
@@ -44,7 +44,7 @@ const FeaturedProducts = () => {
           </div>
         </FadeIn>
 
-        <div className="mb-16" dir={language === "he" ? "rtl" : "ltr"}>
+        <div className="mb-16 py-10" dir={language === "he" ? "rtl" : "ltr"}>
           <Carousel
             opts={{
               align: "start",
@@ -53,9 +53,9 @@ const FeaturedProducts = () => {
             }}
             className="w-full"
           >
-            <CarouselContent className="-ml-3 md:-ml-6">
+            <CarouselContent className="-ml-6 md:-ml-8">
               {products.map((product) => (
-                <CarouselItem key={product.id} className="pl-3 md:pl-6 md:basis-1/2 lg:basis-1/3">
+                <CarouselItem key={product.id} className="pl-6 md:pl-8 md:basis-1/2 lg:basis-1/3">
                   <Link to={`/store?product=${product.id}`} className="block group">
                     <div className="relative h-[480px] rounded-3xl overflow-hidden cursor-pointer shadow-[0_8px_30px_rgba(0,0,0,0.12)] hover:shadow-[0_20px_60px_rgba(0,0,0,0.2)] transition-all duration-500 hover:-translate-y-1.5 hover:scale-[1.01]">
                       <img 
