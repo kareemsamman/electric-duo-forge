@@ -9,15 +9,16 @@ const CTASection = () => {
   const { t, language } = useLanguage();
 
   return (
-    <section className="py-20 md:py-28 bg-gradient-to-b from-[hsl(210,80%,25%)] to-[hsl(210,100%,8%)]">
-      <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-[1360px] text-center">
+    <section className="py-32 md:py-40 bg-[image:var(--gradient-cta)] relative overflow-hidden">
+      <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'var(--texture-noise)' }} />
+      <div className="container relative mx-auto px-4 md:px-6 lg:px-8 max-w-[1360px] text-center">
         <FadeIn>
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">
+          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white tracking-tight">
             {t("cta.title")}
           </h2>
         </FadeIn>
         <FadeIn delay={0.2}>
-          <p className="text-xl mb-8 text-white/90 max-w-2xl mx-auto">
+          <p className="text-xl mb-12 text-white/90 max-w-2xl mx-auto leading-relaxed">
             {t("cta.subtitle")}
           </p>
         </FadeIn>
@@ -27,7 +28,7 @@ const CTASection = () => {
               <Button 
                 size="lg" 
                 variant="outline" 
-                className="bg-white text-accent hover:bg-white/90 border-0"
+                className="h-14 px-10 bg-white text-accent hover:bg-white/90 border-0 rounded-xl text-base font-semibold shadow-xl hover:shadow-2xl transition-all"
               >
                 {t("cta.button")}
                 {language === "he" ? (

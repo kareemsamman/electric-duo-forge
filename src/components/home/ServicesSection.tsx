@@ -28,29 +28,32 @@ const ServicesSection = () => {
   const { t } = useLanguage();
 
   return (
-    <section className="py-20 md:py-28">
+    <section className="py-32 md:py-40">
       <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-[1360px]">
         <FadeIn>
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-16">
-            {t("services.title")}
-          </h2>
+          <div className="text-center mb-20">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight">
+              {t("services.title")}
+            </h2>
+            <div className="w-20 h-1 bg-accent/30 mx-auto mt-6" />
+          </div>
         </FadeIn>
 
-        <StaggerContainer className="grid md:grid-cols-3 gap-8" staggerDelay={0.15}>
+        <StaggerContainer className="grid md:grid-cols-3 gap-10 lg:gap-12" staggerDelay={0.15}>
           {services.map((service, index) => {
             const Icon = service.icon;
             return (
               <StaggerItem key={index}>
                 <AnimatedCard>
-                  <Card className="border-border hover:border-accent hover:shadow-xl transition-all group">
-                    <CardContent className="pt-8 pb-8 text-center">
-                      <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-accent group-hover:scale-110 transition-all duration-300">
-                        <Icon className="text-accent group-hover:text-white transition-colors" size={32} />
+                  <Card className="h-full transition-all duration-300 hover:shadow-[var(--shadow-card-hover)]">
+                    <CardContent className="pt-10 pb-10 text-center">
+                      <div className="w-20 h-20 bg-accent/10 rounded-2xl flex items-center justify-center mx-auto mb-8 transition-all duration-300 group-hover:bg-accent group-hover:scale-105">
+                        <Icon className="text-accent transition-colors" size={36} />
                       </div>
-                      <h3 className="text-xl font-semibold mb-3">
+                      <h3 className="text-2xl font-bold mb-4 tracking-tight">
                         {t(service.titleKey)}
                       </h3>
-                      <p className="text-muted-foreground leading-relaxed">
+                      <p className="text-muted-foreground leading-relaxed text-base">
                         {t(service.descKey)}
                       </p>
                     </CardContent>

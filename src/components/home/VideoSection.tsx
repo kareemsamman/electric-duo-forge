@@ -36,13 +36,14 @@ const VideoSection = () => {
         >
           <source src={videoSection.video_url} type="video/mp4" />
         </video>
-        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/60 to-black/70" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/70 to-black/80" />
+        <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'var(--texture-noise)' }} />
       </div>
 
       {/* Centered Content */}
-      <div className="container relative z-10 mx-auto px-4 md:px-6 lg:px-8 max-w-[1360px] text-center">
+      <div className="container relative z-10 mx-auto px-4 md:px-6 lg:px-8 max-w-[1360px] text-center py-32">
         <FadeIn delay={0.2}>
-          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">
+          <h2 className="text-5xl md:text-6xl font-bold mb-8 text-white tracking-tight leading-tight">
             {language === "he" ? videoSection.video_title : videoSection.video_title_en || videoSection.video_title}
           </h2>
         </FadeIn>

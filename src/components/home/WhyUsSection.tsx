@@ -19,16 +19,19 @@ const WhyUsSection = () => {
   const { t } = useLanguage();
 
   return (
-    <section className="py-20 md:py-28 bg-secondary">
+    <section className="py-32 md:py-40 bg-secondary/30">
       <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-[1360px]">
-        <div className="grid md:grid-cols-2 gap-16 items-center">
+        <div className="grid md:grid-cols-2 gap-20 items-center">
           <FadeIn>
-            <h2 className="text-3xl md:text-4xl font-bold mb-6">
-              {t("whyus.title")}
-            </h2>
-            <p className="text-muted-foreground text-lg leading-relaxed">
-              {t("hero.subtitle")}
-            </p>
+            <div className="mb-8">
+              <h2 className="text-4xl md:text-5xl font-bold mb-6 tracking-tight">
+                {t("whyus.title")}
+              </h2>
+              <div className="w-20 h-1 bg-accent/30 mb-8" />
+              <p className="text-muted-foreground text-lg leading-relaxed">
+                {t("hero.subtitle")}
+              </p>
+            </div>
           </FadeIn>
 
           <StaggerContainer className="grid grid-cols-2 gap-6" staggerDelay={0.1}>
@@ -37,10 +40,10 @@ const WhyUsSection = () => {
               return (
                 <StaggerItem key={index}>
                   <AnimatedCard>
-                    <Card className="border-border hover:shadow-xl transition-shadow">
-                      <CardContent className="pt-6 pb-6">
-                        <Icon className="text-accent mb-4" size={32} />
-                        <p className="font-medium leading-snug">
+                    <Card className="transition-all duration-300 hover:shadow-[var(--shadow-card-hover)]">
+                      <CardContent className="pt-8 pb-8">
+                        <Icon className="text-accent mb-5" size={36} />
+                        <p className="font-semibold leading-snug text-base">
                           {t(feature.key)}
                         </p>
                       </CardContent>
