@@ -2,88 +2,127 @@ import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
-import { FadeIn } from "@/components/animations/FadeIn";
+import { motion } from "framer-motion";
 import { AnimatedButton } from "@/components/animations/AnimatedButton";
+import heroImage from "@/assets/hero-electrical-room.jpg";
 
 const HeroSection = () => {
   const { t, language } = useLanguage();
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.08,
+        delayChildren: 0.2,
+      },
+    },
+  };
+
+  const wordVariants = {
+    hidden: { opacity: 0, y: 24 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5,
+        ease: [0.25, 0.4, 0.25, 1] as const,
+      },
+    },
+  };
+
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Animated Background Layers */}
-      <div className="absolute inset-0 z-0">
-        {/* Video Background */}
-        <video
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="w-full h-full object-cover opacity-35"
-        >
-          <source src="https://assets.mixkit.co/videos/preview/mixkit-engineer-working-on-electrical-panel-28342-large.mp4" type="video/mp4" />
-        </video>
-        
-        {/* Premium Gradient Overlay */}
-        <div className="absolute inset-0 bg-[image:var(--gradient-hero)]" />
-        
-        {/* Industrial Texture */}
-        <div className="absolute inset-0 opacity-25" style={{ backgroundImage: 'var(--texture-noise)' }} />
-        
-        {/* Animated Light Streaks */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-1/4 -left-1/4 w-1/2 h-1/2 bg-gradient-to-r from-transparent via-accent/10 to-transparent blur-3xl animate-[pulse_8s_ease-in-out_infinite]" />
-          <div className="absolute bottom-1/4 -right-1/4 w-1/2 h-1/2 bg-gradient-to-l from-transparent via-electric/10 to-transparent blur-3xl animate-[pulse_10s_ease-in-out_infinite_2s]" />
-        </div>
-        
-        {/* Radial Spotlight */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(11,27,43,0.4)_100%)]" />
-      </div>
+    <section className="relative min-h-screen flex items-center overflow-hidden bg-white">
+      {/* Full-width gradient background */}
+      <div className="absolute inset-0 z-0 bg-[image:var(--gradient-hero)]" />
 
-      {/* Content */}
-      <div className="container relative z-10 mx-auto px-4 md:px-6 lg:px-8 max-w-[1400px] py-48 md:py-56">
-        <div className="max-w-5xl">
-          <FadeIn delay={0.2}>
-            <h1 className="text-6xl md:text-7xl lg:text-8xl font-bold mb-12 text-white leading-[1.1] tracking-tight">
-              {t("hero.title")}
-            </h1>
-          </FadeIn>
-          <FadeIn delay={0.4}>
-            <p className="text-2xl md:text-3xl mb-16 text-white/95 leading-relaxed max-w-3xl font-light">
-              {t("hero.subtitle")}
-            </p>
-          </FadeIn>
-          <FadeIn delay={0.6}>
-            <div className="flex flex-col sm:flex-row gap-6">
-              <AnimatedButton>
-                <Button 
-                  asChild 
-                  size="lg" 
-                  className="h-16 px-10 bg-gradient-to-br from-accent via-accent to-accent/90 hover:from-accent/95 hover:via-accent/90 hover:to-accent/85 text-white shadow-2xl shadow-accent/30 rounded-2xl text-lg font-bold w-full sm:w-auto relative overflow-hidden group"
-                >
-                  <Link to="/contact" className="relative z-10">
-                    <span className="absolute inset-0 bg-gradient-to-t from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                    {t("hero.cta.primary")}
-                    <ArrowRight className={`${language === "he" ? "mr-2 rotate-180" : "ml-2"}`} size={22} />
-                  </Link>
-                </Button>
-              </AnimatedButton>
-              <AnimatedButton>
-                <Button 
-                  asChild 
-                  size="lg" 
-                  variant="outline" 
-                  className="h-16 px-10 bg-white/15 backdrop-blur-md border-2 border-white/40 text-white hover:bg-white/25 hover:border-white/60 rounded-2xl text-lg font-bold w-full sm:w-auto transition-all duration-300"
-                >
-                  <Link to="/projects">{t("hero.cta.secondary")}</Link>
-                </Button>
-              </AnimatedButton>
-            </div>
-          </FadeIn>
+      {/* Content Container */}
+      <div className="container relative z-10 mx-auto px-4 md:px-6 lg:px-8 max-w-[1400px] py-32 md:py-40">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+          {/* Hero Image - Left Side on Desktop */}
+          <motion.div
+            initial={{ opacity: 0, x: -40 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, ease: [0.25, 0.4, 0.25, 1] }}
+            className="order-1 lg:order-1"
+          >
+            <motion.div
+              className="relative rounded-3xl overflow-hidden shadow-[var(--shadow-premium)]"
+              whileInView={{ y: 0 }}
+              initial={{ y: 0 }}
+              style={{ willChange: "transform" }}
+              transition={{ duration: 1, ease: "easeOut" }}
+            >
+              <img
+                src={heroImage}
+                alt="Modern industrial electrical switchgear"
+                className="w-full h-auto object-cover"
+              />
+            </motion.div>
+          </motion.div>
+
+          {/* Text Content - Right Side on Desktop */}
+          <div className="order-2 lg:order-2">
+            <motion.div
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              className="space-y-8"
+            >
+              {/* Title with word-by-word reveal */}
+              <motion.h1 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.1] tracking-tight">
+                {t("hero.title").split(" ").map((word, index) => (
+                  <motion.span
+                    key={index}
+                    variants={wordVariants}
+                    className="inline-block mr-3 md:mr-4"
+                  >
+                    {word}
+                  </motion.span>
+                ))}
+              </motion.h1>
+
+              {/* Subtitle */}
+              <motion.p
+                variants={wordVariants}
+                className="text-xl md:text-2xl leading-relaxed max-w-2xl text-muted-foreground"
+              >
+                {t("hero.subtitle")}
+              </motion.p>
+
+              {/* Buttons */}
+              <motion.div
+                variants={wordVariants}
+                className="flex flex-col sm:flex-row gap-4"
+              >
+                <AnimatedButton>
+                  <Button
+                    asChild
+                    size="lg"
+                    className="h-14 px-8 bg-accent hover:bg-accent/90 text-white rounded-full text-base font-semibold w-full sm:w-auto transition-all duration-300 hover:scale-[1.03]"
+                  >
+                    <Link to="/contact" className="relative z-10">
+                      {t("hero.cta.primary")}
+                      <ArrowRight className={`${language === "he" ? "mr-2 rotate-180" : "ml-2"}`} size={20} />
+                    </Link>
+                  </Button>
+                </AnimatedButton>
+                <AnimatedButton>
+                  <Button
+                    asChild
+                    size="lg"
+                    variant="outline"
+                    className="h-14 px-8 bg-white border-2 border-primary/20 text-primary hover:bg-secondary hover:border-primary/40 rounded-full text-base font-semibold w-full sm:w-auto transition-all duration-300"
+                  >
+                    <Link to="/projects">{t("hero.cta.secondary")}</Link>
+                  </Button>
+                </AnimatedButton>
+              </motion.div>
+            </motion.div>
+          </div>
         </div>
       </div>
-
-      {/* Bottom Gradient Fade */}
-      <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-background via-background/50 to-transparent z-10" />
     </section>
   );
 };
