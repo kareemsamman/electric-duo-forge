@@ -20,7 +20,11 @@ const Certificates = () => {
         
         <div className="grid md:grid-cols-3 gap-8">
           {certificates.map((cert, index) => (
-            <Card key={index} className="hover:shadow-xl transition-shadow cursor-pointer">
+            <Card 
+              key={index} 
+              className="hover:shadow-xl hover:scale-[1.02] transition-all duration-300 cursor-pointer animate-fade-in"
+              style={{ animationDelay: `${index * 100}ms` }}
+            >
               <CardContent className="pt-12 pb-12 text-center">
                 <Award className="text-accent mx-auto mb-6" size={64} />
                 <h3 className="text-2xl font-bold mb-2">{cert.name}</h3>

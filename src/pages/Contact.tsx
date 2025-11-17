@@ -11,13 +11,13 @@ const Contact = () => {
   return (
     <div className="min-h-screen pt-32 pb-20">
       <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-[1360px]">
-        <h1 className="text-4xl md:text-5xl font-bold mb-16 text-center">
+        <h1 className="text-4xl md:text-5xl font-bold mb-16 text-center animate-fade-in">
           {t("contact.title")}
         </h1>
 
         <div className="grid md:grid-cols-2 gap-12 mb-16">
           {/* Contact Form */}
-          <Card>
+          <Card className="animate-fade-in hover:shadow-xl transition-all">
             <CardContent className="pt-8 pb-8">
               <form className="space-y-6">
                 <div>
@@ -36,8 +36,8 @@ const Contact = () => {
                   <Input type="file" />
                 </div>
                 <div className="flex gap-4">
-                  <Button className="flex-1">{t("contact.form.submit")}</Button>
-                  <Button variant="outline" className="flex-1">
+                  <Button className="flex-1 hover:scale-105 transition-all">{t("contact.form.submit")}</Button>
+                  <Button variant="outline" className="flex-1 hover:scale-105 transition-all">
                     {t("contact.form.whatsapp")}
                   </Button>
                 </div>
@@ -47,7 +47,7 @@ const Contact = () => {
 
           {/* Contact Info */}
           <div className="space-y-6">
-            <Card>
+            <Card className="animate-fade-in hover:shadow-xl transition-all" style={{ animationDelay: "100ms" }}>
               <CardContent className="pt-6 pb-6">
                 <div className="space-y-4">
                   <div className="flex items-center gap-3">
@@ -86,7 +86,7 @@ const Contact = () => {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="animate-fade-in hover:shadow-xl transition-all" style={{ animationDelay: "200ms" }}>
               <CardContent className="pt-6 pb-6">
                 <h3 className="font-semibold mb-4">{t("contact.bank.title")}</h3>
                 <div className="space-y-2 text-sm">
@@ -98,19 +98,19 @@ const Contact = () => {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="animate-fade-in hover:shadow-xl transition-all" style={{ animationDelay: "300ms" }}>
               <CardContent className="pt-6 pb-6">
                 <div className="flex gap-4 justify-center">
-                  <a href="#" className="w-10 h-10 rounded-full bg-secondary hover:bg-accent hover:text-white flex items-center justify-center transition-colors">
+                  <a href="#" className="w-10 h-10 rounded-full bg-secondary hover:bg-accent hover:text-white hover:scale-110 flex items-center justify-center transition-all">
                     <Facebook size={20} />
                   </a>
-                  <a href="#" className="w-10 h-10 rounded-full bg-secondary hover:bg-accent hover:text-white flex items-center justify-center transition-colors">
+                  <a href="#" className="w-10 h-10 rounded-full bg-secondary hover:bg-accent hover:text-white hover:scale-110 flex items-center justify-center transition-all">
                     <Instagram size={20} />
                   </a>
-                  <a href="#" className="w-10 h-10 rounded-full bg-secondary hover:bg-accent hover:text-white flex items-center justify-center transition-colors">
+                  <a href="#" className="w-10 h-10 rounded-full bg-secondary hover:bg-accent hover:text-white hover:scale-110 flex items-center justify-center transition-all">
                     <Linkedin size={20} />
                   </a>
-                  <a href="#" className="w-10 h-10 rounded-full bg-secondary hover:bg-accent hover:text-white flex items-center justify-center transition-colors">
+                  <a href="#" className="w-10 h-10 rounded-full bg-secondary hover:bg-accent hover:text-white hover:scale-110 flex items-center justify-center transition-all">
                     <Youtube size={20} />
                   </a>
                 </div>

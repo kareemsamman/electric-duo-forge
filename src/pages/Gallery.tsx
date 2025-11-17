@@ -4,9 +4,20 @@ import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 import { X } from "lucide-react";
 
+type GalleryItem = {
+  id: string;
+  image: string;
+  title: string;
+  title_en: string | null;
+  description: string | null;
+  description_en: string | null;
+  category: string;
+  created_at: string;
+};
+
 const Gallery = () => {
   const { t, language } = useLanguage();
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState<GalleryItem | null>(null);
 
   const { data: gallery, isLoading } = useQuery({
     queryKey: ["gallery"],
@@ -44,7 +55,7 @@ const Gallery = () => {
                 key={item.id}
                 className="relative aspect-square overflow-hidden rounded-lg cursor-pointer group animate-fade-in hover:scale-[1.02] transition-all duration-300"
                 style={{ animationDelay: `${index * 100}ms` }}
-                onClick={() => setSelectedImage(item.image)}
+                onClick={() => setSelectedImage(item)}
               >
                 <img
                   src={item.image}
@@ -82,7 +93,7 @@ const Gallery = () => {
             <X size={32} />
           </button>
           <img
-            src={selectedImage}
+            src={selectedImage.image}
             alt="Full size"
             className="max-w-full max-h-full object-contain animate-scale-in"
           />
