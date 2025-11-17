@@ -1,15 +1,18 @@
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, ShoppingCart } from "lucide-react";
 import { FadeIn } from "@/components/animations/FadeIn";
-import { StaggerContainer } from "@/components/animations/StaggerContainer";
-import { StaggerItem } from "@/components/animations/StaggerItem";
-import { AnimatedCard } from "@/components/animations/AnimatedCard";
 import { AnimatedButton } from "@/components/animations/AnimatedButton";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 const FeaturedProducts = () => {
   const { t, language } = useLanguage();
@@ -42,34 +45,57 @@ const FeaturedProducts = () => {
           </div>
         </FadeIn>
 
-        <StaggerContainer className="grid md:grid-cols-3 gap-10 lg:gap-12 mb-16" staggerDelay={0.15}>
-          {products.map((product) => (
-            <StaggerItem key={product.id}>
-              <AnimatedCard>
-                <Card className="overflow-hidden transition-all duration-300 hover:shadow-[var(--shadow-card-hover)] group cursor-pointer">
-                  <div className="h-56 bg-secondary flex items-center justify-center overflow-hidden">
-                    <img 
-                      src={product.product_image} 
-                      alt={language === "he" ? product.product_name : product.product_name_en || product.product_name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                  </div>
-                  <CardContent className="pt-8 pb-8">
-                    <h3 className="text-2xl font-bold mb-3 tracking-tight">
-                      {language === "he" ? product.product_name : product.product_name_en || product.product_name}
-                    </h3>
-                    <p className="text-sm text-muted-foreground mb-5 leading-relaxed">
-                      {language === "he" ? product.product_specs : product.product_specs_en || product.product_specs}
-                    </p>
-                    <div className="flex items-center justify-between mt-5 pt-5 border-t border-border/50">
-                      <span className="text-3xl font-bold text-accent">₪{product.price.toLocaleString()}</span>
+        <div className="mb-16" dir={language === "he" ? "rtl" : "ltr"}>
+          <Carousel
+            opts={{
+              align: "start",
+              loop: true,
+              direction: language === "he" ? "rtl" : "ltr",
+            }}
+            className="w-full"
+          >
+            <CarouselContent className="-ml-4">
+              {products.map((product) => (
+                <CarouselItem key={product.id} className="pl-4 md:basis-1/2 lg:basis-1/3">
+                  <Link to={`/store?product=${product.id}`} className="block group">
+                    <div className="relative h-[450px] rounded-2xl overflow-hidden cursor-pointer">
+                      <img 
+                        src={product.product_image} 
+                        alt={language === "he" ? product.product_name : product.product_name_en || product.product_name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                      
+                      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 via-black/50 to-transparent p-6 pt-20">
+                        <h3 className="text-2xl font-bold mb-2 text-white tracking-tight">
+                          {language === "he" ? product.product_name : product.product_name_en || product.product_name}
+                        </h3>
+                        <p className="text-sm text-gray-200 mb-4 leading-relaxed line-clamp-2">
+                          {language === "he" ? product.product_specs : product.product_specs_en || product.product_specs}
+                        </p>
+                        <div className="flex items-center justify-between gap-4">
+                          <span className="text-3xl font-bold text-white">₪{product.price.toLocaleString()}</span>
+                          <Button 
+                            variant="outline" 
+                            className="rounded-full border-white/80 bg-transparent text-white hover:bg-white/10 hover:border-white transition-all px-6"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              // Add to cart logic here
+                            }}
+                          >
+                            <ShoppingCart className="w-4 h-4" />
+                            {language === "he" ? "הוספה לעגלה" : "Add to cart"}
+                          </Button>
+                        </div>
+                      </div>
                     </div>
-                  </CardContent>
-                </Card>
-              </AnimatedCard>
-            </StaggerItem>
-          ))}
-        </StaggerContainer>
+                  </Link>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious className="hidden md:flex" />
+            <CarouselNext className="hidden md:flex" />
+          </Carousel>
+        </div>
 
         <FadeIn delay={0.5}>
           <div className="text-center">
@@ -77,7 +103,7 @@ const FeaturedProducts = () => {
               <AnimatedButton>
                 <Button 
                   size="lg" 
-                  className="h-14 px-8 rounded-xl text-base font-semibold shadow-md hover:shadow-lg transition-all group"
+                  className="h-14 px-8 rounded-full text-base font-semibold shadow-md hover:shadow-lg transition-all group border border-white/20"
                 >
                   {t("featured.products.viewAll")}
                   {language === "he" ? (
