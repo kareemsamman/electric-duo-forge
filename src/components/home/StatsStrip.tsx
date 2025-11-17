@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { StaggerContainer } from "@/components/animations/StaggerContainer";
 import { StaggerItem } from "@/components/animations/StaggerItem";
 import { AnimatedCard } from "@/components/animations/AnimatedCard";
+import { FadeIn } from "@/components/animations/FadeIn";
 
 const stats = [
   { value: "10+", key: "stats.experience" },
@@ -17,6 +18,11 @@ const StatsStrip = () => {
   return (
     <section className="py-16 md:py-20 bg-secondary">
       <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-[1360px]">
+        <FadeIn>
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
+            {t("stats.title")}
+          </h2>
+        </FadeIn>
         <StaggerContainer className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12" staggerDelay={0.1}>
           {stats.map((stat, index) => (
             <StaggerItem key={index}>

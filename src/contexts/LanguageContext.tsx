@@ -29,6 +29,7 @@ const translations = {
     "hero.cta.secondary": "צפייה בפרויקטים",
     
     // Stats
+    "stats.title": "במספרים",
     "stats.experience": "שנות ניסיון",
     "stats.projects": "פרויקטים שבוצעו",
     "stats.facility": "מ״ר מפעל ייצור",
@@ -45,6 +46,7 @@ const translations = {
     
     // Projects
     "projects.title": "פרויקטים נבחרים",
+    "projects.subtitle": "מדגם קטן מפרויקטים שביצענו עבור לקוחות בכל הארץ",
     "projects.viewAll": "לכל הפרויקטים",
     
     // Why Us
@@ -109,6 +111,10 @@ const translations = {
     // Gallery Preview
     "gallery.preview.title": "מתוך הפרויקטים שלנו",
     "gallery.preview.viewAll": "לכל הגלריה",
+    
+    // Client Logos
+    "clients.title": "לקוחות שבחרו לעבוד איתנו",
+    "clients.subtitle": "מגוון רחב של חברות וארגונים מהמגזר הציבורי והפרטי",
   },
   en: {
     // Navigation
@@ -128,6 +134,7 @@ const translations = {
     "hero.cta.secondary": "View Projects",
     
     // Stats
+    "stats.title": "By the Numbers",
     "stats.experience": "Years of Experience",
     "stats.projects": "Completed Projects",
     "stats.facility": "sqm Manufacturing Facility",
@@ -144,6 +151,7 @@ const translations = {
     
     // Projects
     "projects.title": "Selected Projects",
+    "projects.subtitle": "A small sample of projects we've completed for clients across the country",
     "projects.viewAll": "View All Projects",
     
     // Why Us
@@ -208,6 +216,10 @@ const translations = {
     // Gallery Preview
     "gallery.preview.title": "From Our Projects",
     "gallery.preview.viewAll": "Full Gallery",
+    
+    // Client Logos
+    "clients.title": "Clients Who Chose to Work With Us",
+    "clients.subtitle": "A wide range of companies and organizations from the public and private sectors",
   },
 };
 
