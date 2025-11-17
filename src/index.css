@@ -8,40 +8,60 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
+    /* Main backgrounds */
     --background: 0 0% 100%;
-    --foreground: 220 26% 14%;
-
+    --foreground: 217 91% 7%;
+    
+    /* Card styling */
     --card: 0 0% 100%;
-    --card-foreground: 220 26% 14%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 220 26% 14%;
-
-    --primary: 210 60% 11%;
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 210 25% 97%;
-    --secondary-foreground: 220 26% 14%;
-
-    --muted: 210 25% 97%;
-    --muted-foreground: 215 16% 47%;
-
-    --accent: 207 73% 51%;
+    --card-foreground: 217 91% 7%;
+    
+    /* Soft alternative sections */
+    --secondary: 214 32% 97%;
+    --secondary-foreground: 217 91% 7%;
+    
+    /* Text colors */
+    --muted: 220 9% 46%;
+    --muted-foreground: 220 9% 46%;
+    
+    /* Accent - Electric Blue */
+    --accent: 207 79% 51%;
     --accent-foreground: 0 0% 100%;
-
-    --electric-blue: 207 73% 51%;
-    --gradient-cyan: 187 85% 43%;
-    --gradient-violet: 258 90% 66%;
-
+    
+    /* Light blue for pills and subtle backgrounds */
+    --light-blue: 213 100% 92%;
+    
+    /* Navy gradient colors */
+    --navy-dark: 222 88% 4%;
+    --navy-mid: 210 57% 12%;
+    
+    /* Popover */
+    --popover: 0 0% 100%;
+    --popover-foreground: 217 91% 7%;
+    
+    /* Primary (Navy) */
+    --primary: 210 57% 12%;
+    --primary-foreground: 0 0% 100%;
+    
+    /* Destructive */
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 210 20% 90%;
-    --input: 210 20% 90%;
-    --ring: 207 73% 51%;
-
-    --radius: 0.75rem;
-
+    --destructive-foreground: 210 40% 98%;
+    
+    /* Border and input */
+    --border: 222 47% 11%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 207 79% 51%;
+    
+    --radius: 1rem;
+    
+    /* Chart colors */
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+    
+    /* Sidebar */
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 240 5.9% 10%;
@@ -50,17 +70,22 @@ All colors MUST be HSL.
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+    
+    /* Legacy support */
+    --electric-blue: 207 79% 51%;
+    --gradient-cyan: 187 92% 44%;
+    --gradient-violet: 263 70% 56%;
 
     /* Premium Shadows */
-    --shadow-subtle: 0 1px 3px 0 hsl(210 20% 80% / 0.08), 0 1px 2px -1px hsl(210 20% 80% / 0.08);
-    --shadow-card: 0 4px 6px -1px hsl(210 20% 70% / 0.06), 0 2px 4px -2px hsl(210 20% 70% / 0.06);
-    --shadow-card-hover: 0 10px 15px -3px hsl(210 20% 60% / 0.08), 0 4px 6px -4px hsl(210 20% 60% / 0.08);
-    --shadow-premium: 0 20px 25px -5px hsl(210 20% 50% / 0.1), 0 8px 10px -6px hsl(210 20% 50% / 0.1);
+    --shadow-subtle: 0 2px 8px rgba(15, 23, 42, 0.04);
+    --shadow-card: 0 14px 40px rgba(15, 23, 42, 0.06);
+    --shadow-card-hover: 0 16px 48px rgba(15, 23, 42, 0.08);
+    --shadow-premium: 0 20px 60px rgba(15, 23, 42, 0.1);
 
-    /* Premium Gradients */
-    --gradient-hero: linear-gradient(135deg, hsl(210 100% 8%) 0%, hsl(210 80% 15%) 50%, hsl(210 50% 25%) 100%);
-    --gradient-hero-overlay: linear-gradient(135deg, hsl(210 100% 8% / 0.95) 0%, hsl(210 80% 15% / 0.85) 100%);
-    --gradient-cta: linear-gradient(180deg, hsl(210 80% 25%) 0%, hsl(210 100% 8%) 100%);
+    /* Cinematic Gradients */
+    --gradient-hero: linear-gradient(180deg, hsl(var(--navy-dark)) 0%, hsl(var(--navy-mid)) 40%, rgba(255, 255, 255, 0) 100%);
+    --gradient-hero-overlay: linear-gradient(180deg, rgba(11, 27, 43, 0.4) 0%, rgba(11, 27, 43, 0.7) 100%);
+    --gradient-cta: linear-gradient(135deg, hsl(var(--navy-dark)) 0%, hsl(var(--navy-mid)) 100%);
     
     /* Subtle Industrial Texture */
     --texture-noise: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.02'/%3E%3C/svg%3E");
