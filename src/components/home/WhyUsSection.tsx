@@ -18,7 +18,7 @@ const WhyUsSection = () => {
     <section className="py-20 md:py-28 bg-secondary">
       <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-[1360px]">
         <div className="grid md:grid-cols-2 gap-16 items-center">
-          <div>
+          <div className="animate-fade-in">
             <h2 className="text-3xl md:text-4xl font-bold mb-6">
               {t("whyus.title")}
             </h2>
@@ -31,7 +31,11 @@ const WhyUsSection = () => {
             {features.map((feature, index) => {
               const Icon = feature.icon;
               return (
-                <Card key={index} className="border-border hover:shadow-lg transition-shadow">
+                <Card 
+                  key={index} 
+                  className="border-border hover:shadow-xl hover:scale-105 transition-all duration-300 animate-fade-in"
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
                   <CardContent className="pt-6 pb-6">
                     <Icon className="text-accent mb-4" size={32} />
                     <p className="font-medium leading-snug">

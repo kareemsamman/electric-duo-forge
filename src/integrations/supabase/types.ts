@@ -14,7 +14,222 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      certificates: {
+        Row: {
+          certificate_image: string
+          certificate_name: string
+          certificate_name_en: string | null
+          created_at: string
+          id: string
+          pdf_file: string | null
+          short_description: string
+          short_description_en: string | null
+        }
+        Insert: {
+          certificate_image: string
+          certificate_name: string
+          certificate_name_en?: string | null
+          created_at?: string
+          id?: string
+          pdf_file?: string | null
+          short_description: string
+          short_description_en?: string | null
+        }
+        Update: {
+          certificate_image?: string
+          certificate_name?: string
+          certificate_name_en?: string | null
+          created_at?: string
+          id?: string
+          pdf_file?: string | null
+          short_description?: string
+          short_description_en?: string | null
+        }
+        Relationships: []
+      }
+      gallery: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          description_en: string | null
+          id: string
+          image: string
+          title: string
+          title_en: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description?: string | null
+          description_en?: string | null
+          id?: string
+          image: string
+          title: string
+          title_en?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          description_en?: string | null
+          id?: string
+          image?: string
+          title?: string
+          title_en?: string | null
+        }
+        Relationships: []
+      }
+      products: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          price: number
+          product_description: string
+          product_description_en: string | null
+          product_image: string
+          product_name: string
+          product_name_en: string | null
+          product_specs: string
+          product_specs_en: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          id?: string
+          price: number
+          product_description: string
+          product_description_en?: string | null
+          product_image: string
+          product_name: string
+          product_name_en?: string | null
+          product_specs: string
+          product_specs_en?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          price?: number
+          product_description?: string
+          product_description_en?: string | null
+          product_image?: string
+          product_name?: string
+          product_name_en?: string | null
+          product_specs?: string
+          product_specs_en?: string | null
+        }
+        Relationships: []
+      }
+      projects: {
+        Row: {
+          created_at: string
+          description: string
+          description_en: string | null
+          id: string
+          image: string
+          location: string
+          location_en: string | null
+          project_name: string
+          project_name_en: string | null
+          tags: string[]
+          tags_en: string[] | null
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          description_en?: string | null
+          id?: string
+          image: string
+          location: string
+          location_en?: string | null
+          project_name: string
+          project_name_en?: string | null
+          tags?: string[]
+          tags_en?: string[] | null
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          description_en?: string | null
+          id?: string
+          image?: string
+          location?: string
+          location_en?: string | null
+          project_name?: string
+          project_name_en?: string | null
+          tags?: string[]
+          tags_en?: string[] | null
+        }
+        Relationships: []
+      }
+      team: {
+        Row: {
+          created_at: string
+          description: string
+          description_en: string | null
+          display_order: number | null
+          id: string
+          name: string
+          photo: string
+          role: string
+          role_en: string | null
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          description_en?: string | null
+          display_order?: number | null
+          id?: string
+          name: string
+          photo: string
+          role: string
+          role_en?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          description_en?: string | null
+          display_order?: number | null
+          id?: string
+          name?: string
+          photo?: string
+          role?: string
+          role_en?: string | null
+        }
+        Relationships: []
+      }
+      video_sections: {
+        Row: {
+          created_at: string
+          id: string
+          video_description: string
+          video_description_en: string | null
+          video_title: string
+          video_title_en: string | null
+          video_url: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          video_description: string
+          video_description_en?: string | null
+          video_title: string
+          video_title_en?: string | null
+          video_url: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          video_description?: string
+          video_description_en?: string | null
+          video_title?: string
+          video_title_en?: string | null
+          video_url?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
