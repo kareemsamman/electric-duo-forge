@@ -9,7 +9,7 @@ const CTASection = () => {
   const { t, language } = useLanguage();
 
   return (
-    <section className="py-20 md:py-28 bg-accent">
+    <section className="py-20 md:py-28 bg-gradient-to-b from-[hsl(210,80%,25%)] to-[hsl(210,100%,8%)]">
       <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-[1360px] text-center">
         <FadeIn>
           <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">
