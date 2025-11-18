@@ -6,7 +6,7 @@ import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { FadeIn } from "@/components/animations/FadeIn";
 
-const ProductsSliderSection = () => {
+const ProjectsSliderSection = () => {
   const { language } = useLanguage();
   const { content } = useContent();
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -193,4 +193,4 @@ const ProductsSliderSection = () => {
   );
 };
 
-export default ProductsSliderSection;
+export default ProjectsSliderSection;
