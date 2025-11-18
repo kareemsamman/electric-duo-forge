@@ -68,34 +68,39 @@ const ClientLogos = () => {
                 return (
                   <motion.div
                     key={logo.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, margin: "-50px" }}
+                    initial={{ opacity: 0, y: 30, scale: 0.9 }}
+                    whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                    viewport={{ once: true, margin: "-100px" }}
                     transition={{
-                      duration: 0.4,
-                      delay: globalIndex * 0.05,
-                      ease: [0.25, 0.4, 0.25, 1],
+                      duration: 0.6,
+                      delay: globalIndex * 0.08,
+                      ease: [0.22, 1, 0.36, 1],
                     }}
                     whileHover={{
-                      scale: 1.08,
-                      opacity: 1,
-                      transition: { duration: 0.2 },
-                    }}
-                    animate={{
-                      y: [0, -4, 0],
-                      transition: {
-                        duration: 2.5 + (globalIndex % 4) * 0.3,
-                        repeat: Infinity,
-                        ease: "easeInOut",
-                        delay: globalIndex * 0.15,
+                      scale: 1.12,
+                      y: -8,
+                      transition: { 
+                        duration: 0.3,
+                        ease: [0.34, 1.56, 0.64, 1]
                       },
                     }}
-                    className="flex items-center justify-center w-20 md:w-24 lg:w-28"
+                    animate={{
+                      y: [0, -6, 0],
+                      rotate: [0, 1, -1, 0],
+                      transition: {
+                        duration: 3 + (globalIndex % 5) * 0.4,
+                        repeat: Infinity,
+                        ease: [0.45, 0.05, 0.55, 0.95],
+                        delay: globalIndex * 0.2,
+                      },
+                    }}
+                    className="flex items-center justify-center w-20 md:w-24 lg:w-28 relative group"
                   >
+                    <div className="absolute inset-0 rounded-lg bg-primary/5 opacity-0 group-hover:opacity-100 blur-xl transition-all duration-500" />
                     <img
                       src={logo.logo_image}
                       alt={logo.company_name}
-                      className="max-h-12 md:max-h-14 lg:max-h-16 w-auto object-contain opacity-60 hover:opacity-100 transition-opacity duration-200 mix-blend-multiply dark:mix-blend-normal"
+                      className="max-h-12 md:max-h-14 lg:max-h-16 w-auto object-contain opacity-55 group-hover:opacity-100 transition-all duration-300 mix-blend-multiply dark:mix-blend-normal relative z-10 filter group-hover:brightness-110"
                     />
                   </motion.div>
                 );
