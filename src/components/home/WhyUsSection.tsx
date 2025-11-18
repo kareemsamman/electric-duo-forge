@@ -6,10 +6,10 @@ import { StaggerItem } from "@/components/animations/StaggerItem";
 import whyUsBackground from "@/assets/why-us-background.jpg";
 
 const features = [
-  { icon: Award, titleKey: "whyus.iso", descKey: "whyus.isoDesc" },
-  { icon: Clock, titleKey: "whyus.delivery", descKey: "whyus.deliveryDesc" },
-  { icon: Shield, titleKey: "whyus.quality", descKey: "whyus.qualityDesc" },
-  { icon: Users, titleKey: "whyus.service", descKey: "whyus.serviceDesc" },
+  { icon: Award, titleKey: "whyus.iso.title", descKey: "whyus.iso.desc" },
+  { icon: Clock, titleKey: "whyus.delivery.title", descKey: "whyus.delivery.desc" },
+  { icon: Shield, titleKey: "whyus.quality.title", descKey: "whyus.quality.desc" },
+  { icon: Users, titleKey: "whyus.service.title", descKey: "whyus.service.desc" },
 ];
 
 const WhyUsSection = () => {
