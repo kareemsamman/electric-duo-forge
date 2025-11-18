@@ -1,28 +1,22 @@
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { useContent } from "@/contexts/ContentContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Link } from "react-router-dom";
-import { ArrowLeft, ArrowRight } from "lucide-react";
 import { FadeIn } from "@/components/animations/FadeIn";
-import { StaggerContainer } from "@/components/animations/StaggerContainer";
-import { StaggerItem } from "@/components/animations/StaggerItem";
-import { AnimatedCard } from "@/components/animations/AnimatedCard";
-import { AnimatedButton } from "@/components/animations/AnimatedButton";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 
 const TeamPreview = () => {
-  const { t, language } = useLanguage();
+  const { language } = useLanguage();
+  const { content } = useContent();
 
   const { data: team } = useQuery({
-    queryKey: ["team-preview"],
+    queryKey: ["team"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("team")
         .select("*")
-        .order("display_order", { ascending: true })
-        .limit(3);
-      
+        .order("display_order", { ascending: true });
+
       if (error) throw error;
       return data;
     },
@@ -31,64 +25,104 @@ const TeamPreview = () => {
   if (!team || team.length === 0) return null;
 
   return (
-    <section className="py-32 md:py-40 bg-secondary/30">
-      <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-[1360px]">
-        <FadeIn>
-          <div className="text-center mb-20">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight">
-              {t("team.preview.title")}
-            </h2>
-            <div className="w-20 h-1 bg-accent/30 mx-auto mt-6" />
-          </div>
-        </FadeIn>
+    <section 
+      className="relative min-h-screen flex items-stretch overflow-hidden"
+      style={{
+        background: 'var(--gradient-cta)',
+      }}
+    >
+      {/* Two Column Layout */}
+      <div className="w-full flex flex-col lg:flex-row">
+        
+        {/* Text Side - 30% */}
+        <div 
+          className={`w-full lg:w-[30%] flex items-center justify-center px-6 md:px-12 py-16 lg:py-0 relative z-10 ${
+            language === "he" ? "lg:order-2" : "lg:order-1"
+          }`}
+        >
+          <FadeIn>
+            <div className={`max-w-lg ${language === "he" ? "text-right" : "text-left"}`}>
+              <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 tracking-tight">
+                {content["team.title"] || "הצוות שלנו"}
+              </h2>
+              <p className="text-lg md:text-xl text-white/80 leading-relaxed">
+                {content["team.subtitle"] || "צוות מקצועי עם ניסיון רב שנים בתחום החשמל והאנרגיה"}
+              </p>
+            </div>
+          </FadeIn>
+        </div>
 
-        <StaggerContainer className="grid md:grid-cols-3 gap-10 lg:gap-12 mb-16" staggerDelay={0.15}>
-          {team.map((member) => (
-            <StaggerItem key={member.id}>
-              <AnimatedCard>
-                <Card className="overflow-hidden transition-all duration-300 hover:shadow-[var(--shadow-card-hover)]">
-                  <div className="aspect-square bg-secondary">
-                    <img 
-                      src={member.photo} 
-                      alt={member.name}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <CardContent className="pt-8 pb-8 text-center">
-                    <h3 className="text-2xl font-bold mb-2 tracking-tight">{member.name}</h3>
-                    <p className="text-sm text-accent font-semibold mb-4">
-                      {language === "he" ? member.role : member.role_en || member.role}
-                    </p>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      {language === "he" ? member.description : member.description_en || member.description}
-                    </p>
-                  </CardContent>
-                </Card>
-              </AnimatedCard>
-            </StaggerItem>
-          ))}
-        </StaggerContainer>
+        {/* Subtle Gradient Fade Between Columns */}
+        <div 
+          className={`hidden lg:block absolute top-0 bottom-0 w-32 z-[5] pointer-events-none ${
+            language === "he" 
+              ? "right-[30%] bg-gradient-to-r from-transparent via-[hsl(var(--navy-mid))] to-transparent" 
+              : "left-[30%] bg-gradient-to-l from-transparent via-[hsl(var(--navy-mid))] to-transparent"
+          }`}
+        />
 
-        <FadeIn delay={0.5}>
-          <div className="text-center">
-            <Link to="/about">
-              <AnimatedButton>
-                <Button 
-                  variant="outline" 
-                  size="lg" 
-                  className="h-14 px-8 rounded-xl text-base font-semibold hover:shadow-md transition-all group"
-                >
-                  {t("team.preview.viewAll")}
-                  {language === "he" ? (
-                    <ArrowLeft className="group-hover:-translate-x-1 transition-transform" size={20} />
-                  ) : (
-                    <ArrowRight className="group-hover:translate-x-1 transition-transform" size={20} />
-                  )}
-                </Button>
-              </AnimatedButton>
-            </Link>
+        {/* Team Slider Side - 70% */}
+        <div 
+          className={`w-full lg:w-[70%] relative ${
+            language === "he" ? "lg:order-1" : "lg:order-2"
+          }`}
+        >
+          <div className="h-full py-12 lg:py-0 flex items-center">
+            <Carousel
+              opts={{
+                align: "center",
+                loop: true,
+                direction: language === "he" ? "rtl" : "ltr",
+              }}
+              className="w-full"
+            >
+              <CarouselContent className="-ml-4 md:-ml-6">
+                {team.map((member) => (
+                  <CarouselItem 
+                    key={member.id} 
+                    className="pl-4 md:pl-6 basis-full md:basis-1/2 lg:basis-1/3"
+                  >
+                    <div className="group relative h-[500px] md:h-[600px] rounded-2xl overflow-hidden cursor-pointer">
+                      {/* Full Image Background */}
+                      <img
+                        src={member.photo}
+                        alt={member.name}
+                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                      />
+
+                      {/* Dark Gradient Overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-80 group-hover:opacity-90 transition-opacity duration-300" />
+
+                      {/* Glass Info Panel */}
+                      <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
+                        <div 
+                          className="bg-white/10 backdrop-blur-lg border border-white/25 rounded-2xl p-6 shadow-[0_0_30px_rgba(0,0,0,0.3)] transition-all duration-300 group-hover:bg-white/15 group-hover:border-white/35"
+                          dir={language === "he" ? "rtl" : "ltr"}
+                        >
+                          <h3 className="text-2xl md:text-3xl font-bold text-white mb-2 tracking-tight">
+                            {member.name}
+                          </h3>
+                          <p className="text-base md:text-lg text-white/90 font-medium mb-3">
+                            {language === "he" ? member.role : member.role_en || member.role}
+                          </p>
+                          <p className="text-sm text-white/70 leading-relaxed">
+                            {language === "he" ? member.description : member.description_en || member.description}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+
+              {/* Navigation Arrows */}
+              <div className="hidden lg:flex absolute top-1/2 -translate-y-1/2 left-4 right-4 justify-between pointer-events-none z-20">
+                <CarouselPrevious className="pointer-events-auto relative left-0 translate-x-0 bg-white/20 backdrop-blur-md border-white/30 hover:bg-white/30 text-white shadow-xl" />
+                <CarouselNext className="pointer-events-auto relative right-0 translate-x-0 bg-white/20 backdrop-blur-md border-white/30 hover:bg-white/30 text-white shadow-xl" />
+              </div>
+            </Carousel>
           </div>
-        </FadeIn>
+        </div>
       </div>
     </section>
   );
