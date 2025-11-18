@@ -49,15 +49,6 @@ const TeamPreview = () => {
           </FadeIn>
         </div>
 
-        {/* Subtle Gradient Fade Between Columns */}
-        <div 
-          className={`hidden lg:block absolute top-0 bottom-0 w-32 z-[5] pointer-events-none ${
-            language === "he" 
-              ? "left-[30%] bg-gradient-to-l from-transparent via-[hsl(var(--navy-mid))] to-transparent" 
-              : "left-[30%] bg-gradient-to-r from-transparent via-[hsl(var(--navy-mid))] to-transparent"
-          }`}
-        />
-
         {/* Team Slider Side - 70% (Always second in visual order) */}
         <div className="w-full lg:w-[70%] relative">
           <div className="h-full py-12 lg:py-0 flex items-center">
@@ -109,10 +100,8 @@ const TeamPreview = () => {
               </CarouselContent>
 
               {/* Navigation Arrows */}
-              <div className="hidden lg:flex absolute top-1/2 -translate-y-1/2 left-4 right-4 justify-between pointer-events-none z-20">
-                <CarouselPrevious className="pointer-events-auto relative left-0 translate-x-0 bg-white/20 backdrop-blur-md border-white/30 hover:bg-white/30 text-white shadow-xl" />
-                <CarouselNext className="pointer-events-auto relative right-0 translate-x-0 bg-white/20 backdrop-blur-md border-white/30 hover:bg-white/30 text-white shadow-xl" />
-              </div>
+              <CarouselPrevious className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/20 backdrop-blur-md border-white/30 hover:bg-white/30 text-white shadow-xl z-20" />
+              <CarouselNext className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/20 backdrop-blur-md border-white/30 hover:bg-white/30 text-white shadow-xl z-20" />
             </Carousel>
           </div>
         </div>
