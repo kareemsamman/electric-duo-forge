@@ -5,19 +5,38 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { motion } from "framer-motion";
 
 const ProjectsPreview = () => {
   const { language } = useLanguage();
   const { content } = useContent();
   const isHebrew = language === "he";
+
+  // Helper function to convert database paths to asset paths
+  const getImageUrl = (imagePath: string) => {
+    try {
+      // If it's a full URL, return it
+      if (imagePath.startsWith("http")) return imagePath;
+
+      // Convert /projects/ to /src/assets/projects/
+      if (imagePath.startsWith("/projects/")) {
+        const fileName = imagePath.replace("/projects/", "");
+        return new URL(`../assets/projects/${fileName}`, import.meta.url).href;
+      }
+
+      // If it's already a src path, try to load it
+      if (imagePath.startsWith("/src/assets/")) {
+        const relativePath = imagePath.replace("/src/", "../");
+        return new URL(relativePath, import.meta.url).href;
+      }
+
+      return imagePath;
+    } catch (error) {
+      console.error("Error loading image:", imagePath, error);
+      return imagePath;
+    }
+  };
 
   const { data: projects } = useQuery({
     queryKey: ["projects-preview"],
@@ -36,10 +55,7 @@ const ProjectsPreview = () => {
   if (!projects || projects.length === 0) return null;
 
   return (
-    <section
-      className="py-20 md:py-32 px-6 md:px-12 lg:px-16"
-      dir={isHebrew ? "rtl" : "ltr"}
-    >
+    <section className="py-20 md:py-32 px-6 md:px-12 lg:px-16" dir={isHebrew ? "rtl" : "ltr"}>
       <div className="max-w-[1400px] mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
           {/* Text Column - Right side in Hebrew */}
@@ -57,11 +73,7 @@ const ProjectsPreview = () => {
               {content["projects.preview.description"] ||
                 "גלו את מגוון הפרויקטים שביצענו בהצלחה עבור לקוחותינו. כל פרויקט משקף את המחויבות שלנו למצוינות ולחדשנות."}
             </p>
-            <Button
-              asChild
-              size="lg"
-              className="group"
-            >
+            <Button asChild size="lg" className="group">
               <Link to="/projects">
                 {content["projects.preview.button"] || "לכל הפרויקטים"}
                 {isHebrew ? (
@@ -95,13 +107,13 @@ const ProjectsPreview = () => {
                     <div className="relative aspect-[16/10] rounded-2xl overflow-hidden group">
                       {/* Project Image */}
                       <img
-                        src={project.image}
-                        alt={
-                          isHebrew
-                            ? project.project_name
-                            : project.project_name_en || project.project_name
-                        }
+                        src={getImageUrl(project.image)}
+                        alt={isHebrew ? project.project_name : project.project_name_en || project.project_name}
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                        onError={(e) => {
+                          console.error("Failed to load image:", project.image);
+                          e.currentTarget.src = "https://via.placeholder.com/800x500?text=Image+Not+Found";
+                        }}
                       />
 
                       {/* Dark Gradient Overlay */}
@@ -112,21 +124,15 @@ const ProjectsPreview = () => {
                         <div className="backdrop-blur-lg bg-white/10 border border-white/20 rounded-2xl p-6 md:p-8 space-y-4">
                           <div className="space-y-2">
                             <h3 className="text-2xl md:text-3xl font-bold text-white">
-                              {isHebrew
-                                ? project.project_name
-                                : project.project_name_en || project.project_name}
+                              {isHebrew ? project.project_name : project.project_name_en || project.project_name}
                             </h3>
                             <p className="text-white/80 text-sm md:text-base">
-                              {isHebrew
-                                ? project.location
-                                : project.location_en || project.location}
+                              {isHebrew ? project.location : project.location_en || project.location}
                             </p>
                           </div>
 
                           <p className="text-white/90 text-sm md:text-base line-clamp-2 leading-relaxed">
-                            {isHebrew
-                              ? project.description
-                              : project.description_en || project.description}
+                            {isHebrew ? project.description : project.description_en || project.description}
                           </p>
 
                           {/* Tags */}
