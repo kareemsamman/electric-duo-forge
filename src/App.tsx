@@ -19,6 +19,7 @@ import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 import AdminContent from "./pages/AdminContent";
 import AdminLogos from "./pages/AdminLogos";
+import AdminProjects from "./pages/AdminProjects";
 
 const queryClient = new QueryClient();
 
@@ -44,6 +45,7 @@ const App = () => (
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/admin/content" element={<AdminContent />} />
                 <Route path="/admin/logos" element={<AdminLogos />} />
+                <Route path="/admin/projects" element={<AdminProjects />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </main>
