@@ -5,7 +5,6 @@ import ServicesSection from "@/components/home/ServicesSection";
 import WhyUsSection from "@/components/home/WhyUsSection";
 import VideoSection from "@/components/home/VideoSection";
 import TeamPreview from "@/components/home/TeamPreview";
-import ProjectsPreview from "@/components/home/ProjectsPreview";
 import GalleryPreview from "@/components/home/GalleryPreview";
 import ClientLogos from "@/components/home/ClientLogos";
 import CTASection from "@/components/home/CTASection";
@@ -20,7 +19,6 @@ const Home = () => {
       <ServicesSection />
       <VideoSection />
       <TeamPreview />
-      <ProjectsPreview />
       <GalleryPreview />
       <ClientLogos />
       <CTASection />
