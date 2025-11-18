@@ -21,7 +21,7 @@ const Home = () => {
       <VideoSection />
       <TeamPreview />
       <ProjectsPreview />
-      {/* <ProjectsSlider /> */}
+      <ProjectsSlider />
       <ClientLogos />
       <CTASection />
     </div>
