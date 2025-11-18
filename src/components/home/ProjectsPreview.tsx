@@ -58,10 +58,10 @@ const ProjectsPreview = () => {
         <FadeIn>
           <div className="text-center mb-12 md:mb-16">
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 tracking-tight">
-              {content["projects.title"] || "מתוך הפרויקטים שלנו"}
+              {content["gallery.title"] || "פרויקטים נבחרים"}
             </h2>
             <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-              {content["projects.subtitle"] || "מדגם קטן מפרויקטים שביצענו עבור לקוחות בכל הארץ"}
+              {content["gallery.subtitle"] || "מדגם קטן מפרויקטים שביצענו עבור לקוחות בכל הארץ"}
             </p>
           </div>
         </FadeIn>
