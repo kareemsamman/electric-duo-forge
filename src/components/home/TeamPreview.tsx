@@ -30,16 +30,13 @@ const TeamPreview = () => {
       style={{
         background: 'var(--gradient-cta)',
       }}
+      dir={language === "he" ? "rtl" : "ltr"}
     >
       {/* Two Column Layout */}
       <div className="w-full flex flex-col lg:flex-row">
         
-        {/* Text Side - 30% */}
-        <div 
-          className={`w-full lg:w-[30%] flex items-center justify-center px-6 md:px-12 py-16 lg:py-0 relative z-10 ${
-            language === "he" ? "lg:order-2" : "lg:order-1"
-          }`}
-        >
+        {/* Text Side - 30% (Always first in visual order) */}
+        <div className="w-full lg:w-[30%] flex items-center justify-center px-6 md:px-12 py-16 lg:py-0 relative z-10">
           <FadeIn>
             <div className={`max-w-lg ${language === "he" ? "text-right" : "text-left"}`}>
               <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 tracking-tight">
@@ -56,17 +53,13 @@ const TeamPreview = () => {
         <div 
           className={`hidden lg:block absolute top-0 bottom-0 w-32 z-[5] pointer-events-none ${
             language === "he" 
-              ? "right-[30%] bg-gradient-to-r from-transparent via-[hsl(var(--navy-mid))] to-transparent" 
-              : "left-[30%] bg-gradient-to-l from-transparent via-[hsl(var(--navy-mid))] to-transparent"
+              ? "left-[30%] bg-gradient-to-l from-transparent via-[hsl(var(--navy-mid))] to-transparent" 
+              : "left-[30%] bg-gradient-to-r from-transparent via-[hsl(var(--navy-mid))] to-transparent"
           }`}
         />
 
-        {/* Team Slider Side - 70% */}
-        <div 
-          className={`w-full lg:w-[70%] relative ${
-            language === "he" ? "lg:order-1" : "lg:order-2"
-          }`}
-        >
+        {/* Team Slider Side - 70% (Always second in visual order) */}
+        <div className="w-full lg:w-[70%] relative">
           <div className="h-full py-12 lg:py-0 flex items-center">
             <Carousel
               opts={{
