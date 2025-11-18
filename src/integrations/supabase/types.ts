@@ -47,6 +47,33 @@ export type Database = {
         }
         Relationships: []
       }
+      client_logos: {
+        Row: {
+          company_name: string
+          company_name_en: string | null
+          created_at: string
+          display_order: number | null
+          id: string
+          logo_image: string
+        }
+        Insert: {
+          company_name: string
+          company_name_en?: string | null
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          logo_image: string
+        }
+        Update: {
+          company_name?: string
+          company_name_en?: string | null
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          logo_image?: string
+        }
+        Relationships: []
+      }
       gallery: {
         Row: {
           category: string
