@@ -55,16 +55,16 @@ const ProjectsPreview = () => {
   if (!projects || projects.length === 0) return null;
 
   return (
-    <section className="py-20 md:py-32 px-6 md:px-12 lg:px-16" dir={isHebrew ? "rtl" : "ltr"}>
+    <section className="py-20 md:py-32" dir={isHebrew ? "rtl" : "ltr"}>
       <div className="max-w-[1400px] mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 items-center">
           {/* Text Column - Right side in Hebrew */}
           <motion.div
             initial={{ opacity: 0, x: isHebrew ? 30 : -30 }}
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
-            className="lg:col-span-4 space-y-6"
+            className="lg:col-span-3 space-y-6 px-6 md:px-12 lg:px-16"
           >
             <h2 className="text-4xl md:text-5xl font-bold text-foreground">
               {content["projects.preview.title"] || "הפרויקטים שלנו"}
@@ -91,7 +91,7 @@ const ProjectsPreview = () => {
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
             viewport={{ once: true }}
-            className="lg:col-span-8"
+            className="lg:col-span-9"
           >
             <Carousel
               opts={{
@@ -104,7 +104,7 @@ const ProjectsPreview = () => {
               <CarouselContent>
                 {projects.map((project) => (
                   <CarouselItem key={project.id}>
-                    <div className="relative aspect-[16/10] rounded-2xl overflow-hidden group">
+                    <div className="relative aspect-[16/9] overflow-hidden group">
                       {/* Project Image */}
                       <img
                         src={getImageUrl(project.image)}
