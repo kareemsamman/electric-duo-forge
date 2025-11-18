@@ -38,49 +38,48 @@ const ProjectsSlider = () => {
   if (!projects || projects.length === 0) return null;
 
   const currentProject = projects[currentIndex];
+  const isHebrew = language === "he";
 
   return (
     <section
-      className="relative w-full min-h-screen flex items-center py-20"
-      style={{
-        background: "linear-gradient(135deg, #050816 0%, #020617 100%)",
-      }}
-      dir={language === "he" ? "rtl" : "ltr"}
+      id="projects"
+      className="relative w-full min-h-screen flex items-center py-20 bg-background"
+      dir={isHebrew ? "rtl" : "ltr"}
     >
       <div className="w-full max-w-[1600px] mx-auto px-4 md:px-8 lg:px-12">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
-          {/* Right column - Text (RTL) */}
-          <div className={`lg:col-span-4 text-${language === "he" ? "right" : "left"}`}>
+          {/* Text column */}
+          <div className={`lg:col-span-4 ${isHebrew ? "lg:order-2 text-right" : "lg:order-1 text-left"}`}>
             <div className="mb-3">
               <span className="text-xs md:text-sm font-bold tracking-wider uppercase text-[#3B82F6]">
                 {content["projects.label"] || "פרויקטים"}
               </span>
             </div>
             
-            <h2 className="text-3xl md:text-4xl lg:text-[36px] font-bold mb-6 text-[#F9FAFB] leading-tight">
+            <h2 className="text-3xl md:text-4xl lg:text-[36px] font-bold mb-6 text-[#0F172A] leading-tight">
               {content["projects.slider.title"] || "מתוך הפרויקטים שלנו"}
             </h2>
             
-            <p className="text-base md:text-lg text-[#9CA3AF] leading-relaxed mb-8">
+            <p className="text-base md:text-lg text-[#4B5563] leading-relaxed mb-8">
               {content["projects.slider.description"] || "אנחנו מתמחים בפרויקטים חשמליים מורכבים בכל הארץ, עם דגש על איכות, בטיחות, ועמידה בלוחות זמנים"}
             </p>
 
             <ul className="space-y-3 mb-8">
               <li className="flex items-start gap-3">
                 <CheckCircle2 className="text-[#22C55E] mt-0.5 shrink-0" size={20} />
-                <span className="text-[#E5E7EB] text-sm md:text-base">
+                <span className="text-[#374151] text-sm md:text-base">
                   {content["projects.slider.bullet1"] || "ניסיון רב בפרויקטים תעשייתיים ומסחריים"}
                 </span>
               </li>
               <li className="flex items-start gap-3">
                 <CheckCircle2 className="text-[#22C55E] mt-0.5 shrink-0" size={20} />
-                <span className="text-[#E5E7EB] text-sm md:text-base">
+                <span className="text-[#374151] text-sm md:text-base">
                   {content["projects.slider.bullet2"] || "צוות מקצועי ומיומן עם אישורים מלאים"}
                 </span>
               </li>
               <li className="flex items-start gap-3">
                 <CheckCircle2 className="text-[#22C55E] mt-0.5 shrink-0" size={20} />
-                <span className="text-[#E5E7EB] text-sm md:text-base">
+                <span className="text-[#374151] text-sm md:text-base">
                   {content["projects.slider.bullet3"] || "עמידה בלוחות זמנים ובתקציב"}
                 </span>
               </li>
@@ -94,15 +93,15 @@ const ProjectsSlider = () => {
               </Button>
               <Button
                 variant="outline"
-                className="border border-white/40 bg-transparent text-[#E5E7EB] hover:bg-white/10 rounded-full px-6 py-3 text-sm md:text-base font-semibold transition-all"
+                className="border border-[rgba(148,163,184,0.8)] bg-transparent text-[#111827] hover:bg-slate-50 rounded-full px-6 py-3 text-sm md:text-base font-semibold transition-all"
               >
                 {content["projects.slider.cta2"] || "צור קשר"}
               </Button>
             </div>
           </div>
 
-          {/* Left column - Slider */}
-          <div className="lg:col-span-8 relative">
+          {/* Slider column */}
+          <div className={`lg:col-span-8 relative ${isHebrew ? "lg:order-1" : "lg:order-2"}`}>
             {/* Main Image */}
             <div className="relative w-full h-[50vh] md:h-[60vh] lg:h-[70vh] rounded-[20px] overflow-hidden shadow-2xl">
               <img
@@ -112,9 +111,9 @@ const ProjectsSlider = () => {
               />
 
               {/* Overlay Details Panel */}
-              <div 
+              <div
                 className="absolute bottom-6 left-6 right-6 md:bottom-8 md:left-auto md:right-8 md:w-[360px] bg-[rgba(15,23,42,0.85)] backdrop-blur-lg border border-[rgba(148,163,184,0.35)] rounded-2xl p-6 shadow-xl"
-                dir={language === "he" ? "rtl" : "ltr"}
+                dir={isHebrew ? "rtl" : "ltr"}
               >
                 <h3 className="text-xl md:text-[22px] font-bold text-[#F9FAFB] mb-2">
                   {language === "he" ? currentProject.project_name : currentProject.project_name_en || currentProject.project_name}
@@ -157,7 +156,7 @@ const ProjectsSlider = () => {
                 <Button
                   className="w-full bg-[#2563EB] hover:bg-[#3B82F6] text-[#F9FAFB] rounded-full py-2 text-sm font-semibold transition-all hover:scale-[1.02]"
                 >
-                  {language === "he" ? "לצפייה בפרויקט" : "View Project"}
+                  {isHebrew ? "לצפייה בפרויקט" : "View project"}
                 </Button>
               </div>
             </div>
@@ -166,14 +165,16 @@ const ProjectsSlider = () => {
             <button
               onClick={handlePrevious}
               className="absolute top-1/2 -translate-y-1/2 left-4 md:left-6 w-10 h-10 md:w-12 md:h-12 flex items-center justify-center bg-[rgba(15,23,42,0.85)] backdrop-blur-sm border border-[rgba(148,163,184,0.4)] rounded-full text-[#E5E7EB] hover:bg-[rgba(30,64,175,0.9)] transition-all z-10"
+              aria-label={isHebrew ? "פרויקט קודם" : "Previous project"}
             >
-              <ChevronLeft size={24} />
+              {isHebrew ? <ChevronRight size={24} /> : <ChevronLeft size={24} />}
             </button>
             <button
               onClick={handleNext}
               className="absolute top-1/2 -translate-y-1/2 right-4 md:right-6 w-10 h-10 md:w-12 md:h-12 flex items-center justify-center bg-[rgba(15,23,42,0.85)] backdrop-blur-sm border border-[rgba(148,163,184,0.4)] rounded-full text-[#E5E7EB] hover:bg-[rgba(30,64,175,0.9)] transition-all z-10"
+              aria-label={isHebrew ? "פרויקט הבא" : "Next project"}
             >
-              <ChevronRight size={24} />
+              {isHebrew ? <ChevronLeft size={24} /> : <ChevronRight size={24} />}
             </button>
 
             {/* Pagination Dots */}
