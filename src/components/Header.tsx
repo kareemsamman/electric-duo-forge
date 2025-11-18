@@ -23,8 +23,8 @@ const Header = () => {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <header className="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-lg border-b border-border">
-      <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-[1360px]">
+    <header className="fixed top-0 w-full z-50 flex justify-center pt-6 px-4 md:px-8">
+      <div className="max-w-[1280px] w-full bg-background/60 backdrop-blur-xl border border-white/20 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] px-6 md:px-8 lg:px-10">
         <div className="flex items-center justify-between h-20">
           <Link to="/" className="flex items-center gap-3 transition-opacity hover:opacity-80">
             <div className="text-2xl font-bold text-primary">
@@ -33,19 +33,21 @@ const Header = () => {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-8">
+          <nav className="hidden lg:flex items-center gap-10">
             {navItems.map((item) => (
               <Link
                 key={item.path}
                 to={item.path}
-                className={`text-sm font-medium transition-colors hover:text-accent relative py-2
-                  ${isActive(item.path) ? "text-accent" : "text-foreground"}
+                className={`text-base font-semibold transition-all duration-300 relative py-2 group
+                  ${isActive(item.path) ? "text-accent" : "text-foreground/90 hover:text-foreground"}
                 `}
               >
                 {item.label}
-                {isActive(item.path) && (
-                  <span className="absolute bottom-0 left-0 w-full h-0.5 bg-accent" />
-                )}
+                <span 
+                  className={`absolute bottom-0 left-0 h-0.5 bg-accent transition-all duration-300 
+                    ${isActive(item.path) ? "w-full" : "w-0 group-hover:w-full"}
+                  `}
+                />
               </Link>
             ))}
           </nav>
@@ -56,14 +58,23 @@ const Header = () => {
               variant="outline"
               size="sm"
               onClick={() => setLanguage(language === "he" ? "en" : "he")}
-              className="font-medium"
+              className="font-semibold border-white/30 hover:bg-white/10 hover:border-white/50 transition-all"
             >
               {language === "he" ? "EN" : "HE"}
             </Button>
 
+            <Link to="/contact" className="hidden lg:block">
+              <Button
+                size="default"
+                className="bg-accent hover:bg-accent/90 text-white font-semibold shadow-lg shadow-accent/20 hover:shadow-xl hover:shadow-accent/30 transition-all duration-300 rounded-xl px-6"
+              >
+                {t("nav.contact")}
+              </Button>
+            </Link>
+
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2"
+              className="lg:hidden p-2 hover:bg-white/10 rounded-lg transition-colors"
             >
               {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
@@ -72,19 +83,27 @@ const Header = () => {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <nav className="md:hidden py-4 border-t border-border">
+          <nav className="lg:hidden py-4 border-t border-white/20 mt-2">
             {navItems.map((item) => (
               <Link
                 key={item.path}
                 to={item.path}
                 onClick={() => setMobileMenuOpen(false)}
-                className={`block py-3 text-base font-medium transition-colors hover:text-accent
-                  ${isActive(item.path) ? "text-accent" : "text-foreground"}
+                className={`block py-3 text-base font-semibold transition-colors hover:text-accent
+                  ${isActive(item.path) ? "text-accent" : "text-foreground/90"}
                 `}
               >
                 {item.label}
               </Link>
             ))}
+            <Link to="/contact" className="block mt-4" onClick={() => setMobileMenuOpen(false)}>
+              <Button
+                size="default"
+                className="w-full bg-accent hover:bg-accent/90 text-white font-semibold shadow-lg shadow-accent/20 rounded-xl"
+              >
+                {t("nav.contact")}
+              </Button>
+            </Link>
           </nav>
         )}
       </div>
