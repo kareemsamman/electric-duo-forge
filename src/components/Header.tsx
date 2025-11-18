@@ -1,23 +1,25 @@
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useContent } from "@/contexts/ContentContext";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
 
 const Header = () => {
-  const { language, setLanguage, t } = useLanguage();
+  const { language, setLanguage } = useLanguage();
+  const { content } = useContent();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navItems = [
-    { path: "/", label: t("nav.home") },
-    { path: "/about", label: t("nav.about") },
-    { path: "/solutions", label: t("nav.solutions") },
-    { path: "/projects", label: t("nav.projects") },
-    { path: "/store", label: t("nav.store") },
-    { path: "/gallery", label: t("nav.gallery") },
-    { path: "/certificates", label: t("nav.certificates") },
-    { path: "/contact", label: t("nav.contact") },
+    { path: "/", label: content["header.nav.home"] || "Home" },
+    { path: "/about", label: content["header.nav.about"] || "About" },
+    { path: "/solutions", label: content["header.nav.solutions"] || "Solutions" },
+    { path: "/projects", label: content["header.nav.projects"] || "Projects" },
+    { path: "/store", label: content["header.nav.store"] || "Store" },
+    { path: "/gallery", label: content["header.nav.gallery"] || "Gallery" },
+    { path: "/certificates", label: content["header.nav.certificates"] || "Certificates" },
+    { path: "/contact", label: content["header.nav.contact"] || "Contact" },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -28,7 +30,7 @@ const Header = () => {
         <div className="flex items-center justify-between h-20">
           <Link to="/" className="flex items-center gap-3 transition-opacity hover:opacity-80">
             <div className="text-2xl font-bold text-primary">
-              {language === "he" ? "גלובל אלקטריק" : "Global Electric"}
+              {content["header.logo"] || "Global Electric"}
             </div>
           </Link>
 
@@ -68,7 +70,7 @@ const Header = () => {
                 size="default"
                 className="bg-accent hover:bg-accent/90 text-white font-semibold shadow-lg shadow-accent/20 hover:shadow-xl hover:shadow-accent/30 transition-all duration-300 rounded-xl px-6"
               >
-                {t("nav.contact")}
+                {content["header.nav.contact"] || "Contact"}
               </Button>
             </Link>
 
@@ -101,7 +103,7 @@ const Header = () => {
                 size="default"
                 className="w-full bg-accent hover:bg-accent/90 text-white font-semibold shadow-lg shadow-accent/20 rounded-xl"
               >
-                {t("nav.contact")}
+                {content["header.nav.contact"] || "Contact"}
               </Button>
             </Link>
           </nav>

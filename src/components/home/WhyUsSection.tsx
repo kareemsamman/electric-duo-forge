@@ -1,4 +1,5 @@
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useContent } from "@/contexts/ContentContext";
 import { Award, Clock, Shield, Users } from "lucide-react";
 import { StaggerContainer } from "@/components/animations/StaggerContainer";
 import { StaggerItem } from "@/components/animations/StaggerItem";
@@ -12,7 +13,7 @@ const features = [
 ];
 
 const WhyUsSection = () => {
-  const { t } = useLanguage();
+  const { content } = useContent();
 
   return (
     <section 
@@ -32,7 +33,7 @@ const WhyUsSection = () => {
         {/* Title */}
         <div className="mb-16">
           <h2 className="text-4xl md:text-5xl font-bold mb-6 tracking-tight text-white">
-            {t("whyus.title")}
+            {content["whyus.title"] || "למה לעבוד איתנו"}
           </h2>
           <div className="w-[70px] h-1 bg-gradient-to-r from-[#1A73E8] to-[#00B0FF] mx-auto rounded-full" />
         </div>
@@ -51,10 +52,10 @@ const WhyUsSection = () => {
                     <Icon className="text-white" size={48} strokeWidth={1.5} />
                   </div>
                   <h3 className="text-xl md:text-2xl font-bold text-white mb-3 leading-snug">
-                    {t(feature.titleKey)}
+                    {content[feature.titleKey] || ""}
                   </h3>
                   <p className="text-base text-white/70 leading-relaxed">
-                    {t(feature.descKey)}
+                    {content[feature.descKey] || ""}
                   </p>
                 </div>
               </StaggerItem>
