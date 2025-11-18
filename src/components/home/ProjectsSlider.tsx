@@ -65,7 +65,7 @@ const ProjectsSlider = () => {
       <div className="w-full max-w-[1600px] mx-auto px-4 md:px-8 lg:px-12">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
           {/* Text column */}
-          <div className={`lg:col-span-4 ${isHebrew ? "lg:order-2 text-right" : "lg:order-1 text-left"}`}>
+          <div className={`lg:col-span-4 ${isHebrew ? "lg:order-1 text-right" : "lg:order-2 text-left"}`}>
             <div className="mb-3">
               <span className="text-xs md:text-sm font-bold tracking-wider uppercase text-[#3B82F6]">
                 {content["projects.label"] || "פרויקטים"}
@@ -117,7 +117,7 @@ const ProjectsSlider = () => {
           </div>
 
           {/* Slider column */}
-          <div className={`lg:col-span-8 relative ${isHebrew ? "lg:order-1" : "lg:order-2"}`}>
+          <div className={`lg:col-span-8 relative ${isHebrew ? "lg:order-2" : "lg:order-1"}`}>
             {/* Main Image */}
             <div className="relative w-full h-[50vh] md:h-[60vh] lg:h-[70vh] rounded-[20px] overflow-hidden shadow-2xl">
               <img
