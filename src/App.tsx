@@ -18,6 +18,7 @@ import Certificates from "./pages/Certificates";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 import AdminContent from "./pages/AdminContent";
+import AdminLogos from "./pages/AdminLogos";
 
 const queryClient = new QueryClient();
 
@@ -42,6 +43,7 @@ const App = () => (
                 <Route path="/certificates" element={<Certificates />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/admin/content" element={<AdminContent />} />
+                <Route path="/admin/logos" element={<AdminLogos />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </main>
