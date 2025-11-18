@@ -56,7 +56,7 @@ const ProjectsPreview = () => {
 
   return (
     <section className="py-20 md:py-32" dir={isHebrew ? "rtl" : "ltr"}>
-      <div className="max-w-[1400px] mx-auto">
+      <div className="w-full">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 items-center">
           {/* Text Column - Right side in Hebrew */}
           <motion.div
@@ -104,7 +104,7 @@ const ProjectsPreview = () => {
               <CarouselContent>
                 {projects.map((project) => (
                   <CarouselItem key={project.id}>
-                    <div className="relative aspect-[16/9] overflow-hidden group">
+                    <div className="relative aspect-[3/2] overflow-hidden group">
                       {/* Project Image */}
                       <img
                         src={getImageUrl(project.image)}
