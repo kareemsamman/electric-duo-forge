@@ -5,7 +5,7 @@ import ServicesSection from "@/components/home/ServicesSection";
 import WhyUsSection from "@/components/home/WhyUsSection";
 import VideoSection from "@/components/home/VideoSection";
 import TeamPreview from "@/components/home/TeamPreview";
-import ProjectsSliderSection from "@/components/home/ProjectsSliderSection";
+import ProductsSliderSection from "@/components/home/ProductsSliderSection";
 import ProjectsPreview from "@/components/home/ProjectsPreview";
 import GalleryPreview from "@/components/home/GalleryPreview";
 import ClientLogos from "@/components/home/ClientLogos";
@@ -21,7 +21,7 @@ const Home = () => {
       <ServicesSection />
       <VideoSection />
       <TeamPreview />
-      <ProjectsSliderSection />
+      <ProductsSliderSection />
       <ProjectsPreview />
       <GalleryPreview />
       <ClientLogos />
