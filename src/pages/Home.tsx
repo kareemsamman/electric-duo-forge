@@ -6,7 +6,6 @@ import WhyUsSection from "@/components/home/WhyUsSection";
 import VideoSection from "@/components/home/VideoSection";
 import TeamPreview from "@/components/home/TeamPreview";
 import ProjectsSlider from "@/components/home/ProjectsSlider";
-import GalleryPreview from "@/components/home/GalleryPreview";
 import ClientLogos from "@/components/home/ClientLogos";
 import CTASection from "@/components/home/CTASection";
 
@@ -21,7 +20,6 @@ const Home = () => {
       <VideoSection />
       <TeamPreview />
       <ProjectsSlider />
-      <GalleryPreview />
       <ClientLogos />
       <CTASection />
     </div>
