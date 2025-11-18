@@ -11,12 +11,13 @@ const ProjectsSlider = () => {
   const { content } = useContent();
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  const { data: projects } = useQuery({
+  const { data: galleryData } = useQuery({
     queryKey: ["projects-slider"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("projects")
+        .from("gallery")
         .select("*")
+        .eq("category", "פרויקטים")
         .order("created_at", { ascending: false })
         .limit(8);
 
@@ -24,6 +25,21 @@ const ProjectsSlider = () => {
       return data;
     },
   });
+
+  // Map gallery data to project format
+  const projects = galleryData?.map(item => ({
+    id: item.id,
+    project_name: item.title,
+    project_name_en: item.title_en,
+    location: "",
+    location_en: "",
+    description: item.description || "",
+    description_en: item.description_en || "",
+    image: item.image,
+    tags: [],
+    tags_en: [],
+    created_at: item.created_at
+  }));
 
   const handlePrevious = () => {
     if (!projects) return;
