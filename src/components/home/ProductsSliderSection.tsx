@@ -3,7 +3,7 @@ import { useContent } from "@/contexts/ContentContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
-import { ChevronLeft, ChevronRight, ShoppingCart } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { FadeIn } from "@/components/animations/FadeIn";
 
 const ProductsSliderSection = () => {
@@ -11,11 +11,11 @@ const ProductsSliderSection = () => {
   const { content } = useContent();
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  const { data: products } = useQuery({
-    queryKey: ["products-slider"],
+  const { data: projects } = useQuery({
+    queryKey: ["projects-slider"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("products")
+        .from("projects")
         .select("*")
         .order("created_at", { ascending: false })
         .limit(10);
@@ -26,18 +26,18 @@ const ProductsSliderSection = () => {
   });
 
   const handlePrevious = () => {
-    if (!products) return;
-    setCurrentSlide((prev) => (prev - 1 + products.length) % products.length);
+    if (!projects) return;
+    setCurrentSlide((prev) => (prev - 1 + projects.length) % projects.length);
   };
 
   const handleNext = () => {
-    if (!products) return;
-    setCurrentSlide((prev) => (prev + 1) % products.length);
+    if (!projects) return;
+    setCurrentSlide((prev) => (prev + 1) % projects.length);
   };
 
-  if (!products || products.length === 0) return null;
+  if (!projects || projects.length === 0) return null;
 
-  const currentProduct = products[currentSlide];
+  const currentProject = projects[currentSlide];
 
   return (
     <section 
@@ -53,17 +53,17 @@ const ProductsSliderSection = () => {
             <div className="text-right space-y-6">
               {/* Section Label */}
               <div className="text-[#3B82F6] text-xs md:text-sm font-bold tracking-widest uppercase">
-                {content["productsslider.label"] || "מוצרים מומלצים"}
+                {content["projectsslider.label"] || "פרויקטים נבחרים"}
               </div>
 
               {/* Main Heading */}
               <h2 className="text-3xl md:text-4xl lg:text-[36px] font-bold text-[#F9FAFB] leading-tight">
-                {content["productsslider.title"] || "מוצרי איכות לפרויקטים חשמליים"}
+                {content["projectsslider.title"] || "מתוך הפרויקטים שלנו"}
               </h2>
 
               {/* Description */}
               <p className="text-base md:text-lg text-[#9CA3AF] leading-relaxed max-w-xl">
-                {content["productsslider.description"] || "מגוון רחב של מוצרים ופתרונות חשמליים מהמותגים המובילים בעולם"}
+                {content["projectsslider.description"] || "פרויקטים מורכבים וייחודיים שביצענו עבור לקוחות בכל הארץ"}
               </p>
 
               {/* Buttons Row */}
@@ -88,8 +88,8 @@ const ProductsSliderSection = () => {
               {/* Main Image */}
               <div className="relative w-full h-full rounded-[20px] overflow-hidden shadow-2xl">
                 <img
-                  src={currentProduct.product_image}
-                  alt={language === "he" ? currentProduct.product_name : currentProduct.product_name_en || currentProduct.product_name}
+                  src={currentProject.image}
+                  alt={language === "he" ? currentProject.project_name : currentProject.project_name_en || currentProject.project_name}
                   className="w-full h-full object-cover"
                 />
 
@@ -103,32 +103,45 @@ const ProductsSliderSection = () => {
                     boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)"
                   }}
                 >
-                  {/* Product Name */}
+                  {/* Project Name */}
                   <h3 className="text-xl md:text-[22px] font-bold text-[#F9FAFB]">
-                    {language === "he" ? currentProduct.product_name : currentProduct.product_name_en || currentProduct.product_name}
+                    {language === "he" ? currentProject.project_name : currentProject.project_name_en || currentProject.project_name}
                   </h3>
 
-                  {/* Category */}
+                  {/* Location */}
                   <p className="text-sm md:text-[15px] text-[#E5E7EB]">
-                    {currentProduct.category}
+                    {language === "he" ? currentProject.location : currentProject.location_en || currentProject.location}
                   </p>
-
-                  {/* Price */}
-                  <div className="text-2xl font-bold text-[#60A5FA]">
-                    ₪{currentProduct.price.toLocaleString()}
-                  </div>
 
                   {/* Short Description */}
-                  <p className="text-sm text-[#9CA3AF] line-clamp-2">
-                    {language === "he" ? currentProduct.product_description : currentProduct.product_description_en || currentProduct.product_description}
+                  <p className="text-sm text-[#9CA3AF] line-clamp-3">
+                    {language === "he" ? currentProject.description : currentProject.description_en || currentProject.description}
                   </p>
+
+                  {/* Tags */}
+                  {currentProject.tags && currentProject.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {(language === "he" ? currentProject.tags : currentProject.tags_en || currentProject.tags).slice(0, 3).map((tag, index) => (
+                        <span
+                          key={index}
+                          className="px-3 py-1 text-xs rounded-full"
+                          style={{
+                            background: "rgba(15, 23, 42, 0.9)",
+                            border: "1px solid rgba(148, 163, 184, 0.3)",
+                            color: "#E5E7EB"
+                          }}
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
 
                   {/* CTA Button */}
                   <button
-                    className="w-full mt-3 px-6 py-2.5 rounded-full bg-[#2563EB] text-[#F9FAFB] font-semibold hover:bg-[#3B82F6] transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2"
+                    className="w-full mt-3 px-6 py-2.5 rounded-full bg-[#2563EB] text-[#F9FAFB] font-semibold hover:bg-[#3B82F6] transition-all duration-300 hover:scale-105"
                   >
-                    <ShoppingCart size={18} />
-                    <span>{language === "he" ? "הוספה לעגלה" : "Add to Cart"}</span>
+                    <span>{language === "he" ? "לצפייה בפרויקט" : "View Project"}</span>
                   </button>
                 </div>
               </div>
@@ -160,7 +173,7 @@ const ProductsSliderSection = () => {
 
               {/* Pagination Dots */}
               <div className="absolute bottom-[-40px] left-1/2 -translate-x-1/2 flex gap-2">
-                {products.map((_, index) => (
+                {projects.map((_, index) => (
                   <button
                     key={index}
                     onClick={() => setCurrentSlide(index)}
@@ -168,7 +181,7 @@ const ProductsSliderSection = () => {
                     style={{
                       background: index === currentSlide ? "#3B82F6" : "rgba(148, 163, 184, 0.4)"
                     }}
-                    aria-label={`Go to product ${index + 1}`}
+                    aria-label={`Go to project ${index + 1}`}
                   />
                 ))}
               </div>
