@@ -3,236 +3,283 @@ import { useContent } from "@/contexts/ContentContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, MapPin, Calendar, CheckCircle2, ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
-
-interface Project {
-  id: string;
-  project_name: string;
-  project_name_en: string | null;
-  location: string;
-  location_en: string | null;
-  description: string;
-  description_en: string | null;
-  tags: string[];
-  tags_en: string[] | null;
-  image: string;
-  created_at: string;
-}
+import { X, ChevronLeft, ChevronRight } from "lucide-react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 const ProjectsSlider = () => {
   const { language } = useLanguage();
   const { content } = useContent();
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
 
-  const { data: projects = [] } = useQuery({
-    queryKey: ["projects"],
+  const { data: galleryData } = useQuery({
+    queryKey: ["projects-slider"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("projects")
+        .from("gallery")
         .select("*")
+        .eq("category", "פרויקטים")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      return data as Project[];
+      return data;
     },
   });
 
-  const nextSlide = () => {
-    setCurrentIndex((prev) => (prev + 1) % projects.length);
-  };
-
-  const prevSlide = () => {
-    setCurrentIndex((prev) => (prev - 1 + projects.length) % projects.length);
-  };
+  // Filter only items with images
+  const projects = galleryData?.filter(item => item.image) || [];
 
   if (projects.length === 0) return null;
 
-  const currentProject = projects[currentIndex];
-  const projectName = language === "he" ? currentProject.project_name : (currentProject.project_name_en || currentProject.project_name);
-  const location = language === "he" ? currentProject.location : (currentProject.location_en || currentProject.location);
-  const description = language === "he" ? currentProject.description : (currentProject.description_en || currentProject.description);
-  const tags = language === "he" ? currentProject.tags : (currentProject.tags_en || currentProject.tags);
-  const year = new Date(currentProject.created_at).getFullYear();
   const isHebrew = language === "he";
 
+  const openLightbox = (index: number) => {
+    setSelectedImageIndex(index);
+  };
+
+  const closeLightbox = () => {
+    setSelectedImageIndex(null);
+  };
+
+  const goToNext = () => {
+    if (selectedImageIndex !== null) {
+      setSelectedImageIndex((selectedImageIndex + 1) % projects.length);
+    }
+  };
+
+  const goToPrevious = () => {
+    if (selectedImageIndex !== null) {
+      setSelectedImageIndex((selectedImageIndex - 1 + projects.length) % projects.length);
+    }
+  };
+
+  const selectedProject = selectedImageIndex !== null ? projects[selectedImageIndex] : null;
+
   return (
-    <section className="min-h-screen flex items-center py-20 md:py-32" id="projects">
-      <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-[1360px]">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
-          {/* Right column - Text (RTL) */}
-          <motion.div
-            initial={{ opacity: 0, x: isHebrew ? 30 : -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            className={`lg:col-span-4 ${isHebrew ? "lg:order-2 text-right" : "lg:order-1 text-left"}`}
-          >
-            <div className="space-y-6">
-              {/* Small label */}
-              <div className="text-[#3B82F6] text-xs md:text-sm font-bold uppercase tracking-wider">
-                {content["projects.label"] || "פרויקטים"}
+    <section
+      id="projects"
+      className="relative w-full py-20 bg-background"
+      dir={isHebrew ? "rtl" : "ltr"}
+    >
+      <div className="w-full max-w-[1600px] mx-auto px-4 md:px-8 lg:px-12">
+        {/* Title */}
+        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-12 text-center text-[#0F172A]">
+          {content["projects.slider.title"] || "מתוך הפרויקטים שלנו"}
+        </h2>
+
+        {/* Masonry Grid */}
+        <div className="space-y-6">
+          {/* Row 1: 30% + 70% */}
+          {projects.length >= 2 && (
+            <div className="grid grid-cols-1 md:grid-cols-10 gap-6">
+              <div 
+                className="md:col-span-3 h-[300px] md:h-[400px] rounded-2xl overflow-hidden cursor-pointer"
+                onClick={() => openLightbox(0)}
+              >
+                <img
+                  src={projects[0].image}
+                  alt={language === "he" ? projects[0].title : projects[0].title_en || projects[0].title}
+                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                />
               </div>
-
-              {/* Main heading */}
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground leading-tight">
-                {content["projects.title"] || "הפרויקטים שלנו"}
-              </h2>
-
-              {/* Description */}
-              <p className="text-sm md:text-base text-muted-foreground leading-relaxed max-w-md">
-                {content["projects.description"] || "אנחנו מתמחים בפתרונות חשמל מתקדמים לפרויקטים בכל הגדלים. מהתכנון ועד ההפעלה, אנחנו מספקים שירות מקצועי ואמין."}
-              </p>
-
-              {/* Bullet points */}
-              <ul className="space-y-3">
-                {[
-                  content["projects.bullet1"] || "ניסיון רב שנים בפרויקטים מורכבים",
-                  content["projects.bullet2"] || "שירות מקצועי ואמין",
-                  content["projects.bullet3"] || "פתרונות מותאמים אישית",
-                ].map((bullet, i) => (
-                  <li key={i} className="flex items-start gap-3">
-                    <CheckCircle2 className="w-5 h-5 text-[#22C55E] flex-shrink-0 mt-0.5" />
-                    <span className="text-sm text-muted-foreground">{bullet}</span>
-                  </li>
-                ))}
-              </ul>
-
-              {/* Buttons */}
-              <div className="flex flex-wrap gap-4 pt-4">
-                <Button
-                  size="lg"
-                  className="bg-[#2563EB] hover:bg-[#3B82F6] text-white rounded-full px-8 transition-all duration-300 hover:scale-105"
-                >
-                  {content["projects.viewAll"] || "לכל הפרויקטים"}
-                  <ArrowLeft className={`w-4 h-4 ${isHebrew ? "" : "rotate-180"}`} />
-                </Button>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="rounded-full px-8 border-border/40 hover:border-border transition-all duration-300"
-                >
-                  {content["projects.contact"] || "צור קשר"}
-                </Button>
+              <div 
+                className="md:col-span-7 h-[300px] md:h-[400px] rounded-2xl overflow-hidden cursor-pointer"
+                onClick={() => openLightbox(1)}
+              >
+                <img
+                  src={projects[1].image}
+                  alt={language === "he" ? projects[1].title : projects[1].title_en || projects[1].title}
+                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                />
               </div>
             </div>
-          </motion.div>
+          )}
 
-          {/* Left column - Slider */}
-          <motion.div
-            initial={{ opacity: 0, x: isHebrew ? -30 : 30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
-            className={`lg:col-span-8 ${isHebrew ? "lg:order-1" : "lg:order-2"}`}
-          >
-            <div className="relative">
-              {/* Image slider */}
-              <div className="relative overflow-hidden rounded-[20px] shadow-[0_20px_60px_rgba(15,23,42,0.25)]" style={{ height: "65vh", minHeight: "500px" }}>
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={currentIndex}
-                    initial={{ opacity: 0, x: isHebrew ? -100 : 100 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: isHebrew ? 100 : -100 }}
-                    transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-                    className="absolute inset-0"
-                  >
-                    <img
-                      src={currentProject.image}
-                      alt={projectName}
-                      className="w-full h-full object-cover"
-                    />
-
-                    {/* Overlay panel */}
-                    <div className={`absolute bottom-6 ${isHebrew ? "right-6" : "left-6"} w-[90%] sm:w-[380px] bg-[rgba(15,23,42,0.85)] backdrop-blur-lg border border-[rgba(148,163,184,0.35)] rounded-2xl p-5 md:p-6`}>
-                      {/* Project name */}
-                      <h3 className="text-xl md:text-2xl font-bold text-[#F9FAFB] mb-2">
-                        {projectName}
-                      </h3>
-
-                      {/* Location */}
-                      <p className="text-sm md:text-base text-[#E5E7EB] mb-4">
-                        {location}
-                      </p>
-
-                      {/* Meta row */}
-                      <div className="flex flex-wrap gap-4 mb-4 text-[#9CA3AF] text-xs md:text-sm">
-                        <div className="flex items-center gap-2">
-                          <MapPin className="w-4 h-4 text-[#60A5FA]" />
-                          <span>{location}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Calendar className="w-4 h-4 text-[#60A5FA]" />
-                          <span>{year}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <CheckCircle2 className="w-4 h-4 text-[#22C55E]" />
-                          <span>{content["projects.completed"] || "הושלם"}</span>
-                        </div>
-                      </div>
-
-                      {/* Tags */}
-                      {tags && tags.length > 0 && (
-                        <div className="flex flex-wrap gap-2 mb-4">
-                          {tags.slice(0, 3).map((tag, i) => (
-                            <span
-                              key={i}
-                              className="px-3 py-1 text-xs bg-[#0B1120] border border-[rgba(148,163,184,0.3)] text-[#E5E7EB] rounded-full"
-                            >
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-
-                      {/* Button */}
-                      <Button
-                        className="w-full bg-[#2563EB] hover:bg-[#3B82F6] text-[#F9FAFB] rounded-full transition-all duration-300 hover:scale-[1.02]"
-                      >
-                        {content["projects.viewProject"] || "לצפייה בפרויקט"}
-                      </Button>
-                    </div>
-                  </motion.div>
-                </AnimatePresence>
-
-                {/* Navigation arrows */}
-                <button
-                  onClick={prevSlide}
-                  className={`absolute top-1/2 -translate-y-1/2 ${isHebrew ? "right-4" : "left-4"} w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-full bg-[rgba(15,23,42,0.85)] border border-[rgba(148,163,184,0.4)] text-[#E5E7EB] hover:bg-[rgba(30,64,175,0.9)] transition-all duration-300 hover:scale-110 z-10`}
-                  aria-label="Previous project"
-                >
-                  {isHebrew ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
-                </button>
-                <button
-                  onClick={nextSlide}
-                  className={`absolute top-1/2 -translate-y-1/2 ${isHebrew ? "left-4" : "right-4"} w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-full bg-[rgba(15,23,42,0.85)] border border-[rgba(148,163,184,0.4)] text-[#E5E7EB] hover:bg-[rgba(30,64,175,0.9)] transition-all duration-300 hover:scale-110 z-10`}
-                  aria-label="Next project"
-                >
-                  {isHebrew ? <ChevronLeft className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
-                </button>
+          {/* Row 2: 70% + 30% */}
+          {projects.length >= 4 && (
+            <div className="grid grid-cols-1 md:grid-cols-10 gap-6">
+              <div 
+                className="md:col-span-7 h-[300px] md:h-[400px] rounded-2xl overflow-hidden cursor-pointer"
+                onClick={() => openLightbox(2)}
+              >
+                <img
+                  src={projects[2].image}
+                  alt={language === "he" ? projects[2].title : projects[2].title_en || projects[2].title}
+                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                />
               </div>
-
-              {/* Pagination dots */}
-              <div className="flex justify-center gap-2 mt-6">
-                {projects.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setCurrentIndex(index)}
-                    className={`h-2 rounded-full transition-all duration-300 ${
-                      index === currentIndex
-                        ? "w-8 bg-[#3B82F6]"
-                        : "w-2 bg-[rgba(148,163,184,0.4)] hover:bg-[rgba(148,163,184,0.6)]"
-                    }`}
-                    aria-label={`Go to project ${index + 1}`}
-                  />
-                ))}
+              <div 
+                className="md:col-span-3 h-[300px] md:h-[400px] rounded-2xl overflow-hidden cursor-pointer"
+                onClick={() => openLightbox(3)}
+              >
+                <img
+                  src={projects[3].image}
+                  alt={language === "he" ? projects[3].title : projects[3].title_en || projects[3].title}
+                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                />
               </div>
             </div>
-          </motion.div>
+          )}
+
+          {/* Row 3: 3 equal images */}
+          {projects.length >= 7 && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div 
+                className="h-[300px] md:h-[400px] rounded-2xl overflow-hidden cursor-pointer"
+                onClick={() => openLightbox(4)}
+              >
+                <img
+                  src={projects[4].image}
+                  alt={language === "he" ? projects[4].title : projects[4].title_en || projects[4].title}
+                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                />
+              </div>
+              <div 
+                className="h-[300px] md:h-[400px] rounded-2xl overflow-hidden cursor-pointer"
+                onClick={() => openLightbox(5)}
+              >
+                <img
+                  src={projects[5].image}
+                  alt={language === "he" ? projects[5].title : projects[5].title_en || projects[5].title}
+                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                />
+              </div>
+              <div 
+                className="h-[300px] md:h-[400px] rounded-2xl overflow-hidden cursor-pointer"
+                onClick={() => openLightbox(6)}
+              >
+                <img
+                  src={projects[6].image}
+                  alt={language === "he" ? projects[6].title : projects[6].title_en || projects[6].title}
+                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Row 4: 3 equal images */}
+          {projects.length >= 10 && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div 
+                className="h-[300px] md:h-[400px] rounded-2xl overflow-hidden cursor-pointer"
+                onClick={() => openLightbox(7)}
+              >
+                <img
+                  src={projects[7].image}
+                  alt={language === "he" ? projects[7].title : projects[7].title_en || projects[7].title}
+                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                />
+              </div>
+              <div 
+                className="h-[300px] md:h-[400px] rounded-2xl overflow-hidden cursor-pointer"
+                onClick={() => openLightbox(8)}
+              >
+                <img
+                  src={projects[8].image}
+                  alt={language === "he" ? projects[8].title : projects[8].title_en || projects[8].title}
+                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                />
+              </div>
+              <div 
+                className="h-[300px] md:h-[400px] rounded-2xl overflow-hidden cursor-pointer"
+                onClick={() => openLightbox(9)}
+              >
+                <img
+                  src={projects[9].image}
+                  alt={language === "he" ? projects[9].title : projects[9].title_en || projects[9].title}
+                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Row 5: 3 equal images */}
+          {projects.length >= 13 && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div 
+                className="h-[300px] md:h-[400px] rounded-2xl overflow-hidden cursor-pointer"
+                onClick={() => openLightbox(10)}
+              >
+                <img
+                  src={projects[10].image}
+                  alt={language === "he" ? projects[10].title : projects[10].title_en || projects[10].title}
+                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                />
+              </div>
+              <div 
+                className="h-[300px] md:h-[400px] rounded-2xl overflow-hidden cursor-pointer"
+                onClick={() => openLightbox(11)}
+              >
+                <img
+                  src={projects[11].image}
+                  alt={language === "he" ? projects[11].title : projects[11].title_en || projects[11].title}
+                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                />
+              </div>
+              <div 
+                className="h-[300px] md:h-[400px] rounded-2xl overflow-hidden cursor-pointer"
+                onClick={() => openLightbox(12)}
+              >
+                <img
+                  src={projects[12].image}
+                  alt={language === "he" ? projects[12].title : projects[12].title_en || projects[12].title}
+                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                />
+              </div>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Lightbox Modal */}
+      <Dialog open={selectedImageIndex !== null} onOpenChange={closeLightbox}>
+        <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 bg-black/95 border-none">
+          <div className="relative w-full h-full flex items-center justify-center">
+            {/* Close Button */}
+            <button
+              onClick={closeLightbox}
+              className="absolute top-4 right-4 z-50 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+            >
+              <X size={24} />
+            </button>
+
+            {/* Navigation Arrows */}
+            <button
+              onClick={goToPrevious}
+              className="absolute left-4 z-50 p-3 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+            >
+              <ChevronLeft size={32} />
+            </button>
+
+            <button
+              onClick={goToNext}
+              className="absolute right-4 z-50 p-3 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+            >
+              <ChevronRight size={32} />
+            </button>
+
+            {/* Image */}
+            {selectedProject && (
+              <div className="w-full h-full flex flex-col items-center justify-center p-8">
+                <img
+                  src={selectedProject.image}
+                  alt={language === "he" ? selectedProject.title : selectedProject.title_en || selectedProject.title}
+                  className="max-w-full max-h-[80vh] object-contain"
+                />
+                
+                {/* Image Info */}
+                <div className="mt-6 text-center text-white">
+                  <h3 className="text-xl font-semibold mb-2">
+                    {language === "he" ? selectedProject.title : selectedProject.title_en || selectedProject.title}
+                  </h3>
+                  <p className="text-sm text-white/70">
+                    {selectedImageIndex !== null && `${selectedImageIndex + 1} / ${projects.length}`}
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 };
