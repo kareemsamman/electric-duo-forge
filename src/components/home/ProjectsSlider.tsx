@@ -135,6 +135,33 @@ const ProjectsSlider = () => {
               </div>
             </div>
           )}
+
+          {/* Row 5: 3 equal images */}
+          {projects.length >= 13 && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="h-[300px] md:h-[400px] rounded-2xl overflow-hidden">
+                <img
+                  src={projects[10].image}
+                  alt={language === "he" ? projects[10].title : projects[10].title_en || projects[10].title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="h-[300px] md:h-[400px] rounded-2xl overflow-hidden">
+                <img
+                  src={projects[11].image}
+                  alt={language === "he" ? projects[11].title : projects[11].title_en || projects[11].title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="h-[300px] md:h-[400px] rounded-2xl overflow-hidden">
+                <img
+                  src={projects[12].image}
+                  alt={language === "he" ? projects[12].title : projects[12].title_en || projects[12].title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </section>
