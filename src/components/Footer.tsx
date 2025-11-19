@@ -8,7 +8,7 @@ const Footer = () => {
   return (
     <footer className="bg-primary text-primary-foreground py-24">
       <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-[1360px]">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-16 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-16 mb-16">
           <div>
             <h3 className="text-3xl font-bold mb-6">
               {language === "he" ? "גלובל אלקטריק" : "Global Electric"}
@@ -31,13 +31,36 @@ const Footer = () => {
               <Link to="/about" className="text-primary-foreground/80 hover:text-accent transition-colors text-base">
                 {t("nav.about")}
               </Link>
+              <Link to="/solutions" className="text-primary-foreground/80 hover:text-accent transition-colors text-base">
+                {language === "he" ? "פתרונות" : "Solutions"}
+              </Link>
               <Link to="/projects" className="text-primary-foreground/80 hover:text-accent transition-colors text-base">
                 {t("nav.projects")}
+              </Link>
+              <Link to="/store" className="text-primary-foreground/80 hover:text-accent transition-colors text-base">
+                {language === "he" ? "חנות" : "Store"}
+              </Link>
+              <Link to="/gallery" className="text-primary-foreground/80 hover:text-accent transition-colors text-base">
+                {language === "he" ? "גלריה" : "Gallery"}
+              </Link>
+              <Link to="/certificates" className="text-primary-foreground/80 hover:text-accent transition-colors text-base">
+                {language === "he" ? "אישורים" : "Certificates"}
               </Link>
               <Link to="/contact" className="text-primary-foreground/80 hover:text-accent transition-colors text-base">
                 {t("nav.contact")}
               </Link>
             </nav>
+          </div>
+
+          <div>
+            <h4 className="font-bold mb-6 text-xl">
+              {language === "he" ? "כתובת" : "Address"}
+            </h4>
+            <p className="text-primary-foreground/80 leading-relaxed text-base">
+              {language === "he" 
+                ? "עטרות 52 - ירושלים, Jerusalem, Israel 9711400"
+                : "52 Atarot - Jerusalem, Jerusalem, Israel 9711400"}
+            </p>
           </div>
 
           <div>
