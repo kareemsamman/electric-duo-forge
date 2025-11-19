@@ -5,8 +5,7 @@ import ServicesSection from "@/components/home/ServicesSection";
 import WhyUsSection from "@/components/home/WhyUsSection";
 import VideoSection from "@/components/home/VideoSection";
 import TeamPreview from "@/components/home/TeamPreview";
-import ProjectsPreview from "@/components/home/ProjectsPreview";
-import ProjectsSlider from "@/components/home/ProjectsSlider";
+import ProjectsSection from "@/components/home/ProjectsSection";
 import ClientLogos from "@/components/home/ClientLogos";
 import CTASection from "@/components/home/CTASection";
 
@@ -20,8 +19,7 @@ const Home = () => {
       <ServicesSection />
       <VideoSection />
       <TeamPreview />
-      <ProjectsPreview />
-      <ProjectsSlider />
+      <ProjectsSection />
       <ClientLogos />
       <CTASection />
     </div>
