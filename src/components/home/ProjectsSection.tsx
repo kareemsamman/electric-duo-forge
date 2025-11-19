@@ -75,7 +75,7 @@ const ProjectsSection = () => {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: index * 0.08 }}
               viewport={{ once: true }}
-              className="relative aspect-[4/3] overflow-hidden rounded-2xl"
+              className="relative aspect-[4/5] overflow-hidden rounded-2xl"
             >
               {/* Project Image - Full Size */}
               <img
