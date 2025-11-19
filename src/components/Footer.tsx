@@ -24,32 +24,36 @@ const Footer = () => {
             <h4 className="font-bold mb-6 text-xl">
               {language === "he" ? "קישורים" : "Links"}
             </h4>
-            <nav className="flex flex-col gap-4">
-              <Link to="/" className="text-primary-foreground/80 hover:text-accent transition-colors text-base">
-                {t("nav.home")}
-              </Link>
-              <Link to="/about" className="text-primary-foreground/80 hover:text-accent transition-colors text-base">
-                {t("nav.about")}
-              </Link>
-              <Link to="/solutions" className="text-primary-foreground/80 hover:text-accent transition-colors text-base">
-                {language === "he" ? "פתרונות" : "Solutions"}
-              </Link>
-              <Link to="/projects" className="text-primary-foreground/80 hover:text-accent transition-colors text-base">
-                {t("nav.projects")}
-              </Link>
-              <Link to="/store" className="text-primary-foreground/80 hover:text-accent transition-colors text-base">
-                {language === "he" ? "חנות" : "Store"}
-              </Link>
-              <Link to="/gallery" className="text-primary-foreground/80 hover:text-accent transition-colors text-base">
-                {language === "he" ? "גלריה" : "Gallery"}
-              </Link>
-              <Link to="/certificates" className="text-primary-foreground/80 hover:text-accent transition-colors text-base">
-                {language === "he" ? "אישורים" : "Certificates"}
-              </Link>
-              <Link to="/contact" className="text-primary-foreground/80 hover:text-accent transition-colors text-base">
-                {t("nav.contact")}
-              </Link>
-            </nav>
+            <div className="grid grid-cols-2 gap-x-8">
+              <nav className="flex flex-col gap-4">
+                <Link to="/" className="text-primary-foreground/80 hover:text-accent transition-colors text-base">
+                  {t("nav.home")}
+                </Link>
+                <Link to="/about" className="text-primary-foreground/80 hover:text-accent transition-colors text-base">
+                  {t("nav.about")}
+                </Link>
+                <Link to="/solutions" className="text-primary-foreground/80 hover:text-accent transition-colors text-base">
+                  {language === "he" ? "פתרונות" : "Solutions"}
+                </Link>
+                <Link to="/projects" className="text-primary-foreground/80 hover:text-accent transition-colors text-base">
+                  {t("nav.projects")}
+                </Link>
+              </nav>
+              <nav className="flex flex-col gap-4">
+                <Link to="/store" className="text-primary-foreground/80 hover:text-accent transition-colors text-base">
+                  {language === "he" ? "חנות" : "Store"}
+                </Link>
+                <Link to="/gallery" className="text-primary-foreground/80 hover:text-accent transition-colors text-base">
+                  {language === "he" ? "גלריה" : "Gallery"}
+                </Link>
+                <Link to="/certificates" className="text-primary-foreground/80 hover:text-accent transition-colors text-base">
+                  {language === "he" ? "אישורים" : "Certificates"}
+                </Link>
+                <Link to="/contact" className="text-primary-foreground/80 hover:text-accent transition-colors text-base">
+                  {t("nav.contact")}
+                </Link>
+              </nav>
+            </div>
           </div>
 
           <div>
