@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Card } from "@/components/ui/card";
 
 const ProjectsSection = () => {
   const { language } = useLanguage();
@@ -76,51 +75,40 @@ const ProjectsSection = () => {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: index * 0.08 }}
               viewport={{ once: true }}
+              className="relative aspect-[4/3] overflow-hidden rounded-2xl"
             >
-              <Card className="overflow-hidden h-full flex flex-col group hover:shadow-lg transition-shadow duration-300">
-                {/* Project Image */}
-                <div className="relative aspect-[4/3] overflow-hidden">
-                  <img
-                    src={getImageUrl(project.image)}
-                    alt={isHebrew ? project.project_name : project.project_name_en || project.project_name}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    onError={(e) => {
-                      console.error("Failed to load image:", project.image);
-                      e.currentTarget.src = "https://via.placeholder.com/800x600?text=Image+Not+Found";
-                    }}
-                  />
-                </div>
+              {/* Project Image - Full Size */}
+              <img
+                src={getImageUrl(project.image)}
+                alt={isHebrew ? project.project_name : project.project_name_en || project.project_name}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  console.error("Failed to load image:", project.image);
+                  e.currentTarget.src = "https://via.placeholder.com/800x600?text=Image+Not+Found";
+                }}
+              />
 
-                {/* Project Info */}
-                <div className="p-6 flex-1 flex flex-col">
-                  <h3 className="text-xl font-bold text-foreground mb-2">
-                    {isHebrew ? project.project_name : project.project_name_en || project.project_name}
-                  </h3>
-                  
-                  <p className="text-sm text-muted-foreground mb-2">
-                    {isHebrew ? project.location : project.location_en || project.location}
-                  </p>
+              {/* Floating Info Panel - Centered at Bottom */}
+              <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-[85%] bg-background/95 backdrop-blur-md rounded-xl p-5 shadow-lg">
+                <h3 className="text-lg font-bold mb-2 text-foreground text-center">
+                  {isHebrew ? project.project_name : project.project_name_en || project.project_name}
+                </h3>
+                
+                <p className="text-muted-foreground text-sm line-clamp-2 leading-relaxed text-center mb-3">
+                  {isHebrew ? project.description : project.description_en || project.description}
+                </p>
 
-                  <p className="text-sm text-muted-foreground mb-4 line-clamp-2 flex-1">
-                    {isHebrew ? project.description : project.description_en || project.description}
-                  </p>
-
-                  <Button
-                    asChild
-                    variant="outline"
-                    className="w-full group/btn"
-                  >
-                    <Link to={`/projects/${project.id}`}>
-                      {content["projects.section.view.button"] || "קרא עוד"}
-                      {isHebrew ? (
-                        <ArrowLeft className="h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
-                      ) : (
-                        <ArrowRight className="h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
-                      )}
-                    </Link>
-                  </Button>
-                </div>
-              </Card>
+                <Button
+                  asChild
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                >
+                  <Link to={`/projects/${project.id}`}>
+                    {content["projects.section.view.button"] || "קרא עוד"}
+                  </Link>
+                </Button>
+              </div>
             </motion.div>
           ))}
         </div>
