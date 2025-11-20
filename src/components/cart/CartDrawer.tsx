@@ -56,7 +56,7 @@ export const CartDrawer = () => {
               {/* Cart Items */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
                 {items.map((item) => (
-                  <div key={item.id} className="flex gap-4 p-4 bg-muted/50 rounded-lg">
+                  <div key={item.id} className="flex gap-4 p-4 bg-card border rounded-lg">
                     {item.image && (
                       <img
                         src={item.image}

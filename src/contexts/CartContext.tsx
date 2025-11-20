@@ -17,7 +17,7 @@ interface CartContextType {
   items: CartItem[];
   itemCount: number;
   subtotal: number;
-  addToCart: (product: any, quantity?: number) => void;
+  addToCart: (product: any, quantity?: number, openDrawer?: boolean) => void;
   removeFromCart: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
@@ -48,7 +48,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem('cart', JSON.stringify(items));
   }, [items]);
 
-  const addToCart = (product: any, quantity: number = 1) => {
+  const addToCart = (product: any, quantity: number = 1, openDrawer: boolean = true) => {
     setItems(prevItems => {
       const existingItem = prevItems.find(item => item.product_id === product.id);
       
@@ -81,7 +81,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
     
     toast.success('המוצר נוסף לעגלה');
-    setIsDrawerOpen(true);
+    if (openDrawer) {
+      setIsDrawerOpen(true);
+    }
   };
 
   const removeFromCart = (productId: string) => {

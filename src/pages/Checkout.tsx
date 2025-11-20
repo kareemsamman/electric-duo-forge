@@ -17,7 +17,9 @@ import { useQuery } from '@tanstack/react-query';
 
 const checkoutSchema = z.object({
   customer_name: z.string().trim().min(2, 'השם חייב להכיל לפחות 2 תווים'),
-  customer_phone: z.string().trim().min(9, 'מספר טלפון לא תקין'),
+  customer_phone: z.string()
+    .trim()
+    .regex(/^0\d{9}$/, 'מספר טלפון חייב להתחיל ב-0 ולהכיל 10 ספרות'),
   customer_email: z.string().trim().email('כתובת אימייל לא תקינה'),
   customer_city: z.string().trim().min(2, 'עיר חייבת להכיל לפחות 2 תווים'),
   customer_address: z.string().trim().min(5, 'כתובת חייבת להכיל לפחות 5 תווים'),
@@ -77,7 +79,17 @@ export default function Checkout() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    
+    // Phone number validation - only numbers, max 10 digits
+    if (name === 'customer_phone') {
+      const numericValue = value.replace(/\D/g, ''); // Remove non-digits
+      if (numericValue.length <= 10) {
+        setFormData(prev => ({ ...prev, [name]: numericValue }));
+      }
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
+    
     // Clear error for this field
     if (errors[name]) {
       setErrors(prev => {
@@ -285,6 +297,10 @@ export default function Checkout() {
                         type="tel"
                         value={formData.customer_phone}
                         onChange={handleInputChange}
+                        placeholder="0525143581"
+                        maxLength={10}
+                        pattern="[0-9]*"
+                        inputMode="numeric"
                         className={errors.customer_phone ? 'border-destructive' : ''}
                       />
                       {errors.customer_phone && (
@@ -383,7 +399,7 @@ export default function Checkout() {
                       <SelectTrigger className={errors.shipping_method_id ? 'border-destructive' : ''}>
                         <SelectValue placeholder={language === 'he' ? 'בחר שיטת משלוח' : 'Select shipping method'} />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent dir={language === 'he' ? 'rtl' : 'ltr'}>
                         {shippingMethods?.map((method) => (
                           <SelectItem key={method.id} value={method.id}>
                             {language === 'he' ? method.name : method.name_en || method.name} - ₪{method.price}
@@ -406,8 +422,9 @@ export default function Checkout() {
                   <RadioGroup
                     value={formData.payment_method}
                     onValueChange={(value) => setFormData(prev => ({ ...prev, payment_method: value as 'cash' | 'visa' }))}
+                    dir={language === 'he' ? 'rtl' : 'ltr'}
                   >
-                    <div className="flex items-center space-x-2 space-x-reverse p-4 border rounded-lg hover:bg-accent cursor-pointer">
+                    <div className="flex items-center gap-3 p-4 border rounded-lg hover:bg-accent cursor-pointer">
                       <RadioGroupItem value="cash" id="cash" />
                       <Label htmlFor="cash" className="flex items-center gap-2 cursor-pointer flex-1">
                         <Banknote className="w-5 h-5" />
@@ -415,7 +432,7 @@ export default function Checkout() {
                       </Label>
                     </div>
 
-                    <div className="flex items-center space-x-2 space-x-reverse p-4 border rounded-lg hover:bg-accent cursor-pointer">
+                    <div className="flex items-center gap-3 p-4 border rounded-lg hover:bg-accent cursor-pointer">
                       <RadioGroupItem value="visa" id="visa" />
                       <Label htmlFor="visa" className="flex items-center gap-2 cursor-pointer flex-1">
                         <CreditCard className="w-5 h-5" />

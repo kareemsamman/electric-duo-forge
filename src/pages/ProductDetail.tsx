@@ -273,7 +273,7 @@ export default function ProductDetail() {
                   className="w-full"
                   onClick={() => {
                     if (product) {
-                      addToCart(product, quantity);
+                      addToCart(product, quantity, false); // Don't open drawer
                       navigate('/checkout');
                     }
                   }}
