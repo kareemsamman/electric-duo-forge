@@ -159,6 +159,37 @@ export default function Checkout() {
 
       if (error) throw error;
 
+      // If payment method is Visa, redirect to Grow payment
+      if (formData.payment_method === 'visa') {
+        try {
+          const { data: paymentData, error: paymentError } = await supabase.functions.invoke(
+            'grow-payment-start',
+            {
+              body: { orderId: order.id }
+            }
+          );
+
+          if (paymentError || !paymentData?.paymentUrl) {
+            console.error('Grow payment error:', paymentError);
+            toast.error(language === 'he' ? 'שגיאה בהפניה לתשלום בכרטיס אשראי' : 'Error initiating card payment');
+            setIsProcessing(false);
+            return;
+          }
+
+          // Clear cart before redirecting to payment
+          clearCart();
+          
+          // Redirect to Grow payment page
+          window.location.href = paymentData.paymentUrl;
+          return;
+        } catch (paymentRedirectError) {
+          console.error('Payment redirect error:', paymentRedirectError);
+          toast.error(language === 'he' ? 'שגיאה בהפניה לדף התשלום' : 'Error redirecting to payment page');
+          setIsProcessing(false);
+          return;
+        }
+      }
+
       // Fetch admin email from settings
       const { data: adminSettings } = await supabase
         .from('site_content')
@@ -225,18 +256,11 @@ export default function Checkout() {
       // Clear cart
       clearCart();
 
-      // Show success message
-      if (formData.payment_method === 'visa') {
-        toast.success(language === 'he' 
-          ? 'ההזמנה נקלטה בהצלחה! תשלום בכרטיס אשראי עדיין לא פעיל. נחזור אליך להשלמת התשלום.'
-          : 'Order placed successfully! Card payment is not active yet. We will contact you to complete payment.'
-        );
-      } else {
-        toast.success(language === 'he' 
-          ? 'ההזמנה נקלטה בהצלחה! התשלום יבוצע במזומן בעת האספקה.'
-          : 'Order placed successfully! Payment will be collected in cash upon delivery.'
-        );
-      }
+      // Show success message for cash payment
+      toast.success(language === 'he' 
+        ? 'ההזמנה נקלטה בהצלחה! התשלום יבוצע במזומן בעת האספקה.'
+        : 'Order placed successfully! Payment will be collected in cash upon delivery.'
+      );
 
       // Navigate to order confirmation
       navigate(`/order/${order.id}`);
