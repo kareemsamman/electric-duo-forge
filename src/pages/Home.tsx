@@ -1,6 +1,5 @@
 import HeroSection from "@/components/home/HeroSection";
 import ValuesCards from "@/components/home/ValuesCards";
-import ValuesButtons from "@/components/home/ValuesButtons";
 import StatsStrip from "@/components/home/StatsStrip";
 import FeaturedProducts from "@/components/home/FeaturedProducts";
 import ServicesSection from "@/components/home/ServicesSection";
@@ -16,7 +15,6 @@ const Home = () => {
     <div className="min-h-screen">
       <HeroSection />
       <ValuesCards />
-      <ValuesButtons />
       <FeaturedProducts />
       <StatsStrip />
       <WhyUsSection />
