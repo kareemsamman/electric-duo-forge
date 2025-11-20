@@ -25,8 +25,8 @@ export const CartDrawer = () => {
   };
 
   return (
-    <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen} direction={language === 'he' ? 'right' : 'left'}>
-      <DrawerContent className={`h-full w-full sm:w-[400px] ${language === 'he' ? 'right-0' : 'left-0'}`}>
+    <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen} direction="left">
+      <DrawerContent className="h-full w-full sm:w-[400px] left-0">
         <DrawerHeader className="border-b">
           <DrawerTitle className="flex items-center gap-2">
             <ShoppingCart className="w-5 h-5" />
@@ -125,7 +125,7 @@ export const CartDrawer = () => {
                   onClick={handleCheckout}
                 >
                   {language === 'he' ? 'לצ׳קאאוט' : 'Checkout'}
-                  <ArrowLeft className={`w-4 h-4 ${language === 'he' ? 'mr-2 rotate-180' : 'ml-2'}`} />
+                  <ArrowLeft className={`w-4 h-4 ${language === 'he' ? 'ml-2' : 'mr-2'}`} />
                 </Button>
                 
                 <Button 
