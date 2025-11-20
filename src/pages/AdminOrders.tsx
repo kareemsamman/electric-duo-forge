@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
-import { Eye, ArrowRight, ArrowLeft, MailWarning, MailCheck } from 'lucide-react';
+import { Eye, ArrowRight, ArrowLeft, MailWarning, MailCheck, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -241,9 +241,17 @@ export default function AdminOrders() {
                               orderData: order
                             });
                           }}
+                          disabled={updateOrderStatus.isPending}
                         >
                           <SelectTrigger className="w-40">
-                            <SelectValue />
+                            {updateOrderStatus.isPending ? (
+                              <div className="flex items-center gap-2">
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                <span>מעדכן...</span>
+                              </div>
+                            ) : (
+                              <SelectValue />
+                            )}
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="pending">בטיפול</SelectItem>
