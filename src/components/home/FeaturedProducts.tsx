@@ -59,7 +59,7 @@ const FeaturedProducts = () => {
             <CarouselContent className="-ml-6 md:-ml-8">
               {products.map((product) => (
                 <CarouselItem key={product.id} className="pl-6 md:pl-8 md:basis-1/2 lg:basis-1/4">
-                  <Link to={`/store?product=${product.id}`} className="block group">
+                  <Link to={`/product/${product.slug}`} className="block group">
                     <div className="relative h-[480px] rounded-3xl overflow-hidden cursor-pointer shadow-[0_8px_30px_rgba(0,0,0,0.12)] hover:shadow-[0_20px_60px_rgba(0,0,0,0.2)] transition-all duration-500 hover:-translate-y-1.5 hover:scale-[1.01]">
                       <img 
                         src={product.product_image} 
