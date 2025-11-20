@@ -5,7 +5,6 @@ import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { AnimatedButton } from "@/components/animations/AnimatedButton";
-import heroImage from "@/assets/hero-electrical-room.jpg";
 
 const HeroSection = () => {
   const { language } = useLanguage();
@@ -36,14 +35,20 @@ const HeroSection = () => {
       }
     }
   };
-  return <section className="relative min-h-screen flex items-center overflow-hidden" style={{
-    backgroundImage: `url(${heroImage})`,
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-    backgroundRepeat: 'no-repeat'
-  }}>
+  return <section className="relative min-h-screen flex items-center overflow-hidden">
+      {/* Background Video */}
+      <video
+        autoPlay
+        muted
+        loop
+        playsInline
+        className="absolute inset-0 w-full h-full object-cover z-0"
+      >
+        <source src="https://cdn.pixabay.com/video/2023/09/04/178622-861162226_large.mp4" type="video/mp4" />
+      </video>
+
       {/* Dark overlay */}
-      <div className="absolute inset-0 bg-black/60 z-0" />
+      <div className="absolute inset-0 bg-black/50 z-0" />
 
       {/* Content Container */}
       <div className="container relative z-10 mx-auto px-6 md:px-12 lg:px-16 py-32 md:py-40">
