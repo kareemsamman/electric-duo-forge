@@ -17,7 +17,9 @@ export default function AdminSettings() {
 
   const [settings, setSettings] = useState({
     admin_email: '',
-    grow_api_key: ''
+    grow_api_key: '',
+    gmail_email: '',
+    gmail_app_password: ''
   });
 
   // Fetch current settings
@@ -27,7 +29,7 @@ export default function AdminSettings() {
       const { data, error } = await supabase
         .from('site_content')
         .select('*')
-        .in('key', ['admin_email', 'grow_api_key']);
+        .in('key', ['admin_email', 'grow_api_key', 'gmail_email', 'gmail_app_password']);
       
       if (error) throw error;
       
@@ -38,7 +40,9 @@ export default function AdminSettings() {
       
       setSettings({
         admin_email: settingsMap.admin_email || '',
-        grow_api_key: settingsMap.grow_api_key || ''
+        grow_api_key: settingsMap.grow_api_key || '',
+        gmail_email: settingsMap.gmail_email || '',
+        gmail_app_password: settingsMap.gmail_app_password || ''
       });
       
       return settingsMap;
@@ -71,6 +75,30 @@ export default function AdminSettings() {
         }, { onConflict: 'key' });
 
       if (apiError) throw apiError;
+
+      // Update or insert gmail_email
+      const { error: gmailEmailError } = await supabase
+        .from('site_content')
+        .upsert({
+          key: 'gmail_email',
+          section: 'settings',
+          value_he: settings.gmail_email,
+          value_en: settings.gmail_email
+        }, { onConflict: 'key' });
+
+      if (gmailEmailError) throw gmailEmailError;
+
+      // Update or insert gmail_app_password
+      const { error: gmailPasswordError } = await supabase
+        .from('site_content')
+        .upsert({
+          key: 'gmail_app_password',
+          section: 'settings',
+          value_he: settings.gmail_app_password,
+          value_en: settings.gmail_app_password
+        }, { onConflict: 'key' });
+
+      if (gmailPasswordError) throw gmailPasswordError;
 
       toast.success(language === 'he' ? 'ההגדרות נשמרו בהצלחה' : 'Settings saved successfully');
     } catch (error) {
@@ -155,6 +183,44 @@ export default function AdminSettings() {
                 {language === 'he' 
                   ? 'מפתח API לעיבוד תשלומים בכרטיס אשראי'
                   : 'API key for processing credit card payments'}
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="gmail_email">
+                {language === 'he' ? 'כתובת Gmail' : 'Gmail Address'}
+              </Label>
+              <Input
+                id="gmail_email"
+                type="email"
+                value={settings.gmail_email}
+                onChange={(e) => setSettings(prev => ({ ...prev, gmail_email: e.target.value }))}
+                placeholder="example@gmail.com"
+                dir="ltr"
+              />
+              <p className="text-sm text-muted-foreground">
+                {language === 'he' 
+                  ? 'כתובת Gmail לשליחת הודעות דוא"ל'
+                  : 'Gmail address for sending emails'}
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="gmail_app_password">
+                {language === 'he' ? 'סיסמת אפליקציה של Gmail' : 'Gmail App Password'}
+              </Label>
+              <Input
+                id="gmail_app_password"
+                type="password"
+                value={settings.gmail_app_password}
+                onChange={(e) => setSettings(prev => ({ ...prev, gmail_app_password: e.target.value }))}
+                placeholder="•••• •••• •••• ••••"
+                dir="ltr"
+              />
+              <p className="text-sm text-muted-foreground">
+                {language === 'he' 
+                  ? 'סיסמת אפליקציה של Gmail (לא הסיסמה הרגילה)'
+                  : 'Gmail app password (not your regular password)'}
               </p>
             </div>
 
