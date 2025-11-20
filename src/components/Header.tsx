@@ -2,6 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useContent } from "@/contexts/ContentContext";
+import { CartIcon } from "@/components/cart/CartIcon";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
 
@@ -56,6 +57,8 @@ const Header = () => {
 
           {/* Language Toggle & Mobile Menu */}
           <div className="flex items-center gap-4">
+            <CartIcon />
+            
             <Button
               variant="outline"
               size="sm"

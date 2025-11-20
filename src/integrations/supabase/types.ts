@@ -107,11 +107,77 @@ export type Database = {
         }
         Relationships: []
       }
+      orders: {
+        Row: {
+          cart_items: Json
+          created_at: string | null
+          customer_address: string
+          customer_city: string
+          customer_email: string
+          customer_name: string
+          customer_notes: string | null
+          customer_phone: string
+          delivery_fee: number | null
+          id: string
+          payment_method: string | null
+          payment_status: string | null
+          status: string | null
+          subtotal: number
+          total: number
+          total_items: number
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          cart_items: Json
+          created_at?: string | null
+          customer_address: string
+          customer_city: string
+          customer_email: string
+          customer_name: string
+          customer_notes?: string | null
+          customer_phone: string
+          delivery_fee?: number | null
+          id?: string
+          payment_method?: string | null
+          payment_status?: string | null
+          status?: string | null
+          subtotal: number
+          total: number
+          total_items: number
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          cart_items?: Json
+          created_at?: string | null
+          customer_address?: string
+          customer_city?: string
+          customer_email?: string
+          customer_name?: string
+          customer_notes?: string | null
+          customer_phone?: string
+          delivery_fee?: number | null
+          id?: string
+          payment_method?: string | null
+          payment_status?: string | null
+          status?: string | null
+          subtotal?: number
+          total?: number
+          total_items?: number
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           category: string
           created_at: string
           id: string
+          images: string[] | null
+          in_stock: boolean | null
+          is_featured: boolean | null
           price: number
           product_description: string
           product_description_en: string | null
@@ -120,11 +186,21 @@ export type Database = {
           product_name_en: string | null
           product_specs: string
           product_specs_en: string | null
+          related_product_ids: string[] | null
+          short_description_en: string | null
+          short_description_he: string | null
+          sku: string | null
+          slug: string | null
+          stock_qty: number | null
+          thumbnail: string | null
         }
         Insert: {
           category: string
           created_at?: string
           id?: string
+          images?: string[] | null
+          in_stock?: boolean | null
+          is_featured?: boolean | null
           price: number
           product_description: string
           product_description_en?: string | null
@@ -133,11 +209,21 @@ export type Database = {
           product_name_en?: string | null
           product_specs: string
           product_specs_en?: string | null
+          related_product_ids?: string[] | null
+          short_description_en?: string | null
+          short_description_he?: string | null
+          sku?: string | null
+          slug?: string | null
+          stock_qty?: number | null
+          thumbnail?: string | null
         }
         Update: {
           category?: string
           created_at?: string
           id?: string
+          images?: string[] | null
+          in_stock?: boolean | null
+          is_featured?: boolean | null
           price?: number
           product_description?: string
           product_description_en?: string | null
@@ -146,6 +232,13 @@ export type Database = {
           product_name_en?: string | null
           product_specs?: string
           product_specs_en?: string | null
+          related_product_ids?: string[] | null
+          short_description_en?: string | null
+          short_description_he?: string | null
+          sku?: string | null
+          slug?: string | null
+          stock_qty?: number | null
+          thumbnail?: string | null
         }
         Relationships: []
       }
