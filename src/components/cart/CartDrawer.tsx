@@ -1,6 +1,6 @@
 import { useCart } from '@/contexts/CartContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Minus, Plus, Trash2, ShoppingCart, ArrowLeft, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -25,17 +25,17 @@ export const CartDrawer = () => {
   };
 
   return (
-    <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen} direction="left">
-      <DrawerContent className="h-full w-full sm:w-[400px] left-0">
-        <DrawerHeader className="border-b">
-          <DrawerTitle className="flex items-center gap-2">
+    <Sheet open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
+      <SheetContent side="left" className="w-full sm:w-[400px] p-0 flex flex-col">
+        <SheetHeader className="border-b p-6">
+          <SheetTitle className="flex items-center gap-2">
             <ShoppingCart className="w-5 h-5" />
             {language === 'he' ? 'עגלת קניות' : 'Shopping Cart'}
             {itemCount > 0 && (
               <span className="text-sm text-muted-foreground">({itemCount})</span>
             )}
-          </DrawerTitle>
-        </DrawerHeader>
+          </SheetTitle>
+        </SheetHeader>
 
         <div className="flex flex-col h-full">
           {items.length === 0 ? (
@@ -143,7 +143,7 @@ export const CartDrawer = () => {
             </>
           )}
         </div>
-      </DrawerContent>
-    </Drawer>
+      </SheetContent>
+    </Sheet>
   );
 };
