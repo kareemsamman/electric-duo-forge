@@ -503,8 +503,8 @@ export default function Checkout() {
                   {formData.payment_method === 'visa' && (
                     <p className="mt-4 text-sm text-muted-foreground bg-muted p-3 rounded-lg">
                       {language === 'he' 
-                        ? 'שים לב: תשלום בכרטיס אשראי עדיין לא פעיל. נחזור אליך להשלמת התשלום.'
-                        : 'Note: Card payment is not active yet. We will contact you to complete payment.'
+                        ? 'לאחר לחיצה על "סיום הזמנה" תועבר לדף תשלום מאובטח לביצוע התשלום בכרטיס אשראי.'
+                        : 'After clicking "Complete Order" you will be redirected to a secure payment page to complete your card payment.'
                       }
                     </p>
                   )}

@@ -124,9 +124,15 @@ export default function OrderConfirmation() {
                       ? 'התשלום יתבצע במזומן בעת האספקה או האיסוף'
                       : 'Payment will be collected in cash upon delivery or pickup'
                     )
-                  : (language === 'he'
-                      ? 'תשלום בכרטיס אשראי עדיין לא פעיל. נחזור אליך להשלמת התשלום.'
-                      : 'Card payment is not active yet. We will contact you to complete payment.'
+                  : (order.payment_status === 'paid' 
+                      ? (language === 'he'
+                          ? 'התשלום בוצע בהצלחה בכרטיס אשראי'
+                          : 'Payment was successfully completed by credit card'
+                        )
+                      : (language === 'he'
+                          ? 'ממתין לאישור תשלום בכרטיס אשראי'
+                          : 'Waiting for credit card payment confirmation'
+                        )
                     )
                 }
               </p>
