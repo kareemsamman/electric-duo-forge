@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useContent } from "@/contexts/ContentContext";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Shield, Wrench, Zap, CheckCircle, Clock, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { AnimatedButton } from "@/components/animations/AnimatedButton";
@@ -37,9 +37,43 @@ const HeroSection = () => {
   };
   const videoUrl = content["hero.video_url"] || "https://cdn.pixabay.com/video/2023/09/04/178622-861162226_large.mp4";
 
+  const cards = [
+    {
+      icon: Shield,
+      titleHe: "פתרון אמין למארזים",
+      titleEn: "Reliable solution"
+    },
+    {
+      icon: Wrench,
+      titleHe: "מותאם לפרויקט שלך",
+      titleEn: "Customized"
+    },
+    {
+      icon: Zap,
+      titleHe: "טכנולוגיה מתקדמת",
+      titleEn: "Advanced tech"
+    },
+    {
+      icon: CheckCircle,
+      titleHe: "אישורים ותקנים",
+      titleEn: "Certifications"
+    },
+    {
+      icon: Clock,
+      titleHe: "זמינות ושירות",
+      titleEn: "24/7 Service"
+    },
+    {
+      icon: Users,
+      titleHe: "צוות מקצועי",
+      titleEn: "Pro team"
+    }
+  ];
+
   return <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Video */}
       <video
+        key={videoUrl}
         autoPlay
         muted
         loop
@@ -68,6 +102,39 @@ const HeroSection = () => {
           <motion.p variants={wordVariants} className="text-xl md:text-2xl lg:text-3xl leading-relaxed max-w-3xl" style={{color: '#E0E0E0'}}>
             {content["hero.subtitle"] || ""}
           </motion.p>
+
+          {/* Cards - מה שמייחד אותנו */}
+          <motion.div 
+            variants={wordVariants}
+            className="w-full max-w-6xl mt-12"
+          >
+            <h3 className="text-2xl md:text-3xl font-bold text-white text-center mb-8">
+              {language === "he" ? "מה שמייחד אותנו" : "What Makes Us Special"}
+            </h3>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+              {cards.map((card, index) => {
+                const Icon = card.icon;
+                return (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.8 + index * 0.1, duration: 0.5 }}
+                    className="bg-white/10 backdrop-blur-md border border-white/25 rounded-2xl p-4 text-center"
+                  >
+                    <div className="flex flex-col items-center space-y-2">
+                      <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+                        <Icon className="w-5 h-5 text-white" />
+                      </div>
+                      <p className="text-sm font-semibold text-white leading-tight">
+                        {language === "he" ? card.titleHe : card.titleEn}
+                      </p>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </motion.div>
 
           {/* Buttons */}
           <motion.div variants={wordVariants} className="flex flex-col sm:flex-row gap-6 mt-4">
