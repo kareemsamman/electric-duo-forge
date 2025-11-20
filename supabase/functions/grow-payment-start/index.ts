@@ -67,9 +67,9 @@ serve(async (req) => {
     }
 
     // Build absolute URLs for success/cancel redirect
-    const baseUrl = Deno.env.get('SUPABASE_URL')?.replace('/rest/v1', '') || '';
-    const successUrl = `${baseUrl}/order/${orderId}?payment=success`;
-    const cancelUrl = `${baseUrl}/order/${orderId}?payment=failed`;
+    const frontendUrl = Deno.env.get('FRONTEND_URL') || 'https://3f725b6a-8b19-4079-a7ca-b7dec47edbb5.lovableproject.com';
+    const successUrl = `${frontendUrl}/order/${orderId}?payment=success`;
+    const cancelUrl = `${frontendUrl}/order/${orderId}?payment=failed`;
 
     // Build payload according to Grow's API
     const payload = new URLSearchParams({
