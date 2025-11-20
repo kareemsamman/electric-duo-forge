@@ -7,6 +7,8 @@ import { useEffect } from "react";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { ContentProvider } from "@/contexts/ContentContext";
 import { CartProvider } from "@/contexts/CartContext";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { CartDrawer } from "@/components/cart/CartDrawer";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -24,6 +26,8 @@ import Gallery from "./pages/Gallery";
 import Certificates from "./pages/Certificates";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
+import Login from "./pages/Login";
+import AdminDashboard from "./pages/AdminDashboard";
 import AdminContent from "./pages/AdminContent";
 import AdminLogos from "./pages/AdminLogos";
 import AdminProjects from "./pages/AdminProjects";
@@ -48,7 +52,8 @@ const App = () => (
     <TooltipProvider>
       <LanguageProvider>
         <ContentProvider>
-          <CartProvider>
+          <AuthProvider>
+            <CartProvider>
             <Toaster />
             <Sonner />
             <BrowserRouter>
@@ -69,12 +74,14 @@ const App = () => (
                   <Route path="/gallery" element={<Gallery />} />
                   <Route path="/certificates" element={<Certificates />} />
                   <Route path="/contact" element={<Contact />} />
-            <Route path="/admin/content" element={<AdminContent />} />
-            <Route path="/admin/logos" element={<AdminLogos />} />
-            <Route path="/admin/projects" element={<AdminProjects />} />
-            <Route path="/admin/products" element={<AdminProducts />} />
-            <Route path="/admin/orders" element={<AdminOrders />} />
-            <Route path="/admin/shipping" element={<AdminShipping />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+                  <Route path="/admin/content" element={<ProtectedRoute><AdminContent /></ProtectedRoute>} />
+                  <Route path="/admin/logos" element={<ProtectedRoute><AdminLogos /></ProtectedRoute>} />
+                  <Route path="/admin/projects" element={<ProtectedRoute><AdminProjects /></ProtectedRoute>} />
+                  <Route path="/admin/products" element={<ProtectedRoute><AdminProducts /></ProtectedRoute>} />
+                  <Route path="/admin/orders" element={<ProtectedRoute><AdminOrders /></ProtectedRoute>} />
+                  <Route path="/admin/shipping" element={<ProtectedRoute><AdminShipping /></ProtectedRoute>} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </main>
@@ -83,7 +90,8 @@ const App = () => (
               <CartDrawer />
             </div>
             </BrowserRouter>
-          </CartProvider>
+            </CartProvider>
+          </AuthProvider>
         </ContentProvider>
       </LanguageProvider>
     </TooltipProvider>
