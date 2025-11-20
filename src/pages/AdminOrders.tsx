@@ -7,9 +7,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
-import { Eye } from 'lucide-react';
+import { Eye, ArrowRight, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function AdminOrders() {
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
@@ -17,6 +18,7 @@ export default function AdminOrders() {
   const [paymentFilter, setPaymentFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
+  const { language } = useLanguage();
 
   // Check authentication
   const { data: session } = useQuery({
@@ -58,8 +60,25 @@ export default function AdminOrders() {
   if (!session) return null;
 
   return (
-    <div className="min-h-screen py-20">
+    <div className="min-h-screen py-20 pt-28">
       <div className="container mx-auto px-6 md:px-12 lg:px-16">
+        <Button
+          variant="ghost"
+          onClick={() => navigate('/admin')}
+          className="mb-6"
+        >
+          {language === 'he' ? (
+            <>
+              <ArrowRight className="ml-2 h-4 w-4" />
+              חזרה ללוח הבקרה
+            </>
+          ) : (
+            <>
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Dashboard
+            </>
+          )}
+        </Button>
         <Card>
           <CardHeader>
             <CardTitle className="text-3xl">ניהול הזמנות</CardTitle>

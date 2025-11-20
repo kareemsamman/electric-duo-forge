@@ -147,6 +147,47 @@ export default function Checkout() {
 
       if (error) throw error;
 
+      // Fetch admin email from settings
+      const { data: adminSettings } = await supabase
+        .from('site_content')
+        .select('value_he')
+        .eq('key', 'admin_email')
+        .single();
+
+      const adminEmail = adminSettings?.value_he || 'morshea500@gmail.com';
+
+      // Send order confirmation emails
+      try {
+        await supabase.functions.invoke('send-order-email', {
+          body: {
+            order_id: order.id,
+            customer_email: formData.customer_email,
+            customer_name: formData.customer_name,
+            admin_email: adminEmail,
+            order_details: {
+              total_items: totalItems,
+              subtotal: Number(subtotal.toFixed(2)),
+              delivery_fee: Number(deliveryFee.toFixed(2)),
+              total: Number(total.toFixed(2)),
+              cart_items: items.map(item => ({
+                name: item.name,
+                quantity: item.quantity,
+                unit_price: item.unit_price,
+                line_total: item.line_total
+              })),
+              payment_method: formData.payment_method,
+              shipping_method: selectedShipping?.name || 'רגיל',
+              customer_address: formData.customer_address,
+              customer_city: formData.customer_city,
+              customer_phone: formData.customer_phone
+            }
+          }
+        });
+      } catch (emailError) {
+        console.error('Error sending order emails:', emailError);
+        // Don't fail the order if email fails
+      }
+
       // Clear cart
       clearCart();
 

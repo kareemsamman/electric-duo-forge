@@ -5,9 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
-import { Truck, Plus, Pencil, Trash2, Save, X } from 'lucide-react';
+import { Truck, Plus, Pencil, Trash2, Save, X, ArrowRight, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { Switch } from '@/components/ui/switch';
+import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface ShippingMethod {
   id: string;
@@ -20,6 +22,8 @@ interface ShippingMethod {
 
 export default function AdminShipping() {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  const { language } = useLanguage();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
   const [formData, setFormData] = useState({
@@ -141,8 +145,25 @@ export default function AdminShipping() {
   }
 
   return (
-    <div className="min-h-screen bg-background py-12">
+    <div className="min-h-screen bg-background py-12 pt-28">
       <div className="container mx-auto px-4 max-w-4xl">
+        <Button
+          variant="ghost"
+          onClick={() => navigate('/admin')}
+          className="mb-6"
+        >
+          {language === 'he' ? (
+            <>
+              <ArrowRight className="ml-2 h-4 w-4" />
+              חזרה ללוח הבקרה
+            </>
+          ) : (
+            <>
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Dashboard
+            </>
+          )}
+        </Button>
         <div className="mb-8 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Truck className="w-8 h-8" />

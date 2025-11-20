@@ -2,7 +2,7 @@ import { useCart } from '@/contexts/CartContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { Button } from '@/components/ui/button';
-import { Minus, Plus, Trash2, ShoppingCart, ArrowLeft } from 'lucide-react';
+import { Minus, Plus, Trash2, ShoppingCart, ArrowLeft, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export const CartDrawer = () => {
@@ -25,8 +25,8 @@ export const CartDrawer = () => {
   };
 
   return (
-    <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen} direction="right">
-      <DrawerContent className="h-full w-full sm:w-[400px] right-0">
+    <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen} direction="left">
+      <DrawerContent className="h-full w-full sm:w-[400px] left-0">
         <DrawerHeader className="border-b">
           <DrawerTitle className="flex items-center gap-2">
             <ShoppingCart className="w-5 h-5" />
@@ -125,7 +125,11 @@ export const CartDrawer = () => {
                   onClick={handleCheckout}
                 >
                   {language === 'he' ? 'לצ׳קאאוט' : 'Checkout'}
-                  <ArrowLeft className={`w-4 h-4 ${language === 'he' ? 'mr-2 rotate-180' : 'ml-2'}`} />
+                  {language === 'he' ? (
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                  ) : (
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  )}
                 </Button>
                 
                 <Button 
