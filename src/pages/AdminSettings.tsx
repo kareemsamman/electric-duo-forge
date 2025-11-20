@@ -17,7 +17,9 @@ export default function AdminSettings() {
 
   const [settings, setSettings] = useState({
     admin_email: '',
+    grow_user: '',
     grow_api_key: '',
+    grow_webhook_key: '',
     gmail_email: '',
     gmail_app_password: ''
   });
@@ -29,7 +31,7 @@ export default function AdminSettings() {
       const { data, error } = await supabase
         .from('site_content')
         .select('*')
-        .in('key', ['admin_email', 'grow_api_key', 'gmail_email', 'gmail_app_password']);
+        .in('key', ['admin_email', 'grow_user', 'grow_api_key', 'grow_webhook_key', 'gmail_email', 'gmail_app_password']);
       
       if (error) throw error;
       
@@ -40,7 +42,9 @@ export default function AdminSettings() {
       
       setSettings({
         admin_email: settingsMap.admin_email || '',
+        grow_user: settingsMap.grow_user || '',
         grow_api_key: settingsMap.grow_api_key || '',
+        grow_webhook_key: settingsMap.grow_webhook_key || '',
         gmail_email: settingsMap.gmail_email || '',
         gmail_app_password: settingsMap.gmail_app_password || ''
       });
@@ -64,6 +68,18 @@ export default function AdminSettings() {
 
       if (emailError) throw emailError;
 
+      // Update or insert grow_user
+      const { error: growUserError } = await supabase
+        .from('site_content')
+        .upsert({
+          key: 'grow_user',
+          section: 'settings',
+          value_he: settings.grow_user,
+          value_en: settings.grow_user
+        }, { onConflict: 'key' });
+
+      if (growUserError) throw growUserError;
+
       // Update or insert grow_api_key
       const { error: apiError } = await supabase
         .from('site_content')
@@ -75,6 +91,18 @@ export default function AdminSettings() {
         }, { onConflict: 'key' });
 
       if (apiError) throw apiError;
+
+      // Update or insert grow_webhook_key
+      const { error: webhookError } = await supabase
+        .from('site_content')
+        .upsert({
+          key: 'grow_webhook_key',
+          section: 'settings',
+          value_he: settings.grow_webhook_key,
+          value_en: settings.grow_webhook_key
+        }, { onConflict: 'key' });
+
+      if (webhookError) throw webhookError;
 
       // Update or insert gmail_email
       const { error: gmailEmailError } = await supabase
@@ -168,6 +196,25 @@ export default function AdminSettings() {
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="grow_user">
+                {language === 'he' ? 'Grow User' : 'Grow User'}
+              </Label>
+              <Input
+                id="grow_user"
+                type="text"
+                value={settings.grow_user}
+                onChange={(e) => setSettings(prev => ({ ...prev, grow_user: e.target.value }))}
+                placeholder={language === 'he' ? 'הזן את Grow User' : 'Enter Grow User'}
+                dir="ltr"
+              />
+              <p className="text-sm text-muted-foreground">
+                {language === 'he' 
+                  ? 'שם המשתמש בגרואו לעיבוד תשלומים'
+                  : 'Grow username for payment processing'}
+              </p>
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="grow_api_key">
                 {language === 'he' ? 'מפתח API של Grow' : 'Grow API Key'}
               </Label>
@@ -183,6 +230,25 @@ export default function AdminSettings() {
                 {language === 'he' 
                   ? 'מפתח API לעיבוד תשלומים בכרטיס אשראי'
                   : 'API key for processing credit card payments'}
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="grow_webhook_key">
+                {language === 'he' ? 'Grow Webhook Key' : 'Grow Webhook Key'}
+              </Label>
+              <Input
+                id="grow_webhook_key"
+                type="password"
+                value={settings.grow_webhook_key}
+                onChange={(e) => setSettings(prev => ({ ...prev, grow_webhook_key: e.target.value }))}
+                placeholder="••••••••••••••••"
+                dir="ltr"
+              />
+              <p className="text-sm text-muted-foreground">
+                {language === 'he' 
+                  ? 'מפתח אימות להתראות מגרואו'
+                  : 'Webhook key for Grow notifications'}
               </p>
             </div>
 
