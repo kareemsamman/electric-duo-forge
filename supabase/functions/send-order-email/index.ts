@@ -1,7 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "npm:resend@2.0.0";
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+const resend_api_key = Deno.env.get("RESEND_API_KEY") || "";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -171,30 +170,46 @@ const handler = async (req: Request): Promise<Response> => {
     `;
 
     // Send customer email
-    const customerEmailResponse = await resend.emails.send({
-      from: "Global Electric <onboarding@resend.dev>",
-      to: [customer_email],
-      subject: `אישור הזמנה #${order_id} - Global Electric`,
-      html: customerEmailHtml,
+    const customerEmailResponse = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${resend_api_key}`,
+      },
+      body: JSON.stringify({
+        from: "Global Electric <onboarding@resend.dev>",
+        to: [customer_email],
+        subject: `אישור הזמנה #${order_id} - Global Electric`,
+        html: customerEmailHtml,
+      }),
     });
 
-    console.log("Customer email sent:", customerEmailResponse);
+    const customerResult = await customerEmailResponse.json();
+    console.log("Customer email sent:", customerResult);
 
     // Send admin email
-    const adminEmailResponse = await resend.emails.send({
-      from: "Global Electric <onboarding@resend.dev>",
-      to: [admin_email],
-      subject: `🔔 הזמנה חדשה #${order_id}`,
-      html: adminEmailHtml,
+    const adminEmailResponse = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${resend_api_key}`,
+      },
+      body: JSON.stringify({
+        from: "Global Electric <onboarding@resend.dev>",
+        to: [admin_email],
+        subject: `🔔 הזמנה חדשה #${order_id}`,
+        html: adminEmailHtml,
+      }),
     });
 
-    console.log("Admin email sent:", adminEmailResponse);
+    const adminResult = await adminEmailResponse.json();
+    console.log("Admin email sent:", adminResult);
 
     return new Response(
       JSON.stringify({
         success: true,
-        customer_email: customerEmailResponse,
-        admin_email: adminEmailResponse,
+        customer_email: customerResult,
+        admin_email: adminResult,
       }),
       {
         status: 200,

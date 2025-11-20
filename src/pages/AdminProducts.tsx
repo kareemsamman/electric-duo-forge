@@ -8,9 +8,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Pencil, Trash2, Upload } from 'lucide-react';
+import { Plus, Pencil, Trash2, Upload, ArrowRight, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function AdminProducts() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -18,6 +19,7 @@ export default function AdminProducts() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const { language } = useLanguage();
 
   // Check authentication
   const { data: session } = useQuery({
@@ -192,8 +194,25 @@ export default function AdminProducts() {
   if (!session) return null;
 
   return (
-    <div className="min-h-screen py-20">
+    <div className="min-h-screen py-20 pt-28">
       <div className="container mx-auto px-6 md:px-12 lg:px-16">
+        <Button
+          variant="ghost"
+          onClick={() => navigate('/admin')}
+          className="mb-6"
+        >
+          {language === 'he' ? (
+            <>
+              <ArrowRight className="ml-2 h-4 w-4" />
+              חזרה ללוח הבקרה
+            </>
+          ) : (
+            <>
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Dashboard
+            </>
+          )}
+        </Button>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-3xl">ניהול מוצרים</CardTitle>
