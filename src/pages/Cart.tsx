@@ -15,7 +15,7 @@ export default function Cart() {
   };
 
   return (
-    <div className="min-h-screen py-20">
+    <div className="min-h-screen pt-28 md:pt-32 py-20">
       <div className="container mx-auto px-6 md:px-12 lg:px-16">
         {/* Breadcrumbs */}
         <FadeIn>

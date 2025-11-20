@@ -46,7 +46,7 @@ const Store = () => {
   });
 
   return (
-    <div className="min-h-screen pt-32 pb-20">
+    <div className="min-h-screen pt-28 md:pt-32 pb-20">
       <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-[1360px]">
         <FadeIn>
           <h1 className="text-4xl md:text-5xl font-bold mb-6 text-center">
