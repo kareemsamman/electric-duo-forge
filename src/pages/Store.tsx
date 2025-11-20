@@ -6,9 +6,15 @@ import { FadeIn } from "@/components/animations/FadeIn";
 import { StaggerContainer } from "@/components/animations/StaggerContainer";
 import { StaggerItem } from "@/components/animations/StaggerItem";
 import { AnimatedCard } from "@/components/animations/AnimatedCard";
+import { useCart } from "@/contexts/CartContext";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { ShoppingCart } from "lucide-react";
 
 const Store = () => {
   const { t, language } = useLanguage();
+  const { addToCart } = useCart();
+  const navigate = useNavigate();
 
   const { data: products, isLoading } = useQuery({
     queryKey: ["products"],
@@ -55,7 +61,10 @@ const Store = () => {
             {products?.map((product) => (
               <StaggerItem key={product.id}>
                 <AnimatedCard>
-                  <Card className="overflow-hidden hover:shadow-xl transition-shadow cursor-pointer">
+                  <Card 
+                    className="overflow-hidden hover:shadow-xl transition-shadow cursor-pointer"
+                    onClick={() => navigate(`/product/${product.slug}`)}
+                  >
                     <div className="h-48 bg-secondary flex items-center justify-center">
                       <img 
                         src={product.product_image} 
@@ -67,16 +76,24 @@ const Store = () => {
                       <h3 className="text-xl font-semibold mb-2">
                         {language === "he" ? product.product_name : product.product_name_en || product.product_name}
                       </h3>
-                      <p className="text-sm text-muted-foreground mb-3">
-                        {language === "he" ? product.product_specs : product.product_specs_en || product.product_specs}
+                      <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                        {language === "he" ? product.short_description_he || product.product_specs : product.short_description_en || product.product_specs_en || product.product_specs}
                       </p>
-                      <p className="text-sm mb-4">
-                        {language === "he" ? product.product_description : product.product_description_en || product.product_description}
-                      </p>
-                      <div className="flex items-center justify-between">
-                        <span className="text-2xl font-bold text-accent">₪{product.price}</span>
+                      <div className="flex items-center justify-between mb-4">
+                        <span className="text-2xl font-bold text-primary">₪{Number(product.price).toFixed(2)}</span>
                         <span className="text-xs text-muted-foreground">{product.category}</span>
                       </div>
+                      <Button 
+                        className="w-full"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          addToCart(product, 1);
+                        }}
+                        disabled={!product.in_stock}
+                      >
+                        <ShoppingCart className={`w-4 h-4 ${language === 'he' ? 'ml-2' : 'mr-2'}`} />
+                        {language === 'he' ? 'הוסף לעגלה' : 'Add to Cart'}
+                      </Button>
                     </CardContent>
                   </Card>
                 </AnimatedCard>
