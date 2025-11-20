@@ -35,6 +35,8 @@ const HeroSection = () => {
       }
     }
   };
+  const videoUrl = content["hero.hero_video_url"] || "https://cdn.pixabay.com/video/2023/09/04/178622-861162226_large.mp4";
+
   return <section className="relative min-h-screen flex items-center overflow-hidden">
       {/* Background Video */}
       <video
@@ -44,7 +46,7 @@ const HeroSection = () => {
         playsInline
         className="absolute inset-0 w-full h-full object-cover z-0"
       >
-        <source src="https://cdn.pixabay.com/video/2023/09/04/178622-861162226_large.mp4" type="video/mp4" />
+        <source src={videoUrl} type="video/mp4" />
       </video>
 
       {/* Dark overlay */}
