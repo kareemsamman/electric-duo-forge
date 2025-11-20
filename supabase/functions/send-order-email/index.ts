@@ -73,8 +73,10 @@ const handler = async (req: Request): Promise<Response> => {
       settings[item.key] = item.value_he;
     });
 
-    const gmailEmail = settings.gmail_email;
-    const gmailAppPassword = settings.gmail_app_password;
+    const gmailEmail = (settings.gmail_email || '').trim();
+    const gmailAppPasswordRaw = settings.gmail_app_password || '';
+    // Remove spaces from app password because Google shows it grouped (e.g. "xxxx xxxx xxxx xxxx")
+    const gmailAppPassword = gmailAppPasswordRaw.replace(/\s+/g, '');
     const adminEmailAddress = admin_email || settings.admin_email;
 
     if (!gmailEmail || !gmailAppPassword) {
