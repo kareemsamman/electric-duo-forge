@@ -418,13 +418,16 @@ export default function Checkout() {
                         }
                       }}
                     >
-                      <SelectTrigger className={errors.shipping_method_id ? 'border-destructive' : ''}>
+                      <SelectTrigger 
+                        className={`text-right ${errors.shipping_method_id ? 'border-destructive' : ''}`}
+                      >
                         <SelectValue placeholder={language === 'he' ? 'בחר שיטת משלוח' : 'Select shipping method'} />
                       </SelectTrigger>
-                      <SelectContent dir={language === 'he' ? 'rtl' : 'ltr'}>
+                      <SelectContent dir={language === 'he' ? 'rtl' : 'ltr'} className="text-right">
                         {shippingMethods?.map((method) => (
-                          <SelectItem key={method.id} value={method.id}>
-                            {language === 'he' ? method.name : method.name_en || method.name} - ₪{method.price}
+                          <SelectItem key={method.id} value={method.id} className="text-right flex justify-between">
+                            <span className="flex-1 text-right">{language === 'he' ? method.name : method.name_en || method.name}</span>
+                            <span className="mr-2">₪{method.price}</span>
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -445,20 +448,30 @@ export default function Checkout() {
                     value={formData.payment_method}
                     onValueChange={(value) => setFormData(prev => ({ ...prev, payment_method: value as 'cash' | 'visa' }))}
                     dir={language === 'he' ? 'rtl' : 'ltr'}
+                    className="text-right"
                   >
                     <div className="flex items-center gap-3 p-4 border rounded-lg hover:bg-accent cursor-pointer">
                       <RadioGroupItem value="cash" id="cash" />
-                      <Label htmlFor="cash" className="flex items-center gap-2 cursor-pointer flex-1">
-                        <Banknote className="w-5 h-5" />
-                        <span>{language === 'he' ? 'מזומן' : 'Cash'}</span>
+                      <Label 
+                        htmlFor="cash" 
+                        className="flex-1 flex items-center justify-between cursor-pointer text-right"
+                      >
+                        <span className="flex items-center gap-2">
+                          <Banknote className="w-5 h-5" />
+                          <span>{language === 'he' ? 'מזומן במשלוח' : 'Cash on Delivery'}</span>
+                        </span>
                       </Label>
                     </div>
-
                     <div className="flex items-center gap-3 p-4 border rounded-lg hover:bg-accent cursor-pointer">
                       <RadioGroupItem value="visa" id="visa" />
-                      <Label htmlFor="visa" className="flex items-center gap-2 cursor-pointer flex-1">
-                        <CreditCard className="w-5 h-5" />
-                        <span>{language === 'he' ? 'כרטיס אשראי (ויזה)' : 'Credit Card (Visa)'}</span>
+                      <Label 
+                        htmlFor="visa" 
+                        className="flex-1 flex items-center justify-between cursor-pointer text-right"
+                      >
+                        <span className="flex items-center gap-2">
+                          <CreditCard className="w-5 h-5" />
+                          <span>{language === 'he' ? 'כרטיס אשראי' : 'Credit Card'}</span>
+                        </span>
                       </Label>
                     </div>
                   </RadioGroup>

@@ -85,13 +85,14 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     console.log('Using Gmail:', gmailEmail);
+    console.log('App password length:', gmailAppPassword.length);
 
-    // Create SMTP client for Gmail
+    // Create SMTP client for Gmail using port 587 with STARTTLS
     const client = new SMTPClient({
       connection: {
         hostname: "smtp.gmail.com",
-        port: 465,
-        tls: true,
+        port: 587,
+        tls: false,
         auth: {
           username: gmailEmail,
           password: gmailAppPassword,
