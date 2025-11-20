@@ -47,6 +47,79 @@ export default function AdminOrders() {
     enabled: !!session
   });
 
+  // Mutation to update order status and send email
+  const updateOrderStatus = useMutation({
+    mutationFn: async ({ orderId, newStatus, orderData }: { orderId: string, newStatus: string, orderData: any }) => {
+      // Get admin email
+      const { data: adminSettings } = await supabase
+        .from('site_content')
+        .select('value_he')
+        .eq('key', 'admin_email')
+        .single();
+
+      const adminEmail = adminSettings?.value_he || 'morshea500@gmail.com';
+
+      // Update status in database
+      const { error: updateError } = await supabase
+        .from('orders')
+        .update({ status: newStatus })
+        .eq('id', orderId);
+
+      if (updateError) throw updateError;
+
+      // Send status update email to customer
+      let emailStatus = 'sent';
+      let emailError = null;
+
+      try {
+        const { error: emailSendError } = await supabase.functions.invoke('send-order-email', {
+          body: {
+            order_id: orderId,
+            customer_email: orderData.customer_email,
+            customer_name: orderData.customer_name,
+            admin_email: adminEmail,
+            email_type: 'status_update',
+            status: newStatus,
+            order_details: {
+              total_items: orderData.total_items,
+              subtotal: orderData.subtotal,
+              delivery_fee: orderData.delivery_fee,
+              total: orderData.total,
+              cart_items: orderData.cart_items,
+              payment_method: orderData.payment_method,
+              shipping_method: 'רגיל',
+              customer_address: orderData.customer_address,
+              customer_city: orderData.customer_city,
+              customer_phone: orderData.customer_phone
+            }
+          }
+        });
+
+        if (emailSendError) {
+          emailStatus = 'failed';
+          emailError = emailSendError.message;
+        }
+      } catch (error: any) {
+        emailStatus = 'failed';
+        emailError = error.message;
+      }
+
+      // Update email tracking
+      await supabase
+        .from('orders')
+        .update({
+          email_last_type: 'status_update',
+          email_last_status: emailStatus,
+          email_last_error: emailError,
+          email_last_sent_at: new Date().toISOString()
+        })
+        .eq('id', orderId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
+    }
+  });
+
   const filteredOrders = orders?.filter(order => {
     const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
     const matchesPayment = paymentFilter === 'all' || order.payment_method === paymentFilter;
@@ -161,14 +234,12 @@ export default function AdminOrders() {
                       <TableCell>
                         <Select
                           value={order.status || 'pending'}
-                          onValueChange={async (value) => {
-                            const { error } = await supabase
-                              .from('orders')
-                              .update({ status: value })
-                              .eq('id', order.id);
-                            if (!error) {
-                              queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
-                            }
+                          onValueChange={(value) => {
+                            updateOrderStatus.mutate({
+                              orderId: order.id,
+                              newStatus: value,
+                              orderData: order
+                            });
                           }}
                         >
                           <SelectTrigger className="w-40">

@@ -169,13 +169,17 @@ export default function Checkout() {
       const adminEmail = adminSettings?.value_he || 'morshea500@gmail.com';
 
       // Send order confirmation emails
+      let emailStatus = 'sent';
+      let emailError = null;
+      
       try {
-        await supabase.functions.invoke('send-order-email', {
+        const { data: emailData, error: emailSendError } = await supabase.functions.invoke('send-order-email', {
           body: {
             order_id: order.id,
             customer_email: formData.customer_email,
             customer_name: formData.customer_name,
             admin_email: adminEmail,
+            email_type: 'new_order',
             order_details: {
               total_items: totalItems,
               subtotal: Number(subtotal.toFixed(2)),
@@ -195,10 +199,28 @@ export default function Checkout() {
             }
           }
         });
-      } catch (emailError) {
-        console.error('Error sending order emails:', emailError);
-        // Don't fail the order if email fails
+        
+        if (emailSendError) {
+          emailStatus = 'failed';
+          emailError = emailSendError.message;
+          console.error('Error sending order emails:', emailSendError);
+        }
+      } catch (emailCatchError: any) {
+        emailStatus = 'failed';
+        emailError = emailCatchError.message;
+        console.error('Error sending order emails:', emailCatchError);
       }
+
+      // Update order with email tracking
+      await supabase
+        .from('orders')
+        .update({
+          email_last_type: 'new_order',
+          email_last_status: emailStatus,
+          email_last_error: emailError,
+          email_last_sent_at: new Date().toISOString()
+        })
+        .eq('id', order.id);
 
       // Clear cart
       clearCart();
