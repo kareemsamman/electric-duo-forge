@@ -257,15 +257,31 @@ export default function ProductDetail() {
               </div>
 
               {/* Add to Cart Button */}
-              <Button 
-                size="lg" 
-                className="w-full"
-                onClick={handleAddToCart}
-                disabled={!product.in_stock}
-              >
-                <ShoppingCart className={`w-5 h-5 ${language === 'he' ? 'ml-2' : 'mr-2'}`} />
-                {language === 'he' ? 'הוסף לעגלה' : 'Add to Cart'}
-              </Button>
+              <div className="grid grid-cols-2 gap-4">
+                <Button 
+                  size="lg" 
+                  variant="outline"
+                  className="w-full"
+                  onClick={handleAddToCart}
+                  disabled={!product.in_stock}
+                >
+                  <ShoppingCart className={`w-5 h-5 ${language === 'he' ? 'ml-2' : 'mr-2'}`} />
+                  {language === 'he' ? 'הוסף לעגלה' : 'Add to Cart'}
+                </Button>
+                <Button 
+                  size="lg" 
+                  className="w-full"
+                  onClick={() => {
+                    if (product) {
+                      addToCart(product, quantity);
+                      navigate('/checkout');
+                    }
+                  }}
+                  disabled={!product.in_stock}
+                >
+                  {language === 'he' ? 'קנייה מיידית' : 'Buy Now'}
+                </Button>
+              </div>
 
               {/* Product Description */}
               {product.product_description && (
