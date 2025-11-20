@@ -1,293 +1,161 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
-import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
+import { Resend } from "https://esm.sh/resend@2.0.0";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 interface OrderEmailRequest {
   order_id: string;
-  customer_email: string;
-  customer_name: string;
-  admin_email?: string;
   email_type: 'new_order' | 'status_update';
   status?: string;
-  order_details: {
-    total_items: number;
-    subtotal: number;
-    delivery_fee: number;
-    total: number;
-    cart_items: Array<{
-      name: string;
-      quantity: number;
-      unit_price: number;
-      line_total: number;
-    }>;
-    payment_method: string;
-    shipping_method: string;
-    customer_address: string;
-    customer_city: string;
-    customer_phone: string;
-  };
+  customer_email: string;
+  admin_email: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
-  if (req.method === "OPTIONS") {
+  if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const {
-      order_id,
-      customer_email,
-      customer_name,
-      admin_email,
-      email_type,
-      status,
-      order_details,
-    }: OrderEmailRequest = await req.json();
-
+    const { order_id, email_type, status, customer_email, admin_email }: OrderEmailRequest = await req.json();
+    
     console.log('Email request:', { order_id, email_type, status, customer_email, admin_email });
 
-    // Get Gmail credentials from database
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { data: settingsData, error: settingsError } = await supabase
-      .from('site_content')
-      .select('key, value_he')
-      .in('key', ['gmail_email', 'gmail_app_password', 'admin_email']);
+    const { data: order, error: orderError } = await supabase
+      .from('orders')
+      .select('*')
+      .eq('id', order_id)
+      .single();
 
-    if (settingsError) {
-      console.error('Error fetching settings:', settingsError);
-      throw new Error('Failed to fetch email settings');
+    if (orderError || !order) {
+      throw new Error('Order not found');
     }
 
-    const settings: Record<string, string> = {};
-    settingsData?.forEach(item => {
-      settings[item.key] = item.value_he;
-    });
+    let subject = '';
+    let body = '';
 
-    const gmailEmail = (settings.gmail_email || '').trim();
-    const gmailAppPasswordRaw = settings.gmail_app_password || '';
-    // Remove spaces from app password because Google shows it grouped (e.g. "xxxx xxxx xxxx xxxx")
-    const gmailAppPassword = gmailAppPasswordRaw.replace(/\s+/g, '');
-    const adminEmailAddress = admin_email || settings.admin_email;
-
-    if (!gmailEmail || !gmailAppPassword) {
-      console.error('Gmail credentials not configured');
-      throw new Error('Gmail credentials not configured in admin settings');
-    }
-
-    console.log('Using Gmail:', gmailEmail);
-    console.log('App password length:', gmailAppPassword.length);
-
-    // Create SMTP client for Gmail using port 587 with STARTTLS
-    const client = new SMTPClient({
-      connection: {
-        hostname: "smtp.gmail.com",
-        port: 587,
-        tls: false,
-        auth: {
-          username: gmailEmail,
-          password: gmailAppPassword,
-        },
-      },
-    });
-
-    const isStatusUpdate = email_type === 'status_update';
-
-    let statusText = '';
-    let emailTitle = 'תודה על ההזמנה!';
-    let customerSubject = `אישור הזמנה #${order_id.substring(0, 8)} - Global Electric`;
-
-    if (isStatusUpdate) {
-      emailTitle = 'עדכון סטטוס הזמנה';
-      customerSubject = `עדכון סטטוס להזמנה #${order_id.substring(0, 8)}`;
-      
-      if (status === 'cancelled') {
-        statusText = '❌ ההזמנה בוטלה לפי בקשתך או בגלל בעיה בעיבוד.';
-      } else if (status === 'shipped') {
-        statusText = '🚚 ההזמנה יצאה לדרך והיא בדרכה אליך!';
-      } else if (status === 'completed') {
-        statusText = '✅ ההזמנה סופקה בהצלחה. תודה שקנית אצלנו!';
-      } else {
-        statusText = '⏳ ההזמנה שלך נמצאת בטיפול אצלנו.';
-      }
-    }
-
-    const customerEmailHtml = `
-      <!DOCTYPE html>
-      <html dir="rtl" lang="he">
-      <head>
-        <meta charset="UTF-8">
-        <style>
-          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-          .header { background: #0B1B2B; color: white; padding: 30px; text-align: center; }
-          .content { padding: 30px; background: #f9f9f9; }
-          .order-summary { background: white; padding: 20px; margin: 20px 0; border-radius: 8px; }
-          .item { padding: 10px 0; border-bottom: 1px solid #eee; }
-          .total { font-size: 24px; font-weight: bold; color: #1E88E5; margin-top: 20px; }
-          .footer { text-align: center; padding: 20px; color: #666; }
-          .status-box { background: #e0f2fe; padding: 16px; border-radius: 8px; margin: 20px 0; font-size: 18px; text-align: center; }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <div class="header">
-            <h1>${emailTitle}</h1>
-          </div>
-          <div class="content">
-            <p>שלום ${customer_name},</p>
-            ${isStatusUpdate 
-              ? `<div class="status-box"><strong>${statusText}</strong></div>`
-              : '<p>הזמנתך התקבלה בהצלחה ותטופל בהקדם.</p>'}
-            
-            <div class="order-summary">
-              <h2>פרטי הזמנה #${order_id.substring(0, 8)}</h2>
-              
-              <h3>פריטים:</h3>
-              ${order_details.cart_items.map(item => `
-                <div class="item">
-                  <strong>${item.name}</strong><br>
-                  כמות: ${item.quantity} × ₪${item.unit_price.toFixed(2)} = <strong>₪${item.line_total.toFixed(2)}</strong>
-                </div>
+    if (email_type === 'new_order') {
+      subject = `הזמנה חדשה #${order_id.substring(0, 8)}`;
+      body = `
+        <div dir="rtl" style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2>הזמנה חדשה התקבלה</h2>
+          <p><strong>מספר הזמנה:</strong> ${order_id}</p>
+          <p><strong>שם לקוח:</strong> ${order.customer_name}</p>
+          <p><strong>טלפון:</strong> ${order.customer_phone}</p>
+          <p><strong>אימייל:</strong> ${order.customer_email}</p>
+          <p><strong>עיר:</strong> ${order.customer_city}</p>
+          <p><strong>כתובת:</strong> ${order.customer_address}</p>
+          
+          <h3>פריטים בהזמנה:</h3>
+          <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+              <tr style="background-color: #f5f5f5;">
+                <th style="padding: 8px; border: 1px solid #ddd; text-align: right;">מוצר</th>
+                <th style="padding: 8px; border: 1px solid #ddd; text-align: right;">כמות</th>
+                <th style="padding: 8px; border: 1px solid #ddd; text-align: right;">מחיר</th>
+                <th style="padding: 8px; border: 1px solid #ddd; text-align: right;">סכום</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${(order.cart_items as any[]).map(item => `
+                <tr>
+                  <td style="padding: 8px; border: 1px solid #ddd;">${item.name}</td>
+                  <td style="padding: 8px; border: 1px solid #ddd;">${item.quantity}</td>
+                  <td style="padding: 8px; border: 1px solid #ddd;">₪${item.unit_price}</td>
+                  <td style="padding: 8px; border: 1px solid #ddd;">₪${item.line_total}</td>
+                </tr>
               `).join('')}
-              
-              <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #ddd;">
-                <p><strong>סכום ביניים:</strong> ₪${order_details.subtotal.toFixed(2)}</p>
-                <p><strong>משלוח:</strong> ₪${order_details.delivery_fee.toFixed(2)}</p>
-                <p class="total">סה"כ לתשלום: ₪${order_details.total.toFixed(2)}</p>
-              </div>
-
-              <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee;">
-                <h3>פרטי משלוח:</h3>
-                <p><strong>כתובת:</strong> ${order_details.customer_address}, ${order_details.customer_city}</p>
-                <p><strong>טלפון:</strong> ${order_details.customer_phone}</p>
-                <p><strong>אמצעי תשלום:</strong> ${order_details.payment_method === 'cash' ? 'מזומן במשלוח' : 'כרטיס אשראי'}</p>
-              </div>
-            </div>
-            
-            ${!isStatusUpdate ? '<p>נצור איתך קשר בקרוב לתיאום המשלוח.</p>' : ''}
-            
-            <p>בברכה,<br><strong>צוות Global Electric</strong></p>
+            </tbody>
+          </table>
+          
+          <div style="margin-top: 20px; padding: 15px; background-color: #f9f9f9; border-radius: 5px;">
+            <p><strong>סכום ביניים:</strong> ₪${order.subtotal}</p>
+            <p><strong>דמי משלוח:</strong> ₪${order.delivery_fee || 0}</p>
+            <p style="font-size: 18px; color: #1E88E5;"><strong>סה"כ:</strong> ₪${order.total}</p>
           </div>
-          <div class="footer">
-            <p>Global Electric | פתרונות חשמל מתקדמים</p>
-          </div>
+          
+          <p><strong>אופן תשלום:</strong> ${order.payment_method === 'cash' ? 'מזומן' : 'כרטיס אשראי'}</p>
+          ${order.customer_notes ? `<p><strong>הערות:</strong> ${order.customer_notes}</p>` : ''}
         </div>
-      </body>
-      </html>
-    `;
-
-    // Send email to customer
-    console.log('Sending email to customer:', customer_email);
-    
-    await client.send({
-      from: gmailEmail,
-      to: customer_email,
-      subject: customerSubject,
-      content: customerEmailHtml,
-      html: customerEmailHtml,
-    });
-    
-    console.log('Customer email sent successfully');
-
-    // Send email to admin if it's a new order
-    if (email_type === 'new_order' && adminEmailAddress) {
-      const adminSubject = `הזמנה חדשה #${order_id.substring(0, 8)} - ${customer_name}`;
-      const adminEmailHtml = `
-        <!DOCTYPE html>
-        <html dir="rtl" lang="he">
-        <head>
-          <meta charset="UTF-8">
-          <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { background: #dc2626; color: white; padding: 30px; text-align: center; }
-            .content { padding: 30px; background: #f9f9f9; }
-            .order-summary { background: white; padding: 20px; margin: 20px 0; border-radius: 8px; }
-            .highlight { background: #fef3c7; padding: 10px; border-radius: 4px; margin: 10px 0; }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="header">
-              <h1>🔔 הזמנה חדשה התקבלה!</h1>
-            </div>
-            <div class="content">
-              <div class="highlight">
-                <p><strong>מספר הזמנה:</strong> #${order_id.substring(0, 8)}</p>
-                <p><strong>סכום כולל:</strong> ₪${order_details.total.toFixed(2)}</p>
-              </div>
-              
-              <div class="order-summary">
-                <h2>פרטי לקוח:</h2>
-                <p><strong>שם:</strong> ${customer_name}</p>
-                <p><strong>אימייל:</strong> ${customer_email}</p>
-                <p><strong>טלפון:</strong> ${order_details.customer_phone}</p>
-                <p><strong>כתובת:</strong> ${order_details.customer_address}, ${order_details.customer_city}</p>
-                
-                <h3>פריטים שהוזמנו:</h3>
-                ${order_details.cart_items.map(item => `
-                  <p>• ${item.name} - כמות: ${item.quantity} × ₪${item.unit_price.toFixed(2)} = ₪${item.line_total.toFixed(2)}</p>
-                `).join('')}
-                
-                <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #ddd;">
-                  <p><strong>סכום ביניים:</strong> ₪${order_details.subtotal.toFixed(2)}</p>
-                  <p><strong>משלוח:</strong> ₪${order_details.delivery_fee.toFixed(2)}</p>
-                  <p style="font-size: 20px; color: #dc2626;"><strong>סה"כ:</strong> ₪${order_details.total.toFixed(2)}</p>
-                </div>
-                
-                <p><strong>אמצעי תשלום:</strong> ${order_details.payment_method === 'cash' ? 'מזומן במשלוח' : 'כרטיס אשראי'}</p>
-              </div>
-            </div>
-          </div>
-        </body>
-        </html>
       `;
-
-      console.log('Sending email to admin:', adminEmailAddress);
+    } else if (email_type === 'status_update') {
+      const statusText = status === 'completed' ? 'הושלמה' : 
+                        status === 'cancelled' ? 'בוטלה' :
+                        status === 'shipped' ? 'נשלחה' : 'בהמתנה';
       
-      await client.send({
-        from: gmailEmail,
-        to: adminEmailAddress,
-        subject: adminSubject,
-        content: adminEmailHtml,
-        html: adminEmailHtml,
-      });
-      
-      console.log('Admin email sent successfully');
+      subject = `עדכון הזמנה #${order_id.substring(0, 8)} - ${statusText}`;
+      body = `
+        <div dir="rtl" style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2>עדכון סטטוס הזמנה</h2>
+          <p>שלום ${order.customer_name},</p>
+          <p>הסטטוס של ההזמנה שלך עודכן ל: <strong>${statusText}</strong></p>
+          <p><strong>מספר הזמנה:</strong> ${order_id}</p>
+          
+          ${status === 'shipped' ? '<p>ההזמנה נשלחה ותגיע אליך בקרוב.</p>' : ''}
+          ${status === 'completed' ? '<p>ההזמנה הושלמה בהצלחה. תודה שבחרת בנו!</p>' : ''}
+          ${status === 'cancelled' ? '<p>ההזמנה בוטלה. אם יש לך שאלות, אנא צור קשר.</p>' : ''}
+        </div>
+      `;
     }
 
-    await client.close();
+    console.log('Sending email to customer via Resend:', customer_email);
+    await resend.emails.send({
+      from: 'Global Electric <onboarding@resend.dev>',
+      to: [customer_email],
+      subject: subject,
+      html: body,
+    });
+
+    if (email_type === 'new_order' && admin_email) {
+      console.log('Sending email to admin via Resend:', admin_email);
+      const adminSubject = `הזמנה חדשה מ-${order.customer_name} #${order_id.substring(0, 8)}`;
+      await resend.emails.send({
+        from: 'Global Electric <onboarding@resend.dev>',
+        to: [admin_email],
+        subject: adminSubject,
+        html: body,
+      });
+    }
+
+    await supabase
+      .from('orders')
+      .update({
+        email_last_sent_at: new Date().toISOString(),
+        email_last_status: 'success',
+        email_last_type: email_type,
+        email_last_error: null
+      })
+      .eq('id', order_id);
 
     return new Response(
-      JSON.stringify({
-        success: true,
-        message: 'Email sent successfully'
-      }),
+      JSON.stringify({ success: true, message: 'Email sent successfully via Resend' }),
       {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
       }
     );
   } catch (error: any) {
-    console.error("Error in send-order-email function:", error);
+    console.error('Error in send-order-email function:', error);
+    
     return new Response(
       JSON.stringify({ 
+        success: false, 
         error: error.message,
-        success: false
+        details: error.toString()
       }),
       {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
       }
     );
   }
