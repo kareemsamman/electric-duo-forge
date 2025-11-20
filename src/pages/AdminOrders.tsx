@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
-import { Eye, ArrowRight, ArrowLeft } from 'lucide-react';
+import { Eye, ArrowRight, ArrowLeft, MailWarning, MailCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -19,6 +19,7 @@ export default function AdminOrders() {
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
   const { language } = useLanguage();
+  const queryClient = useQueryClient();
 
   // Check authentication
   const { data: session } = useQuery({
@@ -135,6 +136,7 @@ export default function AdminOrders() {
                     <TableHead>סכום כולל</TableHead>
                     <TableHead>סטטוס</TableHead>
                     <TableHead>תשלום</TableHead>
+                    <TableHead>אימייל</TableHead>
                     <TableHead>פעולות</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -157,17 +159,48 @@ export default function AdminOrders() {
                         ₪{Number(order.total).toFixed(2)}
                       </TableCell>
                       <TableCell>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          order.status === 'paid' ? 'bg-green-100 text-green-800' :
-                          order.status === 'cancelled' ? 'bg-red-100 text-red-800' :
-                          'bg-yellow-100 text-yellow-800'
-                        }`}>
-                          {order.status === 'paid' ? 'שולם' :
-                           order.status === 'cancelled' ? 'בוטל' : 'ממתין'}
-                        </span>
+                        <Select
+                          value={order.status || 'pending'}
+                          onValueChange={async (value) => {
+                            const { error } = await supabase
+                              .from('orders')
+                              .update({ status: value })
+                              .eq('id', order.id);
+                            if (!error) {
+                              queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
+                            }
+                          }}
+                        >
+                          <SelectTrigger className="w-40">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="pending">בטיפול</SelectItem>
+                            <SelectItem value="shipped">בדרך אל הלקוח</SelectItem>
+                            <SelectItem value="completed">הושלם</SelectItem>
+                            <SelectItem value="cancelled">בוטל</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </TableCell>
                       <TableCell>
                         {order.payment_method === 'cash' ? 'מזומן' : 'כרטיס אשראי'}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          {order.email_last_status === 'sent' ? (
+                            <>
+                              <MailCheck className="h-4 w-4 text-emerald-500" />
+                              <span className="text-xs text-muted-foreground">נשלח</span>
+                            </>
+                          ) : order.email_last_status === 'failed' ? (
+                            <>
+                              <MailWarning className="h-4 w-4 text-destructive" />
+                              <span className="text-xs text-destructive">נכשל</span>
+                            </>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">לא נשלח</span>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell>
                         <Button
