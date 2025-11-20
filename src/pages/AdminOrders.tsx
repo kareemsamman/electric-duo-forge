@@ -1,0 +1,299 @@
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Eye } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { format } from 'date-fns';
+
+export default function AdminOrders() {
+  const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [paymentFilter, setPaymentFilter] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const navigate = useNavigate();
+
+  // Check authentication
+  const { data: session } = useQuery({
+    queryKey: ['session'],
+    queryFn: async () => {
+      const { data } = await supabase.auth.getSession();
+      if (!data.session) {
+        navigate('/');
+        return null;
+      }
+      return data.session;
+    }
+  });
+
+  const { data: orders, isLoading } = useQuery({
+    queryKey: ['admin-orders'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('orders')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!session
+  });
+
+  const filteredOrders = orders?.filter(order => {
+    const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
+    const matchesPayment = paymentFilter === 'all' || order.payment_method === paymentFilter;
+    const matchesSearch = searchQuery === '' || 
+      order.customer_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      order.customer_email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      order.id.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    return matchesStatus && matchesPayment && matchesSearch;
+  });
+
+  if (!session) return null;
+
+  return (
+    <div className="min-h-screen py-20">
+      <div className="container mx-auto px-6 md:px-12 lg:px-16">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-3xl">ניהול הזמנות</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {/* Filters */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <div>
+                <label className="text-sm font-medium mb-2 block">חיפוש</label>
+                <Input
+                  placeholder="חפש לפי שם, אימייל או מספר הזמנה..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-2 block">סטטוס הזמנה</label>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">הכל</SelectItem>
+                    <SelectItem value="pending">ממתין</SelectItem>
+                    <SelectItem value="paid">שולם</SelectItem>
+                    <SelectItem value="cancelled">בוטל</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-2 block">אמצעי תשלום</label>
+                <Select value={paymentFilter} onValueChange={setPaymentFilter}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">הכל</SelectItem>
+                    <SelectItem value="cash">מזומן</SelectItem>
+                    <SelectItem value="visa">כרטיס אשראי</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {isLoading ? (
+              <div>טוען...</div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>מספר הזמנה</TableHead>
+                    <TableHead>תאריך</TableHead>
+                    <TableHead>לקוח</TableHead>
+                    <TableHead>סכום כולל</TableHead>
+                    <TableHead>סטטוס</TableHead>
+                    <TableHead>תשלום</TableHead>
+                    <TableHead>פעולות</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredOrders?.map((order) => (
+                    <TableRow key={order.id}>
+                      <TableCell className="font-mono text-sm">
+                        {order.id.substring(0, 8)}...
+                      </TableCell>
+                      <TableCell>
+                        {order.created_at && format(new Date(order.created_at), 'dd/MM/yyyy HH:mm')}
+                      </TableCell>
+                      <TableCell>
+                        <div>
+                          <div className="font-medium">{order.customer_name}</div>
+                          <div className="text-sm text-muted-foreground">{order.customer_email}</div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="font-semibold">
+                        ₪{Number(order.total).toFixed(2)}
+                      </TableCell>
+                      <TableCell>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          order.status === 'paid' ? 'bg-green-100 text-green-800' :
+                          order.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                          'bg-yellow-100 text-yellow-800'
+                        }`}>
+                          {order.status === 'paid' ? 'שולם' :
+                           order.status === 'cancelled' ? 'בוטל' : 'ממתין'}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        {order.payment_method === 'cash' ? 'מזומן' : 'כרטיס אשראי'}
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => setSelectedOrder(order)}
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+
+            {filteredOrders?.length === 0 && (
+              <div className="text-center py-8 text-muted-foreground">
+                לא נמצאו הזמנות מתאימות
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Order Details Dialog */}
+        <Dialog open={!!selectedOrder} onOpenChange={() => setSelectedOrder(null)}>
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>פרטי הזמנה #{selectedOrder?.id.substring(0, 8)}</DialogTitle>
+            </DialogHeader>
+            {selectedOrder && (
+              <div className="space-y-6">
+                {/* Customer Details */}
+                <div>
+                  <h3 className="font-semibold text-lg mb-3">פרטי לקוח</h3>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="text-muted-foreground">שם:</span>
+                      <div className="font-medium">{selectedOrder.customer_name}</div>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">טלפון:</span>
+                      <div className="font-medium">{selectedOrder.customer_phone}</div>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">אימייל:</span>
+                      <div className="font-medium">{selectedOrder.customer_email}</div>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">עיר:</span>
+                      <div className="font-medium">{selectedOrder.customer_city}</div>
+                    </div>
+                    <div className="col-span-2">
+                      <span className="text-muted-foreground">כתובת:</span>
+                      <div className="font-medium">{selectedOrder.customer_address}</div>
+                    </div>
+                    {selectedOrder.customer_notes && (
+                      <div className="col-span-2">
+                        <span className="text-muted-foreground">הערות:</span>
+                        <div className="font-medium">{selectedOrder.customer_notes}</div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Order Items */}
+                <div>
+                  <h3 className="font-semibold text-lg mb-3">פריטים בהזמנה</h3>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>מוצר</TableHead>
+                        <TableHead>מק"ט</TableHead>
+                        <TableHead>מחיר יחידה</TableHead>
+                        <TableHead>כמות</TableHead>
+                        <TableHead>סה"כ</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {selectedOrder.cart_items.map((item: any, index: number) => (
+                        <TableRow key={index}>
+                          <TableCell>{item.name}</TableCell>
+                          <TableCell>{item.sku || '-'}</TableCell>
+                          <TableCell>₪{Number(item.unit_price).toFixed(2)}</TableCell>
+                          <TableCell>{item.quantity}</TableCell>
+                          <TableCell className="font-semibold">
+                            ₪{Number(item.line_total).toFixed(2)}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                {/* Order Summary */}
+                <div className="border-t pt-4">
+                  <div className="flex justify-between mb-2">
+                    <span>סכום ביניים:</span>
+                    <span className="font-medium">₪{Number(selectedOrder.subtotal).toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between mb-2">
+                    <span>משלוח:</span>
+                    <span className="font-medium">₪{Number(selectedOrder.delivery_fee || 0).toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-lg font-bold border-t pt-2">
+                    <span>סה"כ:</span>
+                    <span>₪{Number(selectedOrder.total).toFixed(2)}</span>
+                  </div>
+                </div>
+
+                {/* Payment Info */}
+                <div className="bg-muted p-4 rounded-lg">
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="text-muted-foreground">אמצעי תשלום:</span>
+                      <div className="font-medium">
+                        {selectedOrder.payment_method === 'cash' ? 'מזומן' : 'כרטיס אשראי'}
+                      </div>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">סטטוס תשלום:</span>
+                      <div className="font-medium">
+                        {selectedOrder.payment_status === 'paid' ? 'שולם' : 'ממתין'}
+                      </div>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">סטטוס הזמנה:</span>
+                      <div className="font-medium">
+                        {selectedOrder.status === 'paid' ? 'שולם' :
+                         selectedOrder.status === 'cancelled' ? 'בוטל' : 'ממתין'}
+                      </div>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">תאריך הזמנה:</span>
+                      <div className="font-medium">
+                        {format(new Date(selectedOrder.created_at), 'dd/MM/yyyy HH:mm')}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+      </div>
+    </div>
+  );
+}
