@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
@@ -9,12 +10,14 @@ import { AnimatedCard } from "@/components/animations/AnimatedCard";
 import { useCart } from "@/contexts/CartContext";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { ShoppingCart, Search } from "lucide-react";
 
 const Store = () => {
   const { t, language } = useLanguage();
   const { addToCart } = useCart();
   const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState("");
 
   const { data: products, isLoading } = useQuery({
     queryKey: ["products"],
@@ -29,6 +32,19 @@ const Store = () => {
     },
   });
 
+  const filteredProducts = products?.filter(product => {
+    if (!searchQuery) return true;
+    
+    const searchLower = searchQuery.toLowerCase();
+    const productName = (language === 'he' ? product.product_name : product.product_name_en || product.product_name).toLowerCase();
+    const productDesc = (language === 'he' ? product.short_description_he : product.short_description_en)?.toLowerCase() || '';
+    const productCategory = product.category.toLowerCase();
+    
+    return productName.includes(searchLower) || 
+           productDesc.includes(searchLower) ||
+           productCategory.includes(searchLower);
+  });
+
   return (
     <div className="min-h-screen pt-32 pb-20">
       <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-[1360px]">
@@ -38,9 +54,25 @@ const Store = () => {
           </h1>
         </FadeIn>
         <FadeIn delay={0.2}>
-          <p className="text-xl text-muted-foreground text-center mb-16 max-w-3xl mx-auto">
+          <p className="text-xl text-muted-foreground text-center mb-8 max-w-3xl mx-auto">
             {t("store.description")}
           </p>
+        </FadeIn>
+
+        {/* Search Bar */}
+        <FadeIn delay={0.3}>
+          <div className="max-w-xl mx-auto mb-12">
+            <div className="relative">
+              <Search className={`absolute top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground ${language === 'he' ? 'right-3' : 'left-3'}`} />
+              <Input
+                type="text"
+                placeholder={language === 'he' ? 'חפש מוצרים...' : 'Search products...'}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className={`${language === 'he' ? 'pr-10' : 'pl-10'} h-12 text-lg`}
+              />
+            </div>
+          </div>
         </FadeIn>
 
         {isLoading ? (
@@ -56,9 +88,15 @@ const Store = () => {
               </Card>
             ))}
           </div>
+        ) : filteredProducts && filteredProducts.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-xl text-muted-foreground">
+              {language === 'he' ? 'לא נמצאו מוצרים' : 'No products found'}
+            </p>
+          </div>
         ) : (
           <StaggerContainer className="grid md:grid-cols-3 gap-8" staggerDelay={0.15}>
-            {products?.map((product) => (
+            {filteredProducts?.map((product) => (
               <StaggerItem key={product.id}>
                 <AnimatedCard>
                   <Card 
