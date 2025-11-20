@@ -12,7 +12,9 @@ interface OrderEmailRequest {
   order_id: string;
   customer_email: string;
   customer_name: string;
-  admin_email: string;
+  admin_email?: string;
+  email_type: 'new_order' | 'status_update';
+  status?: string;
   order_details: {
     total_items: number;
     subtotal: number;
@@ -43,6 +45,8 @@ const handler = async (req: Request): Promise<Response> => {
       customer_email,
       customer_name,
       admin_email,
+      email_type,
+      status,
       order_details,
     }: OrderEmailRequest = await req.json();
 

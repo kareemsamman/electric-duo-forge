@@ -118,6 +118,10 @@ export type Database = {
           customer_notes: string | null
           customer_phone: string
           delivery_fee: number | null
+          email_last_error: string | null
+          email_last_sent_at: string | null
+          email_last_status: string | null
+          email_last_type: string | null
           id: string
           payment_method: string | null
           payment_status: string | null
@@ -138,6 +142,10 @@ export type Database = {
           customer_notes?: string | null
           customer_phone: string
           delivery_fee?: number | null
+          email_last_error?: string | null
+          email_last_sent_at?: string | null
+          email_last_status?: string | null
+          email_last_type?: string | null
           id?: string
           payment_method?: string | null
           payment_status?: string | null
@@ -158,6 +166,10 @@ export type Database = {
           customer_notes?: string | null
           customer_phone?: string
           delivery_fee?: number | null
+          email_last_error?: string | null
+          email_last_sent_at?: string | null
+          email_last_status?: string | null
+          email_last_type?: string | null
           id?: string
           payment_method?: string | null
           payment_status?: string | null
