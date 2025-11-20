@@ -1,1 +1,10 @@
 project_id = "fifqqandppbcbalunafj"
+
+[functions.send-order-email]
+verify_jwt = false
+
+[functions.grow-payment-start]
+verify_jwt = false
+
+[functions.grow-webhook]
+verify_jwt = false
