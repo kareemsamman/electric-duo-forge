@@ -81,13 +81,23 @@ const ValuesCards = () => {
   };
 
   return (
-    <section className="py-20 md:py-32 bg-white" ref={ref}>
+    <section className="py-24 md:py-32 bg-white" ref={ref}>
       <div className="container mx-auto px-6 md:px-12 lg:px-16">
+        {/* Section Title */}
+        <motion.h2 
+          initial={{ opacity: 0, y: 20 }}
+          animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+          transition={{ duration: 0.6 }}
+          className="text-4xl md:text-5xl font-bold text-center mb-16 text-gray-900"
+        >
+          {language === "he" ? "מה שמייחד אותנו" : "What Makes Us Special"}
+        </motion.h2>
+
         <motion.div
           variants={containerVariants}
           initial="hidden"
           animate={inView ? "visible" : "hidden"}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6"
         >
           {cards.map((card, index) => {
             const Icon = card.icon;
@@ -95,16 +105,16 @@ const ValuesCards = () => {
               <motion.div
                 key={index}
                 variants={cardVariants}
-                className="group bg-white rounded-2xl p-8 border border-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.12)] transition-all duration-300 hover:-translate-y-1"
+                className="group bg-white rounded-2xl p-6 border border-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.12)] transition-all duration-300 hover:-translate-y-1"
               >
-                <div className="flex flex-col items-center text-center space-y-4">
-                  <div className="w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center mb-2">
-                    <Icon className="w-7 h-7 text-[#1A73E8]" />
+                <div className="flex flex-col items-center text-center space-y-3">
+                  <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center">
+                    <Icon className="w-6 h-6 text-[#1A73E8]" />
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900">
+                  <h3 className="text-lg font-bold text-gray-900">
                     {language === "he" ? card.titleHe : card.titleEn}
                   </h3>
-                  <p className="text-gray-600 leading-relaxed">
+                  <p className="text-sm text-gray-600 leading-relaxed">
                     {language === "he" ? card.descriptionHe : card.descriptionEn}
                   </p>
                 </div>
