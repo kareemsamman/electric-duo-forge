@@ -8,10 +8,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { FadeIn } from '@/components/animations/FadeIn';
-import { Home, CreditCard, Banknote, Loader2 } from 'lucide-react';
+import { Home, CreditCard, Banknote, Loader2, Truck } from 'lucide-react';
 import { toast } from 'sonner';
 import { z } from 'zod';
+import { useQuery } from '@tanstack/react-query';
 
 const checkoutSchema = z.object({
   customer_name: z.string().trim().min(2, 'השם חייב להכיל לפחות 2 תווים'),
@@ -20,7 +22,8 @@ const checkoutSchema = z.object({
   customer_city: z.string().trim().min(2, 'עיר חייבת להכיל לפחות 2 תווים'),
   customer_address: z.string().trim().min(5, 'כתובת חייבת להכיל לפחות 5 תווים'),
   customer_notes: z.string().optional(),
-  payment_method: z.enum(['cash', 'visa'])
+  payment_method: z.enum(['cash', 'visa']),
+  shipping_method_id: z.string().uuid('נא לבחור שיטת משלוח')
 });
 
 export default function Checkout() {
@@ -37,7 +40,23 @@ export default function Checkout() {
     customer_city: '',
     customer_address: '',
     customer_notes: '',
-    payment_method: 'cash' as 'cash' | 'visa'
+    payment_method: 'cash' as 'cash' | 'visa',
+    shipping_method_id: ''
+  });
+
+  // Fetch shipping methods
+  const { data: shippingMethods } = useQuery({
+    queryKey: ['shipping-methods'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('shipping_methods')
+        .select('*')
+        .eq('is_active', true)
+        .order('price', { ascending: true });
+      
+      if (error) throw error;
+      return data;
+    }
   });
 
   // Redirect if cart is empty
@@ -47,7 +66,8 @@ export default function Checkout() {
     }
   }, [items, navigate]);
 
-  const deliveryFee = 0; // Can be calculated based on location later
+  const selectedShipping = shippingMethods?.find(s => s.id === formData.shipping_method_id);
+  const deliveryFee = selectedShipping?.price || 0;
   const total = subtotal + deliveryFee;
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -298,6 +318,44 @@ export default function Checkout() {
                   </div>
                 </div>
 
+                {/* Shipping Method */}
+                <div className="bg-card rounded-2xl border shadow-sm p-6">
+                  <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
+                    <Truck className="w-5 h-5" />
+                    {language === 'he' ? 'שיטת משלוח *' : 'Shipping Method *'}
+                  </h2>
+                  
+                  <div className="space-y-2">
+                    <Select
+                      value={formData.shipping_method_id}
+                      onValueChange={(value) => {
+                        setFormData(prev => ({ ...prev, shipping_method_id: value }));
+                        if (errors.shipping_method_id) {
+                          setErrors(prev => {
+                            const newErrors = { ...prev };
+                            delete newErrors.shipping_method_id;
+                            return newErrors;
+                          });
+                        }
+                      }}
+                    >
+                      <SelectTrigger className={errors.shipping_method_id ? 'border-destructive' : ''}>
+                        <SelectValue placeholder={language === 'he' ? 'בחר שיטת משלוח' : 'Select shipping method'} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {shippingMethods?.map((method) => (
+                          <SelectItem key={method.id} value={method.id}>
+                            {language === 'he' ? method.name : method.name_en || method.name} - ₪{method.price}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {errors.shipping_method_id && (
+                      <p className="text-sm text-destructive">{errors.shipping_method_id}</p>
+                    )}
+                  </div>
+                </div>
+
                 {/* Payment Method */}
                 <div className="bg-card rounded-2xl border shadow-sm p-6">
                   <h2 className="text-2xl font-semibold mb-4">
@@ -392,9 +450,9 @@ export default function Checkout() {
                   </div>
                   
                   <div className="flex justify-between">
-                    <span>{language === 'he' ? 'משלוח' : 'Delivery'}</span>
+                    <span>{language === 'he' ? 'משלוח' : 'Shipping'}</span>
                     <span className="font-semibold">
-                      {deliveryFee === 0 ? (language === 'he' ? 'חינם' : 'Free') : formatPrice(deliveryFee)}
+                      {formData.shipping_method_id ? formatPrice(deliveryFee) : '-'}
                     </span>
                   </div>
                   

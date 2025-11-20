@@ -6,6 +6,8 @@ import { Link } from "react-router-dom";
 import { ArrowLeft, ArrowRight, ShoppingCart } from "lucide-react";
 import { FadeIn } from "@/components/animations/FadeIn";
 import { AnimatedButton } from "@/components/animations/AnimatedButton";
+import { useCart } from "@/contexts/CartContext";
+import { toast } from "sonner";
 import {
   Carousel,
   CarouselContent,
@@ -16,6 +18,7 @@ import {
 
 const FeaturedProducts = () => {
   const { t, language } = useLanguage();
+  const { addToCart } = useCart();
 
   const { data: products } = useQuery({
     queryKey: ["featured-products"],
@@ -78,7 +81,8 @@ const FeaturedProducts = () => {
                             className="rounded-full border border-white bg-transparent text-white hover:bg-white/15 hover:border-white/90 transition-all px-5 h-11 gap-2"
                             onClick={(e) => {
                               e.preventDefault();
-                              // Add to cart logic here
+                              addToCart(product, 1);
+                              toast.success(language === "he" ? "המוצר נוסף לעגלה" : "Product added to cart");
                             }}
                           >
                             {language === "he" ? (
