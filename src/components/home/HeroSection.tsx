@@ -24,6 +24,7 @@ import { SiWaze } from "react-icons/si";
 const HeroSection = () => {
   const { language } = useLanguage();
   const { content } = useContent();
+
   const containerVariants = {
     hidden: {
       opacity: 0,
@@ -36,6 +37,7 @@ const HeroSection = () => {
       },
     },
   };
+
   const wordVariants = {
     hidden: {
       opacity: 0,
@@ -50,6 +52,7 @@ const HeroSection = () => {
       },
     },
   };
+
   const videoUrl = content["hero.video_url"] || "https://cdn.pixabay.com/video/2023/09/04/178622-861162226_large.mp4";
 
   const cards = [
@@ -104,63 +107,63 @@ const HeroSection = () => {
       >
         <a
           href="#"
-          className="w-9 h-9 rounded-full bg-white/10 backdrop-blur-md border border-white/20 
-               flex items-center justify-center text-white transition-all duration-300 
-               hover:scale-110 mix-blend-difference"
+          className="w-9 h-9 rounded-full bg-black/80 backdrop-blur-md border border-white/50 
+                     flex items-center justify-center text-white transition-all duration-300 
+                     hover:bg-black hover:scale-110 shadow-md"
         >
           <Facebook size={16} />
         </a>
 
         <a
           href="#"
-          className="w-9 h-9 rounded-full bg-white/10 backdrop-blur-md border border-white/20 
-               flex items-center justify-center text-white transition-all duration-300 
-               hover:scale-110 mix-blend-difference"
+          className="w-9 h-9 rounded-full bg-black/80 backdrop-blur-md border border-white/50 
+                     flex items-center justify-center text-white transition-all duration-300 
+                     hover:bg-black hover:scale-110 shadow-md"
         >
           <Instagram size={16} />
         </a>
 
         <a
           href="#"
-          className="w-9 h-9 rounded-full bg-white/10 backdrop-blur-md border border-white/20 
-               flex items-center justify-center text-white transition-all duration-300 
-               hover:scale-110 mix-blend-difference"
+          className="w-9 h-9 rounded-full bg-black/80 backdrop-blur-md border border-white/50 
+                     flex items-center justify-center text-white transition-all duration-300 
+                     hover:bg-black hover:scale-110 shadow-md"
         >
           <FaTiktok size={14} />
         </a>
 
         <a
           href="#"
-          className="w-9 h-9 rounded-full bg-white/10 backdrop-blur-md border border-white/20 
-               flex items-center justify-center text-white transition-all duration-300 
-               hover:scale-110 mix-blend-difference"
+          className="w-9 h-9 rounded-full bg-black/80 backdrop-blur-md border border-white/50 
+                     flex items-center justify-center text-white transition-all duration-300 
+                     hover:bg-black hover:scale-110 shadow-md"
         >
           <BsTwitterX size={14} />
         </a>
 
         <a
           href="#"
-          className="w-9 h-9 rounded-full bg-white/10 backdrop-blur-md border border-white/20 
-               flex items-center justify-center text-white transition-all duration-300 
-               hover:scale-110 mix-blend-difference"
+          className="w-9 h-9 rounded-full bg-black/80 backdrop-blur-md border border-white/50 
+                     flex items-center justify-center text-white transition-all duration-300 
+                     hover:bg-black hover:scale-110 shadow-md"
         >
           <Linkedin size={16} />
         </a>
 
         <a
           href="#"
-          className="w-9 h-9 rounded-full bg-white/10 backdrop-blur-md border border-white/20 
-               flex items-center justify-center text-white transition-all duration-300 
-               hover:scale-110 mix-blend-difference"
+          className="w-9 h-9 rounded-full bg-black/80 backdrop-blur-md border border-white/50 
+                     flex items-center justify-center text-white transition-all duration-300 
+                     hover:bg-black hover:scale-110 shadow-md"
         >
           <Youtube size={16} />
         </a>
 
         <a
           href="#"
-          className="w-9 h-9 rounded-full bg-white/10 backdrop-blur-md border border-white/20 
-               flex items-center justify-center text-white transition-all duration-300 
-               hover:scale-110 mix-blend-difference"
+          className="w-9 h-9 rounded-full bg-black/80 backdrop-blur-md border border-white/50 
+                     flex items-center justify-center text-white transition-all duration-300 
+                     hover:bg-black hover:scale-110 shadow-md"
         >
           <SiWaze size={16} />
         </a>
@@ -259,4 +262,5 @@ const HeroSection = () => {
     </section>
   );
 };
+
 export default HeroSection;
