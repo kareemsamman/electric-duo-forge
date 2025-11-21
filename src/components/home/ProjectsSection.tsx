@@ -61,7 +61,7 @@ const ProjectsSection = () => {
           <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
             {content["projects.section.title"] || "הפרויקטים שלנו"}
           </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto md:mx-0">
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto md:text-center">
             {content["projects.section.subtitle"] || "גלו את מגוון הפרויקטים שביצענו בהצלחה עבור לקוחותינו"}
           </p>
         </motion.div>
