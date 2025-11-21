@@ -146,9 +146,7 @@ const Projects = () => {
                     )}
 
                     <Button asChild variant="outline" size="sm" className="w-full">
-                      <Link to={`/projects/${project.id}`}>
-                        {t("projects.view.button") || (isHebrew ? "קרא עוד על הפרויקט" : "View project")}
-                      </Link>
+                      <Link to={`/projects/${project.id}`}>{isHebrew ? "קרא עוד על הפרויקט" : "View project"}</Link>
                     </Button>
                   </div>
                 </motion.div>
