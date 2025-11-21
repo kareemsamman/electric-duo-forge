@@ -68,66 +68,103 @@ export default function AdminDashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-muted/30 py-12 px-4 pt-28">
+    <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background py-12 px-4 pt-32">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-8 flex items-center justify-between">
+        <div className="mb-12 flex items-center justify-between">
           <div>
-            <h1 className="text-4xl font-bold mb-2">
+            <h1 className="text-5xl font-bold mb-3 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
               {language === 'he' ? 'לוח בקרה' : 'Admin Dashboard'}
             </h1>
-            <p className="text-muted-foreground">
-              {language === 'he' ? `שלום ${user?.email || ''}` : `Hello ${user?.email || ''}`}
+            <p className="text-lg text-muted-foreground">
+              {language === 'he' ? `שלום ${user?.email || ''}` : `Welcome back, ${user?.email || ''}`}
             </p>
           </div>
-          <Button variant="outline" onClick={handleSignOut}>
+          <Button 
+            variant="outline" 
+            onClick={handleSignOut}
+            className="hover:bg-destructive hover:text-destructive-foreground hover:border-destructive transition-all"
+          >
             <LogOut className="w-4 h-4 mr-2" />
             {language === 'he' ? 'התנתק' : 'Sign Out'}
           </Button>
         </div>
 
         {/* Admin Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {adminSections.map((section) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+          {adminSections.map((section, index) => (
             <Card
               key={section.path}
-              className="cursor-pointer hover:shadow-lg transition-shadow"
+              className="group cursor-pointer hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 border-border/50 bg-card/80 backdrop-blur-sm overflow-hidden relative"
               onClick={() => navigate(section.path)}
+              style={{
+                animationDelay: `${index * 0.1}s`,
+              }}
             >
-              <CardHeader>
-                <div className="flex items-center gap-3">
-                  <div className={`p-3 rounded-lg bg-muted ${section.color}`}>
-                    <section.icon className="w-6 h-6" />
+              {/* Gradient overlay on hover */}
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              
+              <CardHeader className="relative">
+                <div className="flex items-start gap-4">
+                  <div className={`p-4 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 group-hover:from-primary/20 group-hover:to-primary/10 transition-all duration-300 ${section.color}`}>
+                    <section.icon className="w-7 h-7" />
                   </div>
-                  <div>
-                    <CardTitle>{section.title}</CardTitle>
-                    <CardDescription className="mt-1">{section.description}</CardDescription>
+                  <div className="flex-1">
+                    <CardTitle className="text-xl mb-2 group-hover:text-primary transition-colors">
+                      {section.title}
+                    </CardTitle>
+                    <CardDescription className="text-sm leading-relaxed">
+                      {section.description}
+                    </CardDescription>
                   </div>
                 </div>
               </CardHeader>
-              <CardContent>
-                <Button variant="ghost" className="w-full">
-                  {language === 'he' ? 'פתח' : 'Open'} →
-                </Button>
+              <CardContent className="relative pt-0">
+                <div className="flex items-center text-sm text-muted-foreground group-hover:text-primary transition-colors">
+                  <span className="font-medium">{language === 'he' ? 'פתח' : 'Open'}</span>
+                  <span className="ml-2 group-hover:translate-x-1 transition-transform">→</span>
+                </div>
               </CardContent>
             </Card>
           ))}
         </div>
 
         {/* Quick Links */}
-        <div className="mt-8 p-6 bg-background rounded-lg border">
-          <h2 className="text-xl font-semibold mb-4">
-            {language === 'he' ? 'קישורים מהירים' : 'Quick Links'}
-          </h2>
-          <div className="flex flex-wrap gap-3">
-            <Button variant="outline" onClick={() => navigate('/')}>
-              {language === 'he' ? 'צפה באתר' : 'View Website'}
-            </Button>
-            <Button variant="outline" onClick={() => navigate('/store')}>
-              {language === 'he' ? 'חנות' : 'Store'}
-            </Button>
-          </div>
-        </div>
+        <Card className="bg-gradient-to-r from-card/50 to-card/80 backdrop-blur-sm border-border/50">
+          <CardHeader>
+            <CardTitle className="text-2xl">
+              {language === 'he' ? 'קישורים מהירים' : 'Quick Links'}
+            </CardTitle>
+            <CardDescription>
+              {language === 'he' ? 'גישה מהירה לאזורים נפוצים' : 'Quick access to common areas'}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-4">
+              <Button 
+                variant="outline" 
+                onClick={() => navigate('/')}
+                className="hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all"
+              >
+                {language === 'he' ? 'צפה באתר' : 'View Website'}
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => navigate('/store')}
+                className="hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all"
+              >
+                {language === 'he' ? 'חנות' : 'Store'}
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => navigate('/projects')}
+                className="hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all"
+              >
+                {language === 'he' ? 'פרויקטים' : 'Projects'}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
