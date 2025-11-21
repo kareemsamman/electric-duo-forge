@@ -1,10 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useContent } from "@/contexts/ContentContext";
-import { ArrowRight, Shield, Wrench, Zap, CheckCircle, Clock, Users } from "lucide-react";
+import { ArrowRight, Shield, Wrench, Zap, CheckCircle, Clock, Users, Facebook, Instagram, Linkedin, Youtube } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { AnimatedButton } from "@/components/animations/AnimatedButton";
+import { FaTiktok } from "react-icons/fa";
+import { BsTwitterX } from "react-icons/bs";
+import { SiWaze } from "react-icons/si";
 
 const HeroSection = () => {
   const { language } = useLanguage();
@@ -85,6 +88,36 @@ const HeroSection = () => {
 
       {/* Dark overlay */}
       <div className="absolute inset-0 bg-black/60 z-0" />
+
+      {/* Social Media Links - Top Left */}
+      <motion.div 
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: 0.5, duration: 0.6 }}
+        className="absolute top-8 left-8 z-20 flex flex-col gap-3"
+      >
+        <a href="#" className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white/20 hover:border-white/40 transition-all duration-300 hover:scale-110">
+          <Facebook size={18} />
+        </a>
+        <a href="#" className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white/20 hover:border-white/40 transition-all duration-300 hover:scale-110">
+          <Instagram size={18} />
+        </a>
+        <a href="#" className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white/20 hover:border-white/40 transition-all duration-300 hover:scale-110">
+          <FaTiktok size={16} />
+        </a>
+        <a href="#" className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white/20 hover:border-white/40 transition-all duration-300 hover:scale-110">
+          <BsTwitterX size={16} />
+        </a>
+        <a href="#" className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white/20 hover:border-white/40 transition-all duration-300 hover:scale-110">
+          <Linkedin size={18} />
+        </a>
+        <a href="#" className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white/20 hover:border-white/40 transition-all duration-300 hover:scale-110">
+          <Youtube size={18} />
+        </a>
+        <a href="#" className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white/20 hover:border-white/40 transition-all duration-300 hover:scale-110">
+          <SiWaze size={18} />
+        </a>
+      </motion.div>
 
       {/* Content Container */}
       <div className="container relative z-10 mx-auto px-6 md:px-12 lg:px-16 py-32 md:py-40">
