@@ -89,12 +89,12 @@ const HeroSection = () => {
       {/* Dark overlay */}
       <div className="absolute inset-0 bg-black/60 z-0" />
 
-      {/* Social Media Links - Top Left */}
+      {/* Social Media Links - Fixed Left Side */}
       <motion.div 
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.5, duration: 0.6 }}
-        className="absolute top-4 left-6 z-20 flex flex-col gap-2.5"
+        className="fixed top-28 left-6 z-50 flex flex-col gap-2.5"
       >
         <a href="#" className="w-9 h-9 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white/20 hover:border-white/40 transition-all duration-300 hover:scale-110">
           <Facebook size={16} />
