@@ -64,7 +64,7 @@ const ProjectsPreview = () => {
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
-            className="lg:col-span-3 space-y-6 px-6 md:px-12 lg:px-16"
+            className="lg:col-span-3 space-y-6 px-6 md:px-12 lg:px-16 text-center"
           >
             <h2 className="text-4xl md:text-5xl font-bold text-foreground">
               {content["projects.preview.title"] || "הפרויקטים שלנו"}
