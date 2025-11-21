@@ -27,7 +27,8 @@ export default function AdminProducts() {
       const { data, error } = await supabase
         .from('products')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('display_order', { ascending: true })
+        .order('created_at', { ascending: true });
       if (error) throw error;
       return data;
     }
@@ -143,7 +144,12 @@ export default function AdminProducts() {
     const [reorderedItem] = items.splice(result.source.index, 1);
     items.splice(result.destination.index, 0, reorderedItem);
     
-    queryClient.setQueryData(['admin-products'], items);
+    const updates = items.map((item, index) => ({ id: item.id, display_order: index }));
+    queryClient.setQueryData(['admin-products'], items.map((item, index) => ({ ...item, display_order: index })));
+
+    for (const update of updates) {
+      await supabase.from('products').update({ display_order: update.display_order }).eq('id', update.id);
+    }
     toast.success('סדר המוצרים עודכן');
   };
 
