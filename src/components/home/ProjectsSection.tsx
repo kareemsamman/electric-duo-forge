@@ -56,7 +56,7 @@ const ProjectsSection = () => {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
-          className="mb-16 text-center md:text-right"
+          className="mb-16 text-center md:text-center"
         >
           <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
             {content["projects.section.title"] || "הפרויקטים שלנו"}
@@ -93,20 +93,13 @@ const ProjectsSection = () => {
                 <h3 className="text-lg font-bold mb-2 text-foreground text-center">
                   {isHebrew ? project.project_name : project.project_name_en || project.project_name}
                 </h3>
-                
+
                 <p className="text-muted-foreground text-sm line-clamp-2 leading-relaxed text-center mb-3">
                   {isHebrew ? project.description : project.description_en || project.description}
                 </p>
 
-                <Button
-                  asChild
-                  variant="outline"
-                  size="sm"
-                  className="w-full"
-                >
-                  <Link to={`/projects/${project.id}`}>
-                    {content["projects.section.view.button"] || "קרא עוד"}
-                  </Link>
+                <Button asChild variant="outline" size="sm" className="w-full">
+                  <Link to={`/projects/${project.id}`}>{content["projects.section.view.button"] || "קרא עוד"}</Link>
                 </Button>
               </div>
             </motion.div>
