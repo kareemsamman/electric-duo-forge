@@ -1,7 +1,19 @@
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useContent } from "@/contexts/ContentContext";
-import { ArrowRight, Shield, Wrench, Zap, CheckCircle, Clock, Users, Facebook, Instagram, Linkedin, Youtube } from "lucide-react";
+import {
+  ArrowRight,
+  Shield,
+  Wrench,
+  Zap,
+  CheckCircle,
+  Clock,
+  Users,
+  Facebook,
+  Instagram,
+  Linkedin,
+  Youtube,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { AnimatedButton } from "@/components/animations/AnimatedButton";
@@ -14,29 +26,29 @@ const HeroSection = () => {
   const { content } = useContent();
   const containerVariants = {
     hidden: {
-      opacity: 0
+      opacity: 0,
     },
     visible: {
       opacity: 1,
       transition: {
         staggerChildren: 0.08,
-        delayChildren: 0.2
-      }
-    }
+        delayChildren: 0.2,
+      },
+    },
   };
   const wordVariants = {
     hidden: {
       opacity: 0,
-      y: 24
+      y: 24,
     },
     visible: {
       opacity: 1,
       y: 0,
       transition: {
         duration: 0.5,
-        ease: [0.25, 0.4, 0.25, 1] as const
-      }
-    }
+        ease: [0.25, 0.4, 0.25, 1] as const,
+      },
+    },
   };
   const videoUrl = content["hero.video_url"] || "https://cdn.pixabay.com/video/2023/09/04/178622-861162226_large.mp4";
 
@@ -44,45 +56,39 @@ const HeroSection = () => {
     {
       icon: Shield,
       titleHe: "פתרון אמין למארזים",
-      titleEn: "Reliable solution"
+      titleEn: "Reliable solution",
     },
     {
       icon: Wrench,
       titleHe: "מותאם לפרויקט שלך",
-      titleEn: "Customized"
+      titleEn: "Customized",
     },
     {
       icon: Zap,
       titleHe: "טכנולוגיה מתקדמת",
-      titleEn: "Advanced tech"
+      titleEn: "Advanced tech",
     },
     {
       icon: CheckCircle,
       titleHe: "אישורים ותקנים",
-      titleEn: "Certifications"
+      titleEn: "Certifications",
     },
     {
       icon: Clock,
       titleHe: "זמינות ושירות",
-      titleEn: "24/7 Service"
+      titleEn: "24/7 Service",
     },
     {
       icon: Users,
       titleHe: "צוות מקצועי",
-      titleEn: "Pro team"
-    }
+      titleEn: "Pro team",
+    },
   ];
 
-  return <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+  return (
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Video */}
-      <video
-        key={videoUrl}
-        autoPlay
-        muted
-        loop
-        playsInline
-        className="absolute inset-0 w-full h-full object-cover z-0"
-      >
+      <video key={videoUrl} autoPlay muted loop playsInline className="absolute inset-0 w-full h-full object-cover z-0">
         <source src={videoUrl} type="video/mp4" />
       </video>
 
@@ -90,38 +96,84 @@ const HeroSection = () => {
       <div className="absolute inset-0 bg-black/60 z-0" />
 
       {/* Social Media Links - Fixed Left Side */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.5, duration: 0.6 }}
         className="fixed top-28 left-6 z-50 flex flex-col gap-2.5"
       >
-        <a href="#" className="w-9 h-9 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white/20 hover:border-white/40 transition-all duration-300 hover:scale-110">
+        <a
+          href="#"
+          className="w-9 h-9 rounded-full bg-white/10 backdrop-blur-md border border-white/20 
+               flex items-center justify-center text-white transition-all duration-300 
+               hover:scale-110 mix-blend-difference"
+        >
           <Facebook size={16} />
         </a>
-        <a href="#" className="w-9 h-9 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white/20 hover:border-white/40 transition-all duration-300 hover:scale-110">
+
+        <a
+          href="#"
+          className="w-9 h-9 rounded-full bg-white/10 backdrop-blur-md border border-white/20 
+               flex items-center justify-center text-white transition-all duration-300 
+               hover:scale-110 mix-blend-difference"
+        >
           <Instagram size={16} />
         </a>
-        <a href="#" className="w-9 h-9 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white/20 hover:border-white/40 transition-all duration-300 hover:scale-110">
+
+        <a
+          href="#"
+          className="w-9 h-9 rounded-full bg-white/10 backdrop-blur-md border border-white/20 
+               flex items-center justify-center text-white transition-all duration-300 
+               hover:scale-110 mix-blend-difference"
+        >
           <FaTiktok size={14} />
         </a>
-        <a href="#" className="w-9 h-9 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white/20 hover:border-white/40 transition-all duration-300 hover:scale-110">
+
+        <a
+          href="#"
+          className="w-9 h-9 rounded-full bg-white/10 backdrop-blur-md border border-white/20 
+               flex items-center justify-center text-white transition-all duration-300 
+               hover:scale-110 mix-blend-difference"
+        >
           <BsTwitterX size={14} />
         </a>
-        <a href="#" className="w-9 h-9 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white/20 hover:border-white/40 transition-all duration-300 hover:scale-110">
+
+        <a
+          href="#"
+          className="w-9 h-9 rounded-full bg-white/10 backdrop-blur-md border border-white/20 
+               flex items-center justify-center text-white transition-all duration-300 
+               hover:scale-110 mix-blend-difference"
+        >
           <Linkedin size={16} />
         </a>
-        <a href="#" className="w-9 h-9 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white/20 hover:border-white/40 transition-all duration-300 hover:scale-110">
+
+        <a
+          href="#"
+          className="w-9 h-9 rounded-full bg-white/10 backdrop-blur-md border border-white/20 
+               flex items-center justify-center text-white transition-all duration-300 
+               hover:scale-110 mix-blend-difference"
+        >
           <Youtube size={16} />
         </a>
-        <a href="#" className="w-9 h-9 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white/20 hover:border-white/40 transition-all duration-300 hover:scale-110">
+
+        <a
+          href="#"
+          className="w-9 h-9 rounded-full bg-white/10 backdrop-blur-md border border-white/20 
+               flex items-center justify-center text-white transition-all duration-300 
+               hover:scale-110 mix-blend-difference"
+        >
           <SiWaze size={16} />
         </a>
       </motion.div>
 
       {/* Content Container */}
       <div className="container relative z-10 mx-auto px-6 md:px-12 lg:px-16 py-32 md:py-40">
-        <motion.div variants={containerVariants} initial="hidden" animate="visible" className="flex flex-col items-center text-center space-y-10 max-w-5xl mx-auto">
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="flex flex-col items-center text-center space-y-10 max-w-5xl mx-auto"
+        >
           {/* Title with word-by-word reveal */}
           <motion.h1 className="text-6xl md:text-7xl lg:text-8xl font-bold leading-[1.05] tracking-tight text-white">
             {(content["hero.title"] || "").split(" ").map((word, index) => (
@@ -132,15 +184,16 @@ const HeroSection = () => {
           </motion.h1>
 
           {/* Subtitle */}
-          <motion.p variants={wordVariants} className="text-xl md:text-2xl lg:text-3xl leading-relaxed max-w-3xl" style={{color: '#E0E0E0'}}>
+          <motion.p
+            variants={wordVariants}
+            className="text-xl md:text-2xl lg:text-3xl leading-relaxed max-w-3xl"
+            style={{ color: "#E0E0E0" }}
+          >
             {content["hero.subtitle"] || ""}
           </motion.p>
 
           {/* Cards - מה שמייחד אותנו */}
-          <motion.div 
-            variants={wordVariants}
-            className="w-full max-w-6xl mt-12"
-          >
+          <motion.div variants={wordVariants} className="w-full max-w-6xl mt-12">
             <h3 className="text-2xl md:text-3xl font-bold text-white text-center mb-8">
               {language === "he" ? "מה שמייחד אותנו" : "What Makes Us Special"}
             </h3>
@@ -176,9 +229,13 @@ const HeroSection = () => {
                 asChild
                 size="lg"
                 className="h-16 px-12 text-white rounded-full text-lg font-semibold w-full sm:w-auto transition-all duration-300 hover:scale-[1.03] shadow-[0_8px_30px_rgba(26,115,232,0.4)] hover:shadow-[0_12px_40px_rgba(26,115,232,0.6)]"
-                style={{backgroundColor: '#1A73E8'}}
-                onMouseEnter={e => {e.currentTarget.style.backgroundColor = '#155BB7';}}
-                onMouseLeave={e => {e.currentTarget.style.backgroundColor = '#1A73E8';}}
+                style={{ backgroundColor: "#1A73E8" }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = "#155BB7";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = "#1A73E8";
+                }}
               >
                 <Link to="/contact" className="relative z-10">
                   {content["hero.cta.primary"] || "Contact Us"}
@@ -199,6 +256,7 @@ const HeroSection = () => {
           </motion.div>
         </motion.div>
       </div>
-    </section>;
+    </section>
+  );
 };
 export default HeroSection;
