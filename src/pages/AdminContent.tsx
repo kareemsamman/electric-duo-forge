@@ -1,12 +1,16 @@
-import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Save, RefreshCw } from "lucide-react";
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Card } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Save, ArrowRight, ArrowLeft } from 'lucide-react';
+import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface ContentItem {
   id: string;
@@ -17,183 +21,147 @@ interface ContentItem {
   description: string | null;
 }
 
-const AdminContent = () => {
-  const [content, setContent] = useState<ContentItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const { toast } = useToast();
+export default function AdminContent() {
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  const { language } = useLanguage();
 
-  const fetchContent = async () => {
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from("site_content")
-        .select("*")
-        .order("section", { ascending: true })
-        .order("key", { ascending: true });
-
+  const { data: content, isLoading } = useQuery({
+    queryKey: ['site-content-admin'],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('site_content').select('*').order('section', { ascending: true });
       if (error) throw error;
-      setContent(data || []);
-    } catch (error) {
-      console.error("Error fetching content:", error);
-      toast({
-        title: "שגיאה",
-        description: "נכשל בטעינת התוכן",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
+      return data as ContentItem[];
     }
-  };
+  });
 
-  useEffect(() => {
-    fetchContent();
-  }, []);
-
-  const handleUpdate = async (id: string, field: "value_he" | "value_en", value: string) => {
-    setContent(prev =>
-      prev.map(item =>
-        item.id === id ? { ...item, [field]: value } : item
-      )
-    );
-  };
-
-  const handleSave = async (item: ContentItem) => {
-    try {
-      setSaving(true);
-      const { error } = await supabase
-        .from("site_content")
-        .update({
-          value_he: item.value_he,
-          value_en: item.value_en,
-        })
-        .eq("id", item.id);
-
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, value_he, value_en }: { id: string; value_he: string; value_en: string }) => {
+      const { error } = await supabase.from('site_content').update({ value_he, value_en }).eq('id', id);
       if (error) throw error;
-
-      toast({
-        title: "נשמר בהצלחה",
-        description: `התוכן "${item.key}" עודכן`,
-      });
-    } catch (error) {
-      console.error("Error saving content:", error);
-      toast({
-        title: "שגיאה",
-        description: "נכשל בשמירת התוכן",
-        variant: "destructive",
-      });
-    } finally {
-      setSaving(false);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['site-content-admin'] });
+      toast.success('תוכן עודכן בהצלחה');
     }
+  });
+
+  const groupedContent = content?.reduce((acc, item) => {
+    if (!acc[item.section]) acc[item.section] = [];
+    acc[item.section].push(item);
+    return acc;
+  }, {} as Record<string, ContentItem[]>);
+
+  const [editingValues, setEditingValues] = useState<Record<string, { he: string; en: string }>>({});
+
+  const handleSave = (item: ContentItem) => {
+    const values = editingValues[item.id] || { he: item.value_he, en: item.value_en || '' };
+    updateMutation.mutate({ id: item.id, value_he: values.he, value_en: values.en });
   };
 
-  const sections = [...new Set(content.map(item => item.section))];
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin" />
-      </div>
-    );
-  }
+  const handleChange = (id: string, lang: 'he' | 'en', value: string) => {
+    setEditingValues(prev => ({
+      ...prev,
+      [id]: { ...prev[id], [lang]: value }
+    }));
+  };
 
   return (
-    <div className="min-h-screen bg-background py-20 px-4 md:px-8">
+    <div className="min-h-screen bg-muted/20 py-12 pt-32 px-4">
       <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-4xl font-bold mb-2">ניהול תוכן האתר</h1>
-            <p className="text-muted-foreground">ערוך את כל הטקסטים באתר ללא צורך בשינוי קוד</p>
-          </div>
-          <Button onClick={fetchContent} variant="outline">
-            <RefreshCw className="w-4 h-4 mr-2" />
-            רענן
-          </Button>
+        <Button variant="ghost" onClick={() => navigate('/admin')} className="mb-6">
+          {language === 'he' ? (
+            <><ArrowRight className="ml-2 h-4 w-4" />חזרה ללוח הבקרה</>
+          ) : (
+            <><ArrowLeft className="mr-2 h-4 w-4" />Back to Dashboard</>
+          )}
+        </Button>
+
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold mb-2">ניהול תוכן האתר</h1>
+          <p className="text-muted-foreground">ערוך טקסטים בעברית ובאנגלית</p>
         </div>
 
-        <Tabs defaultValue={sections[0]} className="w-full" dir="rtl">
-          <TabsList className="w-full justify-start flex-wrap h-auto">
-            {sections.map(section => (
-              <TabsTrigger key={section} value={section} className="capitalize">
-                {section}
-              </TabsTrigger>
+        {isLoading ? (
+          <div className="text-center py-12">טוען...</div>
+        ) : (
+          <Tabs defaultValue={Object.keys(groupedContent || {})[0]} className="space-y-6">
+            <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
+              {Object.keys(groupedContent || {}).map(section => (
+                <TabsTrigger key={section} value={section} className="capitalize">
+                  {section}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+
+            {Object.entries(groupedContent || {}).map(([section, items]) => (
+              <TabsContent key={section} value={section} className="space-y-4">
+                {items.map(item => {
+                  const currentHe = editingValues[item.id]?.he ?? item.value_he;
+                  const currentEn = editingValues[item.id]?.en ?? item.value_en ?? '';
+                  const isLong = currentHe.length > 100 || currentEn.length > 100;
+
+                  return (
+                    <Card key={item.id} className="p-6">
+                      <div className="space-y-4">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-lg">{item.key}</h3>
+                            {item.description && (
+                              <p className="text-sm text-muted-foreground mt-1">{item.description}</p>
+                            )}
+                          </div>
+                          <Button size="sm" onClick={() => handleSave(item)} disabled={updateMutation.isPending}>
+                            <Save className="w-4 h-4 ml-2" />
+                            שמור
+                          </Button>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <Label>עברית</Label>
+                            {isLong ? (
+                              <Textarea
+                                value={currentHe}
+                                onChange={(e) => handleChange(item.id, 'he', e.target.value)}
+                                rows={5}
+                                className="font-medium"
+                              />
+                            ) : (
+                              <Input
+                                value={currentHe}
+                                onChange={(e) => handleChange(item.id, 'he', e.target.value)}
+                                className="font-medium"
+                              />
+                            )}
+                          </div>
+                          <div>
+                            <Label>English</Label>
+                            {isLong ? (
+                              <Textarea
+                                value={currentEn}
+                                onChange={(e) => handleChange(item.id, 'en', e.target.value)}
+                                rows={5}
+                                className="font-medium"
+                              />
+                            ) : (
+                              <Input
+                                value={currentEn}
+                                onChange={(e) => handleChange(item.id, 'en', e.target.value)}
+                                className="font-medium"
+                              />
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </Card>
+                  );
+                })}
+              </TabsContent>
             ))}
-          </TabsList>
-
-          {sections.map(section => (
-            <TabsContent key={section} value={section} className="space-y-4 mt-6">
-              {content
-                .filter(item => item.section === section)
-                .map(item => (
-                  <Card key={item.id}>
-                    <CardHeader>
-                      <CardTitle className="text-lg font-mono">{item.key}</CardTitle>
-                      {item.description && (
-                        <CardDescription>{item.description}</CardDescription>
-                      )}
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium">עברית</label>
-                        {item.value_he.length > 100 ? (
-                          <Textarea
-                            value={item.value_he}
-                            onChange={(e) => handleUpdate(item.id, "value_he", e.target.value)}
-                            rows={3}
-                            className="font-sans"
-                            dir="rtl"
-                          />
-                        ) : (
-                          <Input
-                            value={item.value_he}
-                            onChange={(e) => handleUpdate(item.id, "value_he", e.target.value)}
-                            className="font-sans"
-                            dir="rtl"
-                          />
-                        )}
-                      </div>
-
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium">English</label>
-                        {(item.value_en || "").length > 100 ? (
-                          <Textarea
-                            value={item.value_en || ""}
-                            onChange={(e) => handleUpdate(item.id, "value_en", e.target.value)}
-                            rows={3}
-                            className="font-sans"
-                            dir="ltr"
-                          />
-                        ) : (
-                          <Input
-                            value={item.value_en || ""}
-                            onChange={(e) => handleUpdate(item.id, "value_en", e.target.value)}
-                            className="font-sans"
-                            dir="ltr"
-                          />
-                        )}
-                      </div>
-
-                      <Button
-                        onClick={() => handleSave(item)}
-                        disabled={saving}
-                        className="w-full"
-                      >
-                        {saving ? (
-                          <Loader2 className="w-4 h-4 animate-spin ml-2" />
-                        ) : (
-                          <Save className="w-4 h-4 ml-2" />
-                        )}
-                        שמור שינויים
-                      </Button>
-                    </CardContent>
-                  </Card>
-                ))}
-            </TabsContent>
-          ))}
-        </Tabs>
+          </Tabs>
+        )}
       </div>
     </div>
   );
-};
-
-export default AdminContent;
+}
