@@ -1,420 +1,275 @@
-import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { toast } from "sonner";
-import { Loader2, Plus, Trash2, Save } from "lucide-react";
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Card } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Plus, Pencil, Trash2, GripVertical, ArrowRight, ArrowLeft } from 'lucide-react';
+import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
-interface Project {
-  id: string;
-  project_name: string;
-  project_name_en: string | null;
-  location: string;
-  location_en: string | null;
-  description: string;
-  description_en: string | null;
-  tags: string[];
-  tags_en: string[] | null;
-  image: string;
-  created_at: string;
-}
-
-const AdminProjects = () => {
+export default function AdminProjects() {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingProject, setEditingProject] = useState<any>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const { language } = useLanguage();
-  const isHebrew = language === "he";
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState<string | null>(null);
-  const [newProject, setNewProject] = useState<Partial<Project>>({
-    project_name: "",
-    project_name_en: "",
-    location: "",
-    location_en: "",
-    description: "",
-    description_en: "",
-    tags: [],
-    tags_en: [],
-    image: "",
+
+  const { data: projects, isLoading } = useQuery({
+    queryKey: ['admin-projects'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('projects')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data;
+    }
   });
-  const [showNewForm, setShowNewForm] = useState(false);
 
-  useEffect(() => {
-    fetchProjects();
-  }, []);
+  const uploadImage = async (file: File): Promise<string> => {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `project-${Date.now()}.${fileExt}`;
+    const { error } = await supabase.storage.from('project-images').upload(fileName, file);
+    if (error) throw error;
+    const { data } = supabase.storage.from('project-images').getPublicUrl(fileName);
+    return data.publicUrl;
+  };
 
-  const fetchProjects = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("projects")
-        .select("*")
-        .order("created_at", { ascending: false });
+  const createMutation = useMutation({
+    mutationFn: async (formData: FormData) => {
+      let imageUrl = formData.get('image') as string;
+      if (imageFile) imageUrl = await uploadImage(imageFile);
 
+      const projectData = {
+        project_name: formData.get('project_name') as string,
+        project_name_en: formData.get('project_name_en') as string || null,
+        location: formData.get('location') as string,
+        location_en: formData.get('location_en') as string || null,
+        description: formData.get('description') as string,
+        description_en: formData.get('description_en') as string || null,
+        tags: (formData.get('tags') as string).split(',').map(t => t.trim()),
+        tags_en: (formData.get('tags_en') as string).split(',').map(t => t.trim()),
+        image: imageUrl
+      };
+
+      const { error } = await supabase.from('projects').insert(projectData);
       if (error) throw error;
-      setProjects(data || []);
-    } catch (error) {
-      console.error("Error fetching projects:", error);
-      toast.error(isHebrew ? "שגיאה בטעינת הפרויקטים" : "Error loading projects");
-    } finally {
-      setLoading(false);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-projects'] });
+      toast.success('פרויקט נוצר בהצלחה');
+      setIsDialogOpen(false);
+      setImageFile(null);
     }
-  };
+  });
 
-  const handleUpdate = (id: string, field: string, value: any) => {
-    setProjects(
-      projects.map((project) =>
-        project.id === id ? { ...project, [field]: value } : project
-      )
-    );
-  };
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, formData }: { id: string; formData: FormData }) => {
+      let imageUrl = formData.get('image') as string;
+      if (imageFile) imageUrl = await uploadImage(imageFile);
 
-  const handleSave = async (id: string) => {
-    setSaving(id);
-    try {
-      const project = projects.find((p) => p.id === id);
-      if (!project) return;
+      const projectData = {
+        project_name: formData.get('project_name') as string,
+        project_name_en: formData.get('project_name_en') as string || null,
+        location: formData.get('location') as string,
+        location_en: formData.get('location_en') as string || null,
+        description: formData.get('description') as string,
+        description_en: formData.get('description_en') as string || null,
+        tags: (formData.get('tags') as string).split(',').map(t => t.trim()),
+        tags_en: (formData.get('tags_en') as string).split(',').map(t => t.trim()),
+        image: imageUrl
+      };
 
-      const { error } = await supabase
-        .from("projects")
-        .update({
-          project_name: project.project_name,
-          project_name_en: project.project_name_en,
-          location: project.location,
-          location_en: project.location_en,
-          description: project.description,
-          description_en: project.description_en,
-          tags: project.tags,
-          tags_en: project.tags_en,
-          image: project.image,
-        })
-        .eq("id", id);
-
+      const { error } = await supabase.from('projects').update(projectData).eq('id', id);
       if (error) throw error;
-      toast.success(isHebrew ? "הפרויקט עודכן בהצלחה" : "Project updated successfully");
-    } catch (error) {
-      console.error("Error updating project:", error);
-      toast.error(isHebrew ? "שגיאה בעדכון הפרויקט" : "Error updating project");
-    } finally {
-      setSaving(null);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-projects'] });
+      toast.success('פרויקט עודכן בהצלחה');
+      setIsDialogOpen(false);
+      setEditingProject(null);
+      setImageFile(null);
     }
-  };
+  });
 
-  const handleDelete = async (id: string) => {
-    if (!confirm(isHebrew ? "האם למחוק פרויקט זה?" : "Delete this project?")) return;
-
-    try {
-      const { error } = await supabase.from("projects").delete().eq("id", id);
-
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('projects').delete().eq('id', id);
       if (error) throw error;
-      setProjects(projects.filter((p) => p.id !== id));
-      toast.success(isHebrew ? "הפרויקט נמחק בהצלחה" : "Project deleted successfully");
-    } catch (error) {
-      console.error("Error deleting project:", error);
-      toast.error(isHebrew ? "שגיאה במחיקת הפרויקט" : "Error deleting project");
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-projects'] });
+      toast.success('פרויקט נמחק בהצלחה');
+    }
+  });
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    if (editingProject) {
+      updateMutation.mutate({ id: editingProject.id, formData });
+    } else {
+      createMutation.mutate(formData);
     }
   };
 
-  const handleAddProject = async () => {
-    if (!newProject.project_name || !newProject.location || !newProject.description || !newProject.image) {
-      toast.error(isHebrew ? "אנא מלא את כל השדות הנדרשים" : "Please fill all required fields");
-      return;
-    }
-
-    setSaving("new");
-    try {
-      const { data, error } = await supabase
-        .from("projects")
-        .insert([{
-          project_name: newProject.project_name,
-          project_name_en: newProject.project_name_en || null,
-          location: newProject.location,
-          location_en: newProject.location_en || null,
-          description: newProject.description,
-          description_en: newProject.description_en || null,
-          tags: newProject.tags || [],
-          tags_en: newProject.tags_en || null,
-          image: newProject.image,
-        }])
-        .select();
-
-      if (error) throw error;
-      
-      if (data) {
-        setProjects([data[0], ...projects]);
-        setNewProject({
-          project_name: "",
-          project_name_en: "",
-          location: "",
-          location_en: "",
-          description: "",
-          description_en: "",
-          tags: [],
-          tags_en: [],
-          image: "",
-        });
-        setShowNewForm(false);
-        toast.success(isHebrew ? "הפרויקט נוסף בהצלחה" : "Project added successfully");
-      }
-    } catch (error) {
-      console.error("Error adding project:", error);
-      toast.error(isHebrew ? "שגיאה בהוספת הפרויקט" : "Error adding project");
-    } finally {
-      setSaving(null);
-    }
+  const handleDragEnd = async (result: any) => {
+    if (!result.destination || !projects) return;
+    const items = Array.from(projects);
+    const [reorderedItem] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, reorderedItem);
+    queryClient.setQueryData(['admin-projects'], items);
+    toast.success('סדר הפרויקטים עודכן');
   };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
 
   return (
-    <div className="container mx-auto py-8 px-4" dir={isHebrew ? "rtl" : "ltr"}>
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">
-          {isHebrew ? "ניהול פרויקטים" : "Manage Projects"}
-        </h1>
-        <Button onClick={() => setShowNewForm(!showNewForm)}>
-          <Plus className="h-4 w-4 mr-2" />
-          {isHebrew ? "הוסף פרויקט חדש" : "Add New Project"}
+    <div className="min-h-screen bg-muted/20 py-12 pt-32 px-4">
+      <div className="max-w-7xl mx-auto">
+        <Button variant="ghost" onClick={() => navigate('/admin')} className="mb-6">
+          {language === 'he' ? (
+            <><ArrowRight className="ml-2 h-4 w-4" />חזרה ללוח הבקרה</>
+          ) : (
+            <><ArrowLeft className="mr-2 h-4 w-4" />Back to Dashboard</>
+          )}
         </Button>
-      </div>
 
-      {showNewForm && (
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle>
-              {isHebrew ? "פרויקט חדש" : "New Project"}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Tabs defaultValue="he" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="he">עברית</TabsTrigger>
-                <TabsTrigger value="en">English</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="he" className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium">שם הפרויקט *</label>
-                  <Input
-                    value={newProject.project_name || ""}
-                    onChange={(e) => setNewProject({ ...newProject, project_name: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium">מיקום *</label>
-                  <Input
-                    value={newProject.location || ""}
-                    onChange={(e) => setNewProject({ ...newProject, location: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium">תיאור *</label>
-                  <Textarea
-                    value={newProject.description || ""}
-                    onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium">תגיות (מופרדות בפסיק)</label>
-                  <Input
-                    value={(newProject.tags || []).join(", ")}
-                    onChange={(e) => setNewProject({ ...newProject, tags: e.target.value.split(",").map(t => t.trim()) })}
-                  />
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="en" className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium">Project Name</label>
-                  <Input
-                    value={newProject.project_name_en || ""}
-                    onChange={(e) => setNewProject({ ...newProject, project_name_en: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium">Location</label>
-                  <Input
-                    value={newProject.location_en || ""}
-                    onChange={(e) => setNewProject({ ...newProject, location_en: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium">Description</label>
-                  <Textarea
-                    value={newProject.description_en || ""}
-                    onChange={(e) => setNewProject({ ...newProject, description_en: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium">Tags (comma separated)</label>
-                  <Input
-                    value={(newProject.tags_en || []).join(", ")}
-                    onChange={(e) => setNewProject({ ...newProject, tags_en: e.target.value.split(",").map(t => t.trim()) })}
-                  />
-                </div>
-              </TabsContent>
-            </Tabs>
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-4xl font-bold mb-2">ניהול פרויקטים</h1>
+            <p className="text-muted-foreground">גרור לסידור מחדש, לחץ לעריכה</p>
+          </div>
+          <Button onClick={() => { setEditingProject(null); setImageFile(null); setIsDialogOpen(true); }}>
+            <Plus className="w-4 h-4 ml-2" />הוסף פרויקט חדש
+          </Button>
+        </div>
 
-            <div className="mt-4">
-              <label className="text-sm font-medium">כתובת תמונה (URL או נתיב) *</label>
-              <Input
-                value={newProject.image || ""}
-                onChange={(e) => setNewProject({ ...newProject, image: e.target.value })}
-                placeholder="/src/assets/projects/project-1.jpg"
-              />
-            </div>
-
-            <Button
-              onClick={handleAddProject}
-              disabled={saving === "new"}
-              className="mt-4 w-full"
-            >
-              {saving === "new" ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {isHebrew ? "שומר..." : "Saving..."}
-                </>
-              ) : (
-                <>
-                  <Plus className="mr-2 h-4 w-4" />
-                  {isHebrew ? "הוסף פרויקט" : "Add Project"}
-                </>
-              )}
-            </Button>
-          </CardContent>
-        </Card>
-      )}
-
-      <div className="space-y-6">
-        {projects.map((project) => (
-          <Card key={project.id}>
-            <CardHeader>
-              <div className="flex justify-between items-start">
-                <CardTitle>{project.project_name}</CardTitle>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleSave(project.id)}
-                    disabled={saving === project.id}
-                  >
-                    {saving === project.id ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <>
-                        <Save className="h-4 w-4 mr-2" />
-                        {isHebrew ? "שמור" : "Save"}
-                      </>
+        <DragDropContext onDragEnd={handleDragEnd}>
+          <Droppable droppableId="projects">
+            {(provided) => (
+              <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-3">
+                {projects?.map((project, index) => (
+                  <Draggable key={project.id} draggableId={project.id} index={index}>
+                    {(provided, snapshot) => (
+                      <Card
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        className={`p-6 transition-all ${snapshot.isDragging ? 'shadow-2xl ring-2 ring-primary' : 'hover:shadow-lg'}`}
+                      >
+                        <div className="flex items-center gap-4">
+                          <div {...provided.dragHandleProps} className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground">
+                            <GripVertical className="w-5 h-5" />
+                          </div>
+                          <img src={project.image} alt={project.project_name} className="w-32 h-20 object-cover rounded-lg" />
+                          <div className="flex-1">
+                            <h3 className="text-lg font-semibold">{project.project_name}</h3>
+                            <p className="text-sm text-muted-foreground">{project.location}</p>
+                            <p className="text-sm text-muted-foreground line-clamp-1 mt-1">{project.description}</p>
+                            <div className="flex gap-2 mt-2">
+                              {project.tags?.slice(0, 3).map((tag: string, i: number) => (
+                                <span key={i} className="text-xs px-2 py-1 bg-primary/10 text-primary rounded-full">{tag}</span>
+                              ))}
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button variant="outline" size="sm" onClick={() => { setEditingProject(project); setImageFile(null); setIsDialogOpen(true); }}>
+                              <Pencil className="w-4 h-4" />
+                            </Button>
+                            <Button variant="destructive" size="sm" onClick={() => { if (confirm('למחוק פרויקט זה?')) deleteMutation.mutate(project.id); }}>
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </Card>
                     )}
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => handleDelete(project.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  </Draggable>
+                ))}
+                {provided.placeholder}
+              </div>
+            )}
+          </Droppable>
+        </DragDropContext>
+
+        {isLoading && <div className="text-center py-12">טוען...</div>}
+        {!isLoading && projects?.length === 0 && <div className="text-center py-12 text-muted-foreground">אין פרויקטים. הוסף את הפרויקט הראשון!</div>}
+
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>{editingProject ? 'ערוך פרויקט' : 'הוסף פרויקט חדש'}</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>שם פרויקט (עברית)*</Label>
+                  <Input name="project_name" defaultValue={editingProject?.project_name} required />
+                </div>
+                <div>
+                  <Label>שם פרויקט (English)</Label>
+                  <Input name="project_name_en" defaultValue={editingProject?.project_name_en} />
                 </div>
               </div>
-            </CardHeader>
-            <CardContent>
-              <Tabs defaultValue="he" className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="he">עברית</TabsTrigger>
-                  <TabsTrigger value="en">English</TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="he" className="space-y-4">
-                  <div>
-                    <label className="text-sm font-medium">שם הפרויקט</label>
-                    <Input
-                      value={project.project_name}
-                      onChange={(e) => handleUpdate(project.id, "project_name", e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium">מיקום</label>
-                    <Input
-                      value={project.location}
-                      onChange={(e) => handleUpdate(project.id, "location", e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium">תיאור</label>
-                    <Textarea
-                      value={project.description}
-                      onChange={(e) => handleUpdate(project.id, "description", e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium">תגיות (מופרדות בפסיק)</label>
-                    <Input
-                      value={project.tags.join(", ")}
-                      onChange={(e) => handleUpdate(project.id, "tags", e.target.value.split(",").map(t => t.trim()))}
-                    />
-                  </div>
-                </TabsContent>
-                
-                <TabsContent value="en" className="space-y-4">
-                  <div>
-                    <label className="text-sm font-medium">Project Name</label>
-                    <Input
-                      value={project.project_name_en || ""}
-                      onChange={(e) => handleUpdate(project.id, "project_name_en", e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium">Location</label>
-                    <Input
-                      value={project.location_en || ""}
-                      onChange={(e) => handleUpdate(project.id, "location_en", e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium">Description</label>
-                    <Textarea
-                      value={project.description_en || ""}
-                      onChange={(e) => handleUpdate(project.id, "description_en", e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium">Tags (comma separated)</label>
-                    <Input
-                      value={(project.tags_en || []).join(", ")}
-                      onChange={(e) => handleUpdate(project.id, "tags_en", e.target.value.split(",").map(t => t.trim()))}
-                    />
-                  </div>
-                </TabsContent>
-              </Tabs>
 
-              <div className="mt-4">
-                <label className="text-sm font-medium">כתובת תמונה (URL או נתיב)</label>
-                <Input
-                  value={project.image}
-                  onChange={(e) => handleUpdate(project.id, "image", e.target.value)}
-                />
-                {project.image && (
-                  <img
-                    src={project.image}
-                    alt={project.project_name}
-                    className="mt-2 w-full max-w-md h-48 object-cover rounded-lg"
-                  />
-                )}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>מיקום (עברית)*</Label>
+                  <Input name="location" defaultValue={editingProject?.location} required />
+                </div>
+                <div>
+                  <Label>מיקום (English)</Label>
+                  <Input name="location_en" defaultValue={editingProject?.location_en} />
+                </div>
               </div>
-            </CardContent>
-          </Card>
-        ))}
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>תיאור (עברית)*</Label>
+                  <Textarea name="description" defaultValue={editingProject?.description} rows={4} required />
+                </div>
+                <div>
+                  <Label>תיאור (English)</Label>
+                  <Textarea name="description_en" defaultValue={editingProject?.description_en} rows={4} />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>תגיות (עברית, מופרדות בפסיקים)*</Label>
+                  <Input name="tags" defaultValue={editingProject?.tags?.join(', ')} placeholder="חשמל, אנרגיה, תאורה" required />
+                </div>
+                <div>
+                  <Label>תגיות (English, comma separated)</Label>
+                  <Input name="tags_en" defaultValue={editingProject?.tags_en?.join(', ')} placeholder="electricity, energy, lighting" />
+                </div>
+              </div>
+
+              <div>
+                <Label>תמונת פרויקט</Label>
+                <div className="flex items-center gap-4">
+                  <Input type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files?.[0] || null)} />
+                  {editingProject?.image && !imageFile && (
+                    <img src={editingProject.image} alt="Current" className="w-20 h-16 object-cover rounded" />
+                  )}
+                </div>
+                <input type="hidden" name="image" value={editingProject?.image || ''} />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-4">
+                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>ביטול</Button>
+                <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
+                  {editingProject ? 'עדכן פרויקט' : 'צור פרויקט'}
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
-};
-
-export default AdminProjects;
+}
