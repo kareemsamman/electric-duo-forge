@@ -58,33 +58,8 @@ const Header = () => {
             ))}
           </nav>
 
-          {/* Social Media & Language Toggle & Mobile Menu */}
+          {/* Language Toggle & Cart & Mobile Menu */}
           <div className="flex items-center gap-4">
-            {/* Social Media Links - Hidden on mobile */}
-            <div className="hidden lg:flex items-center gap-2">
-              <a href="#" className="text-foreground/70 hover:text-accent transition-colors p-1.5">
-                <Facebook size={18} />
-              </a>
-              <a href="#" className="text-foreground/70 hover:text-accent transition-colors p-1.5">
-                <Instagram size={18} />
-              </a>
-              <a href="#" className="text-foreground/70 hover:text-accent transition-colors p-1.5">
-                <FaTiktok size={16} />
-              </a>
-              <a href="#" className="text-foreground/70 hover:text-accent transition-colors p-1.5">
-                <BsTwitterX size={16} />
-              </a>
-              <a href="#" className="text-foreground/70 hover:text-accent transition-colors p-1.5">
-                <Linkedin size={18} />
-              </a>
-              <a href="#" className="text-foreground/70 hover:text-accent transition-colors p-1.5">
-                <Youtube size={18} />
-              </a>
-              <a href="#" className="text-foreground/70 hover:text-accent transition-colors p-1.5">
-                <SiWaze size={18} />
-              </a>
-            </div>
-
             <CartIcon />
             
             <Button
