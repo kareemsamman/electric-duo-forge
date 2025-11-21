@@ -1,6 +1,9 @@
 import { Link } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Facebook, Instagram, Linkedin, Youtube } from "lucide-react";
+import { FaTiktok } from "react-icons/fa";
+import { BsTwitterX } from "react-icons/bs";
+import { SiWaze } from "react-icons/si";
 
 const Footer = () => {
   const { language, t } = useLanguage();
@@ -71,7 +74,7 @@ const Footer = () => {
             <h4 className="font-bold mb-6 text-xl">
               {language === "he" ? "עקבו אחרינו" : "Follow Us"}
             </h4>
-            <div className="flex gap-4">
+            <div className="flex flex-wrap gap-3">
               <a
                 href="#"
                 className="w-12 h-12 rounded-xl bg-primary-foreground/10 hover:bg-accent flex items-center justify-center transition-all duration-300 hover:scale-105"
@@ -88,6 +91,18 @@ const Footer = () => {
                 href="#"
                 className="w-12 h-12 rounded-xl bg-primary-foreground/10 hover:bg-accent flex items-center justify-center transition-all duration-300 hover:scale-105"
               >
+                <FaTiktok size={20} />
+              </a>
+              <a
+                href="#"
+                className="w-12 h-12 rounded-xl bg-primary-foreground/10 hover:bg-accent flex items-center justify-center transition-all duration-300 hover:scale-105"
+              >
+                <BsTwitterX size={20} />
+              </a>
+              <a
+                href="#"
+                className="w-12 h-12 rounded-xl bg-primary-foreground/10 hover:bg-accent flex items-center justify-center transition-all duration-300 hover:scale-105"
+              >
                 <Linkedin size={22} />
               </a>
               <a
@@ -95,6 +110,12 @@ const Footer = () => {
                 className="w-12 h-12 rounded-xl bg-primary-foreground/10 hover:bg-accent flex items-center justify-center transition-all duration-300 hover:scale-105"
               >
                 <Youtube size={22} />
+              </a>
+              <a
+                href="#"
+                className="w-12 h-12 rounded-xl bg-primary-foreground/10 hover:bg-accent flex items-center justify-center transition-all duration-300 hover:scale-105"
+              >
+                <SiWaze size={22} />
               </a>
             </div>
           </div>

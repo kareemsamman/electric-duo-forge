@@ -27,12 +27,12 @@ const About = () => {
     <div className="min-h-screen pt-28 md:pt-32 pb-20">
       <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-[1360px]">
         <FadeIn>
-          <h1 className="text-4xl md:text-5xl font-bold mb-8">{t("about.title")}</h1>
+          <h1 className="text-4xl md:text-5xl font-bold mb-8 text-center">{t("about.title")}</h1>
         </FadeIn>
         
         <FadeIn delay={0.2}>
-          <div className="prose prose-lg max-w-none mb-16">
-            <p className="text-lg text-muted-foreground leading-relaxed">
+          <div className="prose prose-lg max-w-4xl mx-auto mb-16">
+            <p className="text-lg text-muted-foreground leading-relaxed text-center">
               {t("hero.subtitle")}
             </p>
           </div>

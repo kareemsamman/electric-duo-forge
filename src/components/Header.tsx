@@ -3,8 +3,11 @@ import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useContent } from "@/contexts/ContentContext";
 import { CartIcon } from "@/components/cart/CartIcon";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Facebook, Instagram, Linkedin, Youtube } from "lucide-react";
 import { useState } from "react";
+import { FaTiktok } from "react-icons/fa";
+import { BsTwitterX } from "react-icons/bs";
+import { SiWaze } from "react-icons/si";
 
 const Header = () => {
   const { language, setLanguage } = useLanguage();
@@ -55,8 +58,33 @@ const Header = () => {
             ))}
           </nav>
 
-          {/* Language Toggle & Mobile Menu */}
+          {/* Social Media & Language Toggle & Mobile Menu */}
           <div className="flex items-center gap-4">
+            {/* Social Media Links - Hidden on mobile */}
+            <div className="hidden lg:flex items-center gap-2">
+              <a href="#" className="text-foreground/70 hover:text-accent transition-colors p-1.5">
+                <Facebook size={18} />
+              </a>
+              <a href="#" className="text-foreground/70 hover:text-accent transition-colors p-1.5">
+                <Instagram size={18} />
+              </a>
+              <a href="#" className="text-foreground/70 hover:text-accent transition-colors p-1.5">
+                <FaTiktok size={16} />
+              </a>
+              <a href="#" className="text-foreground/70 hover:text-accent transition-colors p-1.5">
+                <BsTwitterX size={16} />
+              </a>
+              <a href="#" className="text-foreground/70 hover:text-accent transition-colors p-1.5">
+                <Linkedin size={18} />
+              </a>
+              <a href="#" className="text-foreground/70 hover:text-accent transition-colors p-1.5">
+                <Youtube size={18} />
+              </a>
+              <a href="#" className="text-foreground/70 hover:text-accent transition-colors p-1.5">
+                <SiWaze size={18} />
+              </a>
+            </div>
+
             <CartIcon />
             
             <Button
