@@ -104,63 +104,49 @@ const HeroSection = () => {
       >
         
           href="#"
-          className="w-9 h-9 rounded-full bg-gray-900/90 backdrop-blur-md border border-gray-700
-               flex items-center justify-center text-white transition-all duration-300 
-               hover:scale-110 hover:bg-[#1877F2] hover:border-[#1877F2] shadow-lg"
+          className="w-9 h-9 rounded-full bg-gray-900/90 backdrop-blur-md border border-gray-700 flex items-center justify-center text-white transition-all duration-300 hover:scale-110 hover:bg-[#1877F2] hover:border-[#1877F2] shadow-lg"
         >
           <Facebook size={16} />
         </a>
 
         
           href="#"
-          className="w-9 h-9 rounded-full bg-gray-900/90 backdrop-blur-md border border-gray-700
-               flex items-center justify-center text-white transition-all duration-300 
-               hover:scale-110 hover:bg-gradient-to-br hover:from-[#833AB4] hover:via-[#FD1D1D] hover:to-[#F77737] hover:border-transparent shadow-lg"
+          className="w-9 h-9 rounded-full bg-gray-900/90 backdrop-blur-md border border-gray-700 flex items-center justify-center text-white transition-all duration-300 hover:scale-110 hover:bg-gradient-to-br hover:from-[#833AB4] hover:via-[#FD1D1D] hover:to-[#F77737] hover:border-transparent shadow-lg"
         >
           <Instagram size={16} />
         </a>
 
         
           href="#"
-          className="w-9 h-9 rounded-full bg-gray-900/90 backdrop-blur-md border border-gray-700
-               flex items-center justify-center text-white transition-all duration-300 
-               hover:scale-110 hover:bg-[#000000] hover:border-[#000000] shadow-lg"
+          className="w-9 h-9 rounded-full bg-gray-900/90 backdrop-blur-md border border-gray-700 flex items-center justify-center text-white transition-all duration-300 hover:scale-110 hover:bg-[#000000] hover:border-[#000000] shadow-lg"
         >
           <FaTiktok size={14} />
         </a>
 
         
           href="#"
-          className="w-9 h-9 rounded-full bg-gray-900/90 backdrop-blur-md border border-gray-700
-               flex items-center justify-center text-white transition-all duration-300 
-               hover:scale-110 hover:bg-[#000000] hover:border-[#000000] shadow-lg"
+          className="w-9 h-9 rounded-full bg-gray-900/90 backdrop-blur-md border border-gray-700 flex items-center justify-center text-white transition-all duration-300 hover:scale-110 hover:bg-[#000000] hover:border-[#000000] shadow-lg"
         >
           <BsTwitterX size={14} />
         </a>
 
         
           href="#"
-          className="w-9 h-9 rounded-full bg-gray-900/90 backdrop-blur-md border border-gray-700
-               flex items-center justify-center text-white transition-all duration-300 
-               hover:scale-110 hover:bg-[#0A66C2] hover:border-[#0A66C2] shadow-lg"
+          className="w-9 h-9 rounded-full bg-gray-900/90 backdrop-blur-md border border-gray-700 flex items-center justify-center text-white transition-all duration-300 hover:scale-110 hover:bg-[#0A66C2] hover:border-[#0A66C2] shadow-lg"
         >
           <Linkedin size={16} />
         </a>
 
         
           href="#"
-          className="w-9 h-9 rounded-full bg-gray-900/90 backdrop-blur-md border border-gray-700
-               flex items-center justify-center text-white transition-all duration-300 
-               hover:scale-110 hover:bg-[#FF0000] hover:border-[#FF0000] shadow-lg"
+          className="w-9 h-9 rounded-full bg-gray-900/90 backdrop-blur-md border border-gray-700 flex items-center justify-center text-white transition-all duration-300 hover:scale-110 hover:bg-[#FF0000] hover:border-[#FF0000] shadow-lg"
         >
           <Youtube size={16} />
         </a>
 
         
           href="#"
-          className="w-9 h-9 rounded-full bg-gray-900/90 backdrop-blur-md border border-gray-700
-               flex items-center justify-center text-white transition-all duration-300 
-               hover:scale-110 hover:bg-[#33CCFF] hover:border-[#33CCFF] shadow-lg"
+          className="w-9 h-9 rounded-full bg-gray-900/90 backdrop-blur-md border border-gray-700 flex items-center justify-center text-white transition-all duration-300 hover:scale-110 hover:bg-[#33CCFF] hover:border-[#33CCFF] shadow-lg"
         >
           <SiWaze size={16} />
         </a>
