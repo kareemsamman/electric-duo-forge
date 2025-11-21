@@ -86,9 +86,9 @@ export default function AdminContent() {
           <div className="text-center py-12">טוען...</div>
         ) : (
           <Tabs defaultValue={Object.keys(groupedContent || {})[0]} className="space-y-6">
-            <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
+            <TabsList className="flex flex-wrap gap-2 bg-background border rounded-full p-1 shadow-sm overflow-x-auto">
               {Object.keys(groupedContent || {}).map(section => (
-                <TabsTrigger key={section} value={section} className="capitalize">
+                <TabsTrigger key={section} value={section} className="px-4 py-1 rounded-full text-sm capitalize">
                   {section}
                 </TabsTrigger>
               ))}

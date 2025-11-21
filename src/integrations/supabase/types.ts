@@ -186,6 +186,7 @@ export type Database = {
         Row: {
           category: string
           created_at: string
+          display_order: number
           id: string
           images: string[] | null
           in_stock: boolean | null
@@ -209,6 +210,7 @@ export type Database = {
         Insert: {
           category: string
           created_at?: string
+          display_order?: number
           id?: string
           images?: string[] | null
           in_stock?: boolean | null
@@ -232,6 +234,7 @@ export type Database = {
         Update: {
           category?: string
           created_at?: string
+          display_order?: number
           id?: string
           images?: string[] | null
           in_stock?: boolean | null
@@ -259,6 +262,7 @@ export type Database = {
           created_at: string
           description: string
           description_en: string | null
+          display_order: number
           id: string
           image: string
           location: string
@@ -272,6 +276,7 @@ export type Database = {
           created_at?: string
           description: string
           description_en?: string | null
+          display_order?: number
           id?: string
           image: string
           location: string
@@ -285,6 +290,7 @@ export type Database = {
           created_at?: string
           description?: string
           description_en?: string | null
+          display_order?: number
           id?: string
           image?: string
           location?: string
@@ -299,6 +305,7 @@ export type Database = {
       shipping_methods: {
         Row: {
           created_at: string
+          display_order: number
           id: string
           is_active: boolean
           name: string
@@ -309,6 +316,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          display_order?: number
           id?: string
           is_active?: boolean
           name: string
@@ -319,6 +327,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          display_order?: number
           id?: string
           is_active?: boolean
           name?: string

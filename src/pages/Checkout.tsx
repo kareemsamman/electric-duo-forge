@@ -54,7 +54,7 @@ export default function Checkout() {
         .from('shipping_methods')
         .select('*')
         .eq('is_active', true)
-        .order('price', { ascending: true });
+        .order('display_order', { ascending: true });
       
       if (error) throw error;
       return data;

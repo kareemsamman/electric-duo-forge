@@ -41,7 +41,8 @@ export default function AdminShipping() {
       const { data, error } = await supabase
         .from('shipping_methods')
         .select('*')
-        .order('region', { ascending: true });
+        .order('display_order', { ascending: true })
+        .order('created_at', { ascending: true });
       if (error) throw error;
       return data as ShippingMethod[];
     }
@@ -101,7 +102,12 @@ export default function AdminShipping() {
     const items = Array.from(shippingMethods);
     const [reorderedItem] = items.splice(result.source.index, 1);
     items.splice(result.destination.index, 0, reorderedItem);
-    queryClient.setQueryData(['shipping-methods-admin'], items);
+    queryClient.setQueryData(['shipping-methods-admin'], items.map((item, index) => ({ ...item, display_order: index })));
+
+    for (let index = 0; index < items.length; index++) {
+      const item = items[index];
+      await supabase.from('shipping_methods').update({ display_order: index }).eq('id', item.id);
+    }
     toast.success('סדר שיטות המשלוח עודכן');
   };
 
