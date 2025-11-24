@@ -36,6 +36,7 @@ import AdminProjects from "./pages/AdminProjects";
 import AdminProducts from "./pages/AdminProducts";
 import AdminOrders from "./pages/AdminOrders";
 import AdminShipping from "./pages/AdminShipping";
+import NewProject from "./pages/NewProject";
 
 const queryClient = new QueryClient();
 
@@ -74,6 +75,7 @@ const App = () => (
                   <Route path="/cart" element={<Cart />} />
                   <Route path="/checkout" element={<Checkout />} />
                   <Route path="/order/:id" element={<OrderConfirmation />} />
+                  <Route path="/new-project" element={<NewProject />} />
                   <Route path="/gallery" element={<Gallery />} />
                   <Route path="/certificates" element={<Certificates />} />
                   <Route path="/contact" element={<Contact />} />
