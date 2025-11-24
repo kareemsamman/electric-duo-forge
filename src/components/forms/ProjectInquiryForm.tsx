@@ -209,7 +209,17 @@ export const ProjectInquiryForm = ({ onSuccess }: ProjectInquiryFormProps) => {
               <FormItem>
                 <FormLabel>ח.פ / ע.מ *</FormLabel>
                 <FormControl>
-                  <Input {...field} />
+                  <Input 
+                    {...field} 
+                    type="text"
+                    maxLength={10}
+                    pattern="[0-9]*"
+                    inputMode="numeric"
+                    onInput={(e) => {
+                      const target = e.target as HTMLInputElement;
+                      target.value = target.value.replace(/[^0-9]/g, '');
+                    }}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -270,7 +280,17 @@ export const ProjectInquiryForm = ({ onSuccess }: ProjectInquiryFormProps) => {
                   <FormItem>
                     <FormLabel>מיקוד</FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <Input 
+                        {...field}
+                        type="text"
+                        maxLength={7}
+                        pattern="[0-9]*"
+                        inputMode="numeric"
+                        onInput={(e) => {
+                          const target = e.target as HTMLInputElement;
+                          target.value = target.value.replace(/[^0-9]/g, '');
+                        }}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -306,7 +326,18 @@ export const ProjectInquiryForm = ({ onSuccess }: ProjectInquiryFormProps) => {
                 <FormItem>
                   <FormLabel>נייד *</FormLabel>
                   <FormControl>
-                    <Input {...field} type="tel" placeholder="0521234567" />
+                    <Input 
+                      {...field} 
+                      type="tel" 
+                      placeholder="0521234567"
+                      maxLength={10}
+                      pattern="[0-9]*"
+                      inputMode="numeric"
+                      onInput={(e) => {
+                        const target = e.target as HTMLInputElement;
+                        target.value = target.value.replace(/[^0-9]/g, '');
+                      }}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -355,7 +386,17 @@ export const ProjectInquiryForm = ({ onSuccess }: ProjectInquiryFormProps) => {
                 <FormItem>
                   <FormLabel>טלפון</FormLabel>
                   <FormControl>
-                    <Input {...field} type="tel" />
+                    <Input 
+                      {...field} 
+                      type="tel"
+                      maxLength={12}
+                      pattern="[0-9]*"
+                      inputMode="numeric"
+                      onInput={(e) => {
+                        const target = e.target as HTMLInputElement;
+                        target.value = target.value.replace(/[^0-9]/g, '');
+                      }}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
