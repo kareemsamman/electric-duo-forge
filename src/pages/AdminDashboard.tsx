@@ -3,7 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useNavigate } from 'react-router-dom';
-import { Package, ShoppingCart, Truck, FolderKanban, Image, Users, LogOut, Settings } from 'lucide-react';
+import { Package, ShoppingCart, Truck, FolderKanban, Image, Users, LogOut, Settings, Mail } from 'lucide-react';
 
 export default function AdminDashboard() {
   const { language } = useLanguage();
@@ -57,6 +57,13 @@ export default function AdminDashboard() {
       icon: Users,
       path: '/admin/content',
       color: 'text-cyan-500',
+    },
+    {
+      title: language === 'he' ? 'פניות לפרויקטים' : 'Inquiries',
+      description: language === 'he' ? 'צפייה בפניות ממולאי הטפסים' : 'View form inquiries',
+      icon: Mail,
+      path: '/admin/inquiries',
+      color: 'text-indigo-500',
     },
     {
       title: language === 'he' ? 'הגדרות' : 'Settings',
