@@ -13,16 +13,16 @@ import { useLanguage } from "@/contexts/LanguageContext";
 
 const formSchema = z.object({
   companyName: z.string().min(2, "נא להזין שם חברה"),
-  companyId: z.string().regex(/^\d{5,10}$/, "ח.פ / ע.מ חייב להכיל 5-10 ספרות"),
+  companyId: z.string().regex(/^\d{1,10}$/, "ח.פ / ע.מ חייב להכיל עד 10 ספרות בלבד"),
   street: z.string().min(2, "נא להזין שם רחוב"),
   streetNumber: z.string().min(1, "נא להזין מספר בית"),
   city: z.string().min(2, "נא להזין שם עיר"),
   zipCode: z.string().regex(/^\d{5,7}$/, "מיקוד חייב להכיל 5-7 ספרות").optional().or(z.literal("")),
   contactName: z.string().min(2, "נא להזין שם איש קשר"),
-  mobile: z.string().regex(/^05\d{8}$/, "נא להזין מספר נייד תקין (05xxxxxxxx)"),
+  mobile: z.string().regex(/^\d{9,10}$/, "נא להזין מספר נייד תקין (9-10 ספרות)"),
   email: z.string().email("נא להזין כתובת מייל תקינה"),
   accountantName: z.string().optional(),
-  accountantPhone: z.string().regex(/^\d{8,12}$/, "מספר טלפון לא תקין").optional().or(z.literal("")),
+  accountantPhone: z.string().regex(/^\d{9,10}$/, "מספר טלפון לא תקין").optional().or(z.literal("")),
   notes: z.string().max(1000, "הערות לא יכולות לעבור 1000 תווים").optional(),
   honeypot: z.string().max(0, "Invalid submission"),
 });
@@ -62,17 +62,7 @@ export const ProjectInquiryForm = ({ onSuccess }: ProjectInquiryFormProps) => {
     const files = event.target.files;
     if (!files || files.length === 0) return;
 
-    const allowedTypes = [
-      "application/pdf",
-      "application/msword",
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      "application/vnd.ms-excel",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      "image/jpeg",
-      "image/png",
-      "application/zip",
-    ];
-
+    const allowedExtensions = ['.pdf', '.doc', '.docx', '.xls', '.xlsx', '.jpg', '.jpeg', '.png', '.zip'];
     const maxSize = 20 * 1024 * 1024; // 20MB
     const maxFiles = 10;
 
@@ -86,8 +76,9 @@ export const ProjectInquiryForm = ({ onSuccess }: ProjectInquiryFormProps) => {
     try {
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
+        const fileExt = '.' + file.name.split('.').pop()?.toLowerCase();
 
-        if (!allowedTypes.includes(file.type)) {
+        if (!allowedExtensions.includes(fileExt)) {
           toast.error(`סוג הקובץ ${file.name} לא נתמך`);
           continue;
         }
@@ -97,10 +88,16 @@ export const ProjectInquiryForm = ({ onSuccess }: ProjectInquiryFormProps) => {
           continue;
         }
 
-        const fileName = `${Date.now()}-${file.name}`;
+        const timestamp = Date.now();
+        const cleanFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+        const fileName = `inquiry-files/${timestamp}-${cleanFileName}`;
+        
         const { data, error } = await supabase.storage
           .from("product-images")
-          .upload(`inquiry-files/${fileName}`, file);
+          .upload(fileName, file, {
+            cacheControl: '3600',
+            upsert: false
+          });
 
         if (error) {
           console.error("Upload error:", error);
@@ -114,6 +111,7 @@ export const ProjectInquiryForm = ({ onSuccess }: ProjectInquiryFormProps) => {
 
         setUploadedFiles((prev) => [...prev, { name: file.name, url: urlData.publicUrl }]);
       }
+      toast.success("קבצים הועלו בהצלחה");
     } catch (error) {
       console.error("File upload error:", error);
       toast.error("שגיאה בהעלאת קבצים");
@@ -184,10 +182,8 @@ export const ProjectInquiryForm = ({ onSuccess }: ProjectInquiryFormProps) => {
           />
         </div>
 
-        {/* Company Details */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-foreground">פרטי החברה</h3>
-          
+        {/* Company & Contact - Compact Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
             name="companyName"
@@ -209,81 +205,20 @@ export const ProjectInquiryForm = ({ onSuccess }: ProjectInquiryFormProps) => {
               <FormItem>
                 <FormLabel>ח.פ / ע.מ *</FormLabel>
                 <FormControl>
-                  <Input {...field} />
+                  <Input 
+                    {...field} 
+                    maxLength={10}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, '');
+                      field.onChange(value);
+                    }}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
 
-          <div className="space-y-4">
-            <h4 className="text-sm font-medium text-foreground">כתובת העסק</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="street"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>רחוב *</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="streetNumber"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>מספר *</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="city"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>עיר *</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="zipCode"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>מיקוד</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Contact Details */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-foreground">איש קשר</h3>
-          
           <FormField
             control={form.control}
             name="contactName"
@@ -298,70 +233,142 @@ export const ProjectInquiryForm = ({ onSuccess }: ProjectInquiryFormProps) => {
             )}
           />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="mobile"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>נייד *</FormLabel>
-                  <FormControl>
-                    <Input {...field} type="tel" placeholder="0521234567" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          <FormField
+            control={form.control}
+            name="mobile"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>נייד *</FormLabel>
+                <FormControl>
+                  <Input 
+                    {...field} 
+                    type="tel" 
+                    placeholder="0521234567"
+                    maxLength={10}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, '');
+                      field.onChange(value);
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>מייל אלקטרוני *</FormLabel>
-                  <FormControl>
-                    <Input {...field} type="email" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-        </div>
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>מייל אלקטרוני *</FormLabel>
+                <FormControl>
+                  <Input {...field} type="email" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-        {/* Accountant Details */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-foreground">מנהל/ת חשבונות (אופציונלי)</h3>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="accountantName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>שם מנהל/ת חשבונות</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          <FormField
+            control={form.control}
+            name="street"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>רחוב *</FormLabel>
+                <FormControl>
+                  <Input {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-            <FormField
-              control={form.control}
-              name="accountantPhone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>טלפון</FormLabel>
-                  <FormControl>
-                    <Input {...field} type="tel" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
+          <FormField
+            control={form.control}
+            name="streetNumber"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>מספר *</FormLabel>
+                <FormControl>
+                  <Input {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="city"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>עיר *</FormLabel>
+                <FormControl>
+                  <Input {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="zipCode"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>מיקוד</FormLabel>
+                <FormControl>
+                  <Input 
+                    {...field}
+                    maxLength={7}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, '');
+                      field.onChange(value);
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="accountantName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>שם מנהל/ת חשבונות</FormLabel>
+                <FormControl>
+                  <Input {...field} placeholder="אופציונלי" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="accountantPhone"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>טלפון מנהל/ת חשבונות</FormLabel>
+                <FormControl>
+                  <Input 
+                    {...field} 
+                    type="tel"
+                    placeholder="אופציונלי"
+                    maxLength={10}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, '');
+                      field.onChange(value);
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
 
         {/* Notes */}
