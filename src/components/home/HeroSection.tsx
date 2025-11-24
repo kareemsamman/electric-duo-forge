@@ -53,7 +53,10 @@ const HeroSection = () => {
     },
   };
 
+  const backgroundType = content["hero.background_type"] || "video";
   const videoUrl = content["hero.video_url"] || "https://cdn.pixabay.com/video/2023/09/04/178622-861162226_large.mp4";
+  const imageDesktopUrl = content["hero.image_desktop_url"] || "";
+  const imageMobileUrl = content["hero.image_mobile_url"] || "";
 
   const cards = [
     {
@@ -90,10 +93,31 @@ const HeroSection = () => {
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Background Video */}
-      <video key={videoUrl} autoPlay muted loop playsInline className="absolute inset-0 w-full h-full object-cover z-0">
-        <source src={videoUrl} type="video/mp4" />
-      </video>
+      {/* Background - Video or Image */}
+      {backgroundType === "video" ? (
+        <video key={videoUrl} autoPlay muted loop playsInline className="absolute inset-0 w-full h-full object-cover z-0">
+          <source src={videoUrl} type="video/mp4" />
+        </video>
+      ) : (
+        <>
+          {/* Desktop Image */}
+          {imageDesktopUrl && (
+            <img 
+              src={imageDesktopUrl} 
+              alt="Hero background" 
+              className="hidden md:block absolute inset-0 w-full h-full object-cover z-0" 
+            />
+          )}
+          {/* Mobile Image */}
+          {imageMobileUrl && (
+            <img 
+              src={imageMobileUrl} 
+              alt="Hero background" 
+              className="block md:hidden absolute inset-0 w-full h-full object-cover z-0" 
+            />
+          )}
+        </>
+      )}
 
       {/* Dark overlay */}
       <div className="absolute inset-0 bg-black/60 z-0" />

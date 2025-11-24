@@ -7,7 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Save, ArrowRight, ArrowLeft } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Save, ArrowRight, ArrowLeft, Upload, ImageIcon, Video } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -66,6 +67,37 @@ export default function AdminContent() {
     }));
   };
 
+  const handleFileUpload = async (file: File, key: string) => {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const filePath = `hero/${Date.now()}.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('product-images')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('product-images')
+        .getPublicUrl(filePath);
+
+      const contentItem = content?.find(item => item.key === key);
+      if (contentItem) {
+        await updateMutation.mutateAsync({
+          id: contentItem.id,
+          value_he: publicUrl,
+          value_en: publicUrl
+        });
+      }
+
+      toast.success('קובץ הועלה בהצלחה');
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast.error('שגיאה בהעלאת הקובץ');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-muted/20 py-12 pt-32 px-4">
       <div className="max-w-7xl mx-auto">
@@ -101,6 +133,11 @@ export default function AdminContent() {
                   const currentEn = editingValues[item.id]?.en ?? item.value_en ?? '';
                   const isLong = currentHe.length > 100 || currentEn.length > 100;
 
+                  // Special handling for hero background fields
+                  const isBackgroundType = item.key === 'hero.background_type';
+                  const isVideoUrl = item.key === 'hero.video_url';
+                  const isImageUrl = item.key === 'hero.image_desktop_url' || item.key === 'hero.image_mobile_url';
+
                   return (
                     <Card key={item.id} className="p-6">
                       <div className="space-y-4">
@@ -117,42 +154,110 @@ export default function AdminContent() {
                           </Button>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {isBackgroundType ? (
                           <div>
-                            <Label>עברית</Label>
-                            {isLong ? (
-                              <Textarea
-                                value={currentHe}
-                                onChange={(e) => handleChange(item.id, 'he', e.target.value)}
-                                rows={5}
-                                className="font-medium"
-                              />
-                            ) : (
+                            <Label>סוג רקע</Label>
+                            <Select value={currentHe} onValueChange={(value) => handleChange(item.id, 'he', value)}>
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="video">
+                                  <div className="flex items-center gap-2">
+                                    <Video className="w-4 h-4" />
+                                    וידאו
+                                  </div>
+                                </SelectItem>
+                                <SelectItem value="image">
+                                  <div className="flex items-center gap-2">
+                                    <ImageIcon className="w-4 h-4" />
+                                    תמונה
+                                  </div>
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        ) : (isVideoUrl || isImageUrl) ? (
+                          <div className="space-y-3">
+                            <div>
+                              <Label>העלאת קובץ</Label>
+                              <div className="flex items-center gap-2 mt-2">
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  onClick={() => {
+                                    const input = document.createElement('input');
+                                    input.type = 'file';
+                                    input.accept = isVideoUrl ? 'video/*' : 'image/*';
+                                    input.onchange = (e) => {
+                                      const file = (e.target as HTMLInputElement).files?.[0];
+                                      if (file) handleFileUpload(file, item.key);
+                                    };
+                                    input.click();
+                                  }}
+                                >
+                                  <Upload className="w-4 h-4 ml-2" />
+                                  {isVideoUrl ? 'העלה וידאו' : 'העלה תמונה'}
+                                </Button>
+                              </div>
+                            </div>
+                            <div>
+                              <Label>או הזן URL</Label>
                               <Input
                                 value={currentHe}
                                 onChange={(e) => handleChange(item.id, 'he', e.target.value)}
+                                placeholder="https://..."
                                 className="font-medium"
                               />
+                            </div>
+                            {currentHe && (
+                              <div className="mt-2 p-2 border rounded-lg">
+                                {isVideoUrl ? (
+                                  <video src={currentHe} className="w-full h-32 object-cover rounded" controls />
+                                ) : (
+                                  <img src={currentHe} alt="Preview" className="w-full h-32 object-cover rounded" />
+                                )}
+                              </div>
                             )}
                           </div>
-                          <div>
-                            <Label>English</Label>
-                            {isLong ? (
-                              <Textarea
-                                value={currentEn}
-                                onChange={(e) => handleChange(item.id, 'en', e.target.value)}
-                                rows={5}
-                                className="font-medium"
-                              />
-                            ) : (
-                              <Input
-                                value={currentEn}
-                                onChange={(e) => handleChange(item.id, 'en', e.target.value)}
-                                className="font-medium"
-                              />
-                            )}
+                        ) : (
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <Label>עברית</Label>
+                              {isLong ? (
+                                <Textarea
+                                  value={currentHe}
+                                  onChange={(e) => handleChange(item.id, 'he', e.target.value)}
+                                  rows={5}
+                                  className="font-medium"
+                                />
+                              ) : (
+                                <Input
+                                  value={currentHe}
+                                  onChange={(e) => handleChange(item.id, 'he', e.target.value)}
+                                  className="font-medium"
+                                />
+                              )}
+                            </div>
+                            <div>
+                              <Label>English</Label>
+                              {isLong ? (
+                                <Textarea
+                                  value={currentEn}
+                                  onChange={(e) => handleChange(item.id, 'en', e.target.value)}
+                                  rows={5}
+                                  className="font-medium"
+                                />
+                              ) : (
+                                <Input
+                                  value={currentEn}
+                                  onChange={(e) => handleChange(item.id, 'en', e.target.value)}
+                                  className="font-medium"
+                                />
+                              )}
+                            </div>
                           </div>
-                        </div>
+                        )}
                       </div>
                     </Card>
                   );
