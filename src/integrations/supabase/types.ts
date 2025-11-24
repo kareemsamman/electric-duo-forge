@@ -257,6 +257,66 @@ export type Database = {
         }
         Relationships: []
       }
+      project_inquiries: {
+        Row: {
+          accountant_name: string | null
+          accountant_phone: string | null
+          city: string
+          company_id: string
+          company_name: string
+          contact_name: string
+          created_at: string
+          email: string
+          file_urls: string[] | null
+          id: string
+          mobile: string
+          notes: string | null
+          status: string | null
+          street: string
+          street_number: string
+          updated_at: string
+          zip_code: string | null
+        }
+        Insert: {
+          accountant_name?: string | null
+          accountant_phone?: string | null
+          city: string
+          company_id: string
+          company_name: string
+          contact_name: string
+          created_at?: string
+          email: string
+          file_urls?: string[] | null
+          id?: string
+          mobile: string
+          notes?: string | null
+          status?: string | null
+          street: string
+          street_number: string
+          updated_at?: string
+          zip_code?: string | null
+        }
+        Update: {
+          accountant_name?: string | null
+          accountant_phone?: string | null
+          city?: string
+          company_id?: string
+          company_name?: string
+          contact_name?: string
+          created_at?: string
+          email?: string
+          file_urls?: string[] | null
+          id?: string
+          mobile?: string
+          notes?: string | null
+          status?: string | null
+          street?: string
+          street_number?: string
+          updated_at?: string
+          zip_code?: string | null
+        }
+        Relationships: []
+      }
       projects: {
         Row: {
           created_at: string
