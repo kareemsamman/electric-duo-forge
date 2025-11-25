@@ -127,7 +127,7 @@ const HeroSection = () => {
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.5, duration: 0.6 }}
-        className="fixed top-28 left-6 z-50 flex flex-col gap-2.5"
+        className="fixed top-28 left-6 z-50 hidden md:flex flex-col gap-2.5"
       >
         <a
           href="#"
