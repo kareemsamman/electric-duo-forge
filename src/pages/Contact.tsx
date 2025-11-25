@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,9 +8,45 @@ import { Phone, Mail, MapPin, Clock, Facebook, Instagram, Linkedin, Youtube } fr
 import { FadeIn } from "@/components/animations/FadeIn";
 import { AnimatedButton } from "@/components/animations/AnimatedButton";
 import { motion } from "framer-motion";
+import { sendEmailViaGmail } from "@/lib/emailService";
+import { toast } from "sonner";
 
 const Contact = () => {
   const { t, language } = useLanguage();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    message: ""
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      const result = await sendEmailViaGmail({
+        form_type: "Contact",
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        message: formData.message,
+        subject: language === 'he' ? 'טופס יצירת קשר חדש' : 'New Contact Form Submission'
+      });
+
+      if (result.success) {
+        toast.success(language === 'he' ? 'ההודעה נשלחה בהצלחה!' : 'Message sent successfully!');
+        setFormData({ name: "", email: "", phone: "", message: "" });
+      } else {
+        toast.error(result.message);
+      }
+    } catch (error) {
+      toast.error(language === 'he' ? 'שגיאה בשליחת ההודעה' : 'Failed to send message');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="min-h-screen pt-28 md:pt-32 pb-20">
@@ -22,25 +59,55 @@ const Contact = () => {
           {/* Contact Form */}
           <Card className="animate-fade-in hover:shadow-xl transition-all">
             <CardContent className="pt-8 pb-8">
-              <form className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
-                  <Input placeholder={t("contact.form.name")} />
+                  <Input 
+                    placeholder={t("contact.form.name")} 
+                    value={formData.name}
+                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                    required
+                  />
                 </div>
                 <div>
-                  <Input type="email" placeholder={t("contact.form.email")} />
+                  <Input 
+                    type="email" 
+                    placeholder={t("contact.form.email")} 
+                    value={formData.email}
+                    onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                    required
+                  />
                 </div>
                 <div>
-                  <Input type="tel" placeholder={t("contact.form.phone")} />
+                  <Input 
+                    type="tel" 
+                    placeholder={t("contact.form.phone")} 
+                    value={formData.phone}
+                    onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                  />
                 </div>
                 <div>
-                  <Textarea placeholder={t("contact.form.message")} rows={5} />
-                </div>
-                <div>
-                  <Input type="file" />
+                  <Textarea 
+                    placeholder={t("contact.form.message")} 
+                    rows={5}
+                    value={formData.message}
+                    onChange={(e) => setFormData(prev => ({ ...prev, message: e.target.value }))}
+                    required
+                  />
                 </div>
                 <div className="flex gap-4">
-                  <Button className="flex-1 hover:scale-105 transition-all">{t("contact.form.submit")}</Button>
-                  <Button variant="outline" className="flex-1 hover:scale-105 transition-all">
+                  <Button 
+                    type="submit" 
+                    className="flex-1 hover:scale-105 transition-all"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? (language === 'he' ? 'שולח...' : 'Sending...') : t("contact.form.submit")}
+                  </Button>
+                  <Button 
+                    type="button"
+                    variant="outline" 
+                    className="flex-1 hover:scale-105 transition-all"
+                    onClick={() => window.open('https://wa.me/972501234567', '_blank')}
+                  >
                     {t("contact.form.whatsapp")}
                   </Button>
                 </div>
