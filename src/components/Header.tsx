@@ -20,6 +20,7 @@ const Header = () => {
     { path: "/about", label: content["header.nav.about"] || "About" },
     { path: "/solutions", label: content["header.nav.solutions"] || "Solutions" },
     { path: "/projects", label: content["header.nav.projects"] || "Projects" },
+    { path: "/new-project", label: content["header.nav.newproject"] || "פרויקט חדש" },
     { path: "/store", label: content["header.nav.store"] || "Store" },
     { path: "/gallery", label: content["header.nav.gallery"] || "Gallery" },
     { path: "/certificates", label: content["header.nav.certificates"] || "Certificates" },
