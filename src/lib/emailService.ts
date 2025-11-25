@@ -1,13 +1,13 @@
 import { supabase } from "@/integrations/supabase/client";
 
 export interface EmailFormData {
-  form_type: "Contact" | "Shop" | "New Project";
+  form_type: "Contact" | "Shop Order" | "New Project";
   name: string;
   email: string;
   subject?: string;
   message: string;
-  phone?: string;
-  [key: string]: any; // Allow additional fields
+  attachments?: string[]; // Array of public URLs for file attachments
+  [key: string]: any; // Allow additional fields like Phone, City, Order_Details, etc.
 }
 
 export async function sendEmailViaGmail(formData: EmailFormData): Promise<{ success: boolean; message: string }> {
@@ -37,7 +37,7 @@ export async function sendEmailViaGmail(formData: EmailFormData): Promise<{ succ
       throw new Error("Gmail credentials not configured in Admin Settings");
     }
 
-    // Prepare payload for PHP endpoint
+    // Prepare payload for PHP endpoint with all fields at root level
     const payload = {
       admin_email,
       app_password,
@@ -46,7 +46,14 @@ export async function sendEmailViaGmail(formData: EmailFormData): Promise<{ succ
       email: formData.email,
       subject: formData.subject || `New ${formData.form_type} Form Submission`,
       message: formData.message,
-      ...formData, // Include any additional fields
+      ...(formData.attachments && formData.attachments.length > 0 && { attachments: formData.attachments }),
+      ...Object.keys(formData).reduce((acc, key) => {
+        // Exclude already added fields and internal fields
+        if (!['form_type', 'name', 'email', 'subject', 'message', 'attachments'].includes(key)) {
+          acc[key] = formData[key];
+        }
+        return acc;
+      }, {} as Record<string, any>)
     };
 
     // Send to PHP endpoint

@@ -158,7 +158,7 @@ export const ProjectInquiryForm = ({ onSuccess }: ProjectInquiryFormProps) => {
 
       if (dbError) throw dbError;
 
-      // Prepare email message
+      // Prepare email message (without file URLs in the message text)
       const emailMessage = `
 חברה: ${values.companyName}
 ח.פ/ע.מ: ${values.companyId}
@@ -171,21 +171,20 @@ export const ProjectInquiryForm = ({ onSuccess }: ProjectInquiryFormProps) => {
 ${values.accountantName ? `מנהל חשבונות: ${values.accountantName}\n` : ''}
 ${values.accountantPhone ? `טלפון מנהל חשבונות: ${values.accountantPhone}\n` : ''}
 ${values.notes ? `\nהערות:\n${values.notes}` : ''}
-
-${fileUrls.length > 0 ? `\nקבצים מצורפים (${fileUrls.length}):\n${fileUrls.join('\n')}` : ''}
       `.trim();
 
-      // Send email via Gmail SMTP
+      // Send email via Gmail SMTP with attachments array
       const emailResult = await sendEmailViaGmail({
         form_type: "New Project",
         name: values.contactName,
         email: values.email,
         subject: language === 'he' ? 'פנייה חדשה - מתכננים פרויקט חדש' : 'New Project Inquiry',
         message: emailMessage,
-        companyName: values.companyName,
-        companyId: values.companyId,
-        mobile: values.mobile,
-        fileUrls: fileUrls
+        attachments: fileUrls, // File URLs as separate array
+        Phone: values.mobile,
+        Company: values.companyName,
+        Company_ID: values.companyId,
+        City: values.city
       });
 
       if (!emailResult.success) {
@@ -196,8 +195,8 @@ ${fileUrls.length > 0 ? `\nקבצים מצורפים (${fileUrls.length}):\n${fi
         );
       } else {
         toast.success(language === 'he' 
-          ? 'הטופס נשלח בהצלחה! נחזור אליכם בקרוב' 
-          : 'Form submitted successfully! We will contact you soon'
+          ? 'הטופס נשלח בהצלחה! נשלח אליך אישור למייל.' 
+          : 'Form submitted successfully! A confirmation has been sent to your email.'
         );
       }
 

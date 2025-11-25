@@ -30,13 +30,13 @@ const Contact = () => {
         form_type: "Contact",
         name: formData.name,
         email: formData.email,
-        phone: formData.phone,
         message: formData.message,
-        subject: language === 'he' ? 'טופס יצירת קשר חדש' : 'New Contact Form Submission'
+        subject: language === 'he' ? 'טופס יצירת קשר חדש' : 'New Contact Form Submission',
+        Phone: formData.phone
       });
 
       if (result.success) {
-        toast.success(language === 'he' ? 'ההודעה נשלחה בהצלחה!' : 'Message sent successfully!');
+        toast.success(language === 'he' ? 'ההודעה נשלחה בהצלחה! נשלח אליך אישור למייל.' : 'Message sent successfully! A confirmation has been sent to your email.');
         setFormData({ name: "", email: "", phone: "", message: "" });
       } else {
         toast.error(result.message);
