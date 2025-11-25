@@ -91,27 +91,54 @@ const Header = () => {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <nav className="lg:hidden py-4 border-t border-white/20 mt-2">
-            {navItems.map((item) => (
-              <Link
-                key={item.path}
-                to={item.path}
-                onClick={() => setMobileMenuOpen(false)}
-                className={`block py-3 text-base font-semibold transition-colors hover:text-accent
-                  ${isActive(item.path) ? "text-accent" : "text-foreground/90"}
-                `}
-              >
-                {item.label}
+          <nav className="lg:hidden py-4 border-t border-white/20 mt-2 flex flex-col">
+            <div className="flex-1">
+              {navItems.map((item) => (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`block py-3 text-base font-semibold transition-colors hover:text-accent
+                    ${isActive(item.path) ? "text-accent" : "text-foreground/90"}
+                  `}
+                >
+                  {item.label}
+                </Link>
+              ))}
+              <Link to="/contact" className="block mt-4" onClick={() => setMobileMenuOpen(false)}>
+                <Button
+                  size="default"
+                  className="w-full bg-accent hover:bg-accent/90 text-white font-semibold shadow-lg shadow-accent/20 rounded-xl"
+                >
+                  {content["header.nav.contact"] || "Contact"}
+                </Button>
               </Link>
-            ))}
-            <Link to="/contact" className="block mt-4" onClick={() => setMobileMenuOpen(false)}>
-              <Button
-                size="default"
-                className="w-full bg-accent hover:bg-accent/90 text-white font-semibold shadow-lg shadow-accent/20 rounded-xl"
-              >
-                {content["header.nav.contact"] || "Contact"}
-              </Button>
-            </Link>
+            </div>
+            
+            {/* Social Icons - Horizontal Row at Bottom */}
+            <div className="flex items-center justify-center gap-4 mt-6 pt-4 border-t border-white/10">
+              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-foreground/70 hover:text-accent transition-colors">
+                <Facebook size={20} />
+              </a>
+              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-foreground/70 hover:text-accent transition-colors">
+                <Instagram size={20} />
+              </a>
+              <a href="https://tiktok.com" target="_blank" rel="noopener noreferrer" className="text-foreground/70 hover:text-accent transition-colors">
+                <FaTiktok size={20} />
+              </a>
+              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-foreground/70 hover:text-accent transition-colors">
+                <BsTwitterX size={20} />
+              </a>
+              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="text-foreground/70 hover:text-accent transition-colors">
+                <Linkedin size={20} />
+              </a>
+              <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="text-foreground/70 hover:text-accent transition-colors">
+                <Youtube size={20} />
+              </a>
+              <a href="https://waze.com" target="_blank" rel="noopener noreferrer" className="text-foreground/70 hover:text-accent transition-colors">
+                <SiWaze size={20} />
+              </a>
+            </div>
           </nav>
         )}
       </div>
