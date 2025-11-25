@@ -51,7 +51,8 @@ export const ContentProvider = ({ children }: { children: ReactNode }) => {
   // Convert content array to key-value object based on current language
   const content = contentData.reduce((acc, item) => {
     const value = language === "he" ? item.value_he : (item.value_en || item.value_he);
-    acc[item.key] = value;
+    // Create keys with section prefix (e.g., "social.facebook_url")
+    acc[`${item.section}.${item.key}`] = value;
     return acc;
   }, {} as Record<string, string>);
 
