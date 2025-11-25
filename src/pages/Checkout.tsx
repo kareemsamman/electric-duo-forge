@@ -190,56 +190,57 @@ export default function Checkout() {
         }
       }
 
-      // Fetch admin email from settings
-      const { data: adminSettings } = await supabase
-        .from('site_content')
-        .select('value_he')
-        .eq('key', 'admin_email')
-        .single();
-
-      const adminEmail = adminSettings?.value_he || 'morshea500@gmail.com';
-
-      // Send order confirmation emails
+      // Send order confirmation email via Gmail SMTP
       let emailStatus = 'sent';
       let emailError = null;
       
       try {
-        const { data: emailData, error: emailSendError } = await supabase.functions.invoke('send-order-email', {
-          body: {
-            order_id: order.id,
-            customer_email: formData.customer_email,
-            customer_name: formData.customer_name,
-            admin_email: adminEmail,
-            email_type: 'new_order',
-            order_details: {
-              total_items: totalItems,
-              subtotal: Number(subtotal.toFixed(2)),
-              delivery_fee: Number(deliveryFee.toFixed(2)),
-              total: Number(total.toFixed(2)),
-              cart_items: items.map(item => ({
-                name: item.name,
-                quantity: item.quantity,
-                unit_price: item.unit_price,
-                line_total: item.line_total
-              })),
-              payment_method: formData.payment_method,
-              shipping_method: selectedShipping?.name || 'רגיל',
-              customer_address: formData.customer_address,
-              customer_city: formData.customer_city,
-              customer_phone: formData.customer_phone
-            }
-          }
+        // Format order details for email
+        const orderItemsList = items.map(item => 
+          `${item.name} x ${item.quantity} - ${formatPrice(item.line_total)}`
+        ).join('\n');
+
+        const orderDetails = `
+פרטי ההזמנה #${order.id}
+
+לקוח: ${formData.customer_name}
+טלפון: ${formData.customer_phone}
+אימייל: ${formData.customer_email}
+כתובת: ${formData.customer_address}, ${formData.customer_city}
+שיטת משלוח: ${selectedShipping?.name || 'רגיל'} (${formatPrice(deliveryFee)})
+אמצעי תשלום: ${formData.payment_method === 'cash' ? 'מזומן' : 'כרטיס אשראי'}
+
+פריטים:
+${orderItemsList}
+
+סכום ביניים: ${formatPrice(subtotal)}
+דמי משלוח: ${formatPrice(deliveryFee)}
+סה"כ לתשלום: ${formatPrice(total)}
+
+${formData.customer_notes ? `הערות:\n${formData.customer_notes}` : ''}
+        `.trim();
+
+        const { sendEmailViaGmail } = await import('@/lib/emailService');
+        const emailResult = await sendEmailViaGmail({
+          form_type: "Shop Order",
+          name: formData.customer_name,
+          email: formData.customer_email,
+          subject: `הזמנה חדשה #${order.id}`,
+          message: orderDetails,
+          Phone: formData.customer_phone,
+          City: formData.customer_city,
+          Order_Details: orderItemsList
         });
         
-        if (emailSendError) {
+        if (!emailResult.success) {
           emailStatus = 'failed';
-          emailError = emailSendError.message;
-          console.error('Error sending order emails:', emailSendError);
+          emailError = emailResult.message;
+          console.error('Error sending order email:', emailResult.message);
         }
       } catch (emailCatchError: any) {
         emailStatus = 'failed';
         emailError = emailCatchError.message;
-        console.error('Error sending order emails:', emailCatchError);
+        console.error('Error sending order email:', emailCatchError);
       }
 
       // Update order with email tracking
@@ -258,8 +259,8 @@ export default function Checkout() {
 
       // Show success message for cash payment
       toast.success(language === 'he' 
-        ? 'ההזמנה נקלטה בהצלחה! התשלום יבוצע במזומן בעת האספקה.'
-        : 'Order placed successfully! Payment will be collected in cash upon delivery.'
+        ? 'ההזמנה נקלטה בהצלחה! נשלח אליך אישור למייל. התשלום יבוצע במזומן בעת האספקה.'
+        : 'Order placed successfully! A confirmation has been sent to your email. Payment will be collected in cash upon delivery.'
       );
 
       // Navigate to order confirmation
