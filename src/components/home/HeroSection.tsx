@@ -129,68 +129,96 @@ const HeroSection = () => {
         transition={{ delay: 0.5, duration: 0.6 }}
         className="fixed top-28 left-6 z-50 hidden md:flex flex-col gap-2.5"
       >
-        <a
-          href="#"
-          className="w-9 h-9 rounded-full bg-black/80 backdrop-blur-md border border-white/50 
-                     flex items-center justify-center text-white transition-all duration-300 
-                     hover:bg-black hover:scale-110 shadow-md"
-        >
-          <Facebook size={16} />
-        </a>
+        {content["social.facebook_url"] && (
+          <a
+            href={content["social.facebook_url"]}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-9 h-9 rounded-full bg-black/80 backdrop-blur-md border border-white/50 
+                       flex items-center justify-center text-white transition-all duration-300 
+                       hover:bg-black hover:scale-110 shadow-md"
+          >
+            <Facebook size={16} />
+          </a>
+        )}
 
-        <a
-          href="#"
-          className="w-9 h-9 rounded-full bg-black/80 backdrop-blur-md border border-white/50 
-                     flex items-center justify-center text-white transition-all duration-300 
-                     hover:bg-black hover:scale-110 shadow-md"
-        >
-          <Instagram size={16} />
-        </a>
+        {content["social.instagram_url"] && (
+          <a
+            href={content["social.instagram_url"]}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-9 h-9 rounded-full bg-black/80 backdrop-blur-md border border-white/50 
+                       flex items-center justify-center text-white transition-all duration-300 
+                       hover:bg-black hover:scale-110 shadow-md"
+          >
+            <Instagram size={16} />
+          </a>
+        )}
 
-        <a
-          href="#"
-          className="w-9 h-9 rounded-full bg-black/80 backdrop-blur-md border border-white/50 
-                     flex items-center justify-center text-white transition-all duration-300 
-                     hover:bg-black hover:scale-110 shadow-md"
-        >
-          <FaTiktok size={14} />
-        </a>
+        {content["social.tiktok_url"] && (
+          <a
+            href={content["social.tiktok_url"]}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-9 h-9 rounded-full bg-black/80 backdrop-blur-md border border-white/50 
+                       flex items-center justify-center text-white transition-all duration-300 
+                       hover:bg-black hover:scale-110 shadow-md"
+          >
+            <FaTiktok size={14} />
+          </a>
+        )}
 
-        <a
-          href="#"
-          className="w-9 h-9 rounded-full bg-black/80 backdrop-blur-md border border-white/50 
-                     flex items-center justify-center text-white transition-all duration-300 
-                     hover:bg-black hover:scale-110 shadow-md"
-        >
-          <BsTwitterX size={14} />
-        </a>
+        {content["social.twitter_url"] && (
+          <a
+            href={content["social.twitter_url"]}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-9 h-9 rounded-full bg-black/80 backdrop-blur-md border border-white/50 
+                       flex items-center justify-center text-white transition-all duration-300 
+                       hover:bg-black hover:scale-110 shadow-md"
+          >
+            <BsTwitterX size={14} />
+          </a>
+        )}
 
-        <a
-          href="#"
-          className="w-9 h-9 rounded-full bg-black/80 backdrop-blur-md border border-white/50 
-                     flex items-center justify-center text-white transition-all duration-300 
-                     hover:bg-black hover:scale-110 shadow-md"
-        >
-          <Linkedin size={16} />
-        </a>
+        {content["social.linkedin_url"] && (
+          <a
+            href={content["social.linkedin_url"]}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-9 h-9 rounded-full bg-black/80 backdrop-blur-md border border-white/50 
+                       flex items-center justify-center text-white transition-all duration-300 
+                       hover:bg-black hover:scale-110 shadow-md"
+          >
+            <Linkedin size={16} />
+          </a>
+        )}
 
-        <a
-          href="#"
-          className="w-9 h-9 rounded-full bg-black/80 backdrop-blur-md border border-white/50 
-                     flex items-center justify-center text-white transition-all duration-300 
-                     hover:bg-black hover:scale-110 shadow-md"
-        >
-          <Youtube size={16} />
-        </a>
+        {content["social.youtube_url"] && (
+          <a
+            href={content["social.youtube_url"]}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-9 h-9 rounded-full bg-black/80 backdrop-blur-md border border-white/50 
+                       flex items-center justify-center text-white transition-all duration-300 
+                       hover:bg-black hover:scale-110 shadow-md"
+          >
+            <Youtube size={16} />
+          </a>
+        )}
 
-        <a
-          href="#"
-          className="w-9 h-9 rounded-full bg-black/80 backdrop-blur-md border border-white/50 
-                     flex items-center justify-center text-white transition-all duration-300 
-                     hover:bg-black hover:scale-110 shadow-md"
-        >
-          <SiWaze size={16} />
-        </a>
+        {content["social.waze_url"] && (
+          <a
+            href={content["social.waze_url"]}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-9 h-9 rounded-full bg-black/80 backdrop-blur-md border border-white/50 
+                       flex items-center justify-center text-white transition-all duration-300 
+                       hover:bg-black hover:scale-110 shadow-md"
+          >
+            <SiWaze size={16} />
+          </a>
+        )}
       </motion.div>
 
       {/* Content Container */}

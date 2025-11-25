@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useContent } from "@/contexts/ContentContext";
 import { Facebook, Instagram, Linkedin, Youtube } from "lucide-react";
 import { FaTiktok } from "react-icons/fa";
 import { BsTwitterX } from "react-icons/bs";
@@ -7,6 +8,7 @@ import { SiWaze } from "react-icons/si";
 
 const Footer = () => {
   const { language, t } = useLanguage();
+  const { content } = useContent();
 
   return (
     <footer className="bg-primary text-primary-foreground py-24">
@@ -75,48 +77,76 @@ const Footer = () => {
               {language === "he" ? "עקבו אחרינו" : "Follow Us"}
             </h4>
             <div className="flex flex-wrap gap-3">
-              <a
-                href="#"
-                className="w-12 h-12 rounded-xl bg-primary-foreground/10 hover:bg-accent flex items-center justify-center transition-all duration-300 hover:scale-105"
-              >
-                <Facebook size={22} />
-              </a>
-              <a
-                href="#"
-                className="w-12 h-12 rounded-xl bg-primary-foreground/10 hover:bg-accent flex items-center justify-center transition-all duration-300 hover:scale-105"
-              >
-                <Instagram size={22} />
-              </a>
-              <a
-                href="#"
-                className="w-12 h-12 rounded-xl bg-primary-foreground/10 hover:bg-accent flex items-center justify-center transition-all duration-300 hover:scale-105"
-              >
-                <FaTiktok size={20} />
-              </a>
-              <a
-                href="#"
-                className="w-12 h-12 rounded-xl bg-primary-foreground/10 hover:bg-accent flex items-center justify-center transition-all duration-300 hover:scale-105"
-              >
-                <BsTwitterX size={20} />
-              </a>
-              <a
-                href="#"
-                className="w-12 h-12 rounded-xl bg-primary-foreground/10 hover:bg-accent flex items-center justify-center transition-all duration-300 hover:scale-105"
-              >
-                <Linkedin size={22} />
-              </a>
-              <a
-                href="#"
-                className="w-12 h-12 rounded-xl bg-primary-foreground/10 hover:bg-accent flex items-center justify-center transition-all duration-300 hover:scale-105"
-              >
-                <Youtube size={22} />
-              </a>
-              <a
-                href="#"
-                className="w-12 h-12 rounded-xl bg-primary-foreground/10 hover:bg-accent flex items-center justify-center transition-all duration-300 hover:scale-105"
-              >
-                <SiWaze size={22} />
-              </a>
+              {content["social.facebook_url"] && (
+                <a
+                  href={content["social.facebook_url"]}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-12 h-12 rounded-xl bg-primary-foreground/10 hover:bg-accent flex items-center justify-center transition-all duration-300 hover:scale-105"
+                >
+                  <Facebook size={22} />
+                </a>
+              )}
+              {content["social.instagram_url"] && (
+                <a
+                  href={content["social.instagram_url"]}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-12 h-12 rounded-xl bg-primary-foreground/10 hover:bg-accent flex items-center justify-center transition-all duration-300 hover:scale-105"
+                >
+                  <Instagram size={22} />
+                </a>
+              )}
+              {content["social.tiktok_url"] && (
+                <a
+                  href={content["social.tiktok_url"]}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-12 h-12 rounded-xl bg-primary-foreground/10 hover:bg-accent flex items-center justify-center transition-all duration-300 hover:scale-105"
+                >
+                  <FaTiktok size={20} />
+                </a>
+              )}
+              {content["social.twitter_url"] && (
+                <a
+                  href={content["social.twitter_url"]}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-12 h-12 rounded-xl bg-primary-foreground/10 hover:bg-accent flex items-center justify-center transition-all duration-300 hover:scale-105"
+                >
+                  <BsTwitterX size={20} />
+                </a>
+              )}
+              {content["social.linkedin_url"] && (
+                <a
+                  href={content["social.linkedin_url"]}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-12 h-12 rounded-xl bg-primary-foreground/10 hover:bg-accent flex items-center justify-center transition-all duration-300 hover:scale-105"
+                >
+                  <Linkedin size={22} />
+                </a>
+              )}
+              {content["social.youtube_url"] && (
+                <a
+                  href={content["social.youtube_url"]}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-12 h-12 rounded-xl bg-primary-foreground/10 hover:bg-accent flex items-center justify-center transition-all duration-300 hover:scale-105"
+                >
+                  <Youtube size={22} />
+                </a>
+              )}
+              {content["social.waze_url"] && (
+                <a
+                  href={content["social.waze_url"]}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-12 h-12 rounded-xl bg-primary-foreground/10 hover:bg-accent flex items-center justify-center transition-all duration-300 hover:scale-105"
+                >
+                  <SiWaze size={22} />
+                </a>
+              )}
             </div>
           </div>
         </div>

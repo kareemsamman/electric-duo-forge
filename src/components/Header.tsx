@@ -117,27 +117,41 @@ const Header = () => {
             
             {/* Social Icons - Horizontal Row at Bottom */}
             <div className="flex items-center justify-center gap-4 mt-6 pt-4 border-t border-white/10">
-              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-foreground/70 hover:text-accent transition-colors">
-                <Facebook size={20} />
-              </a>
-              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-foreground/70 hover:text-accent transition-colors">
-                <Instagram size={20} />
-              </a>
-              <a href="https://tiktok.com" target="_blank" rel="noopener noreferrer" className="text-foreground/70 hover:text-accent transition-colors">
-                <FaTiktok size={20} />
-              </a>
-              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-foreground/70 hover:text-accent transition-colors">
-                <BsTwitterX size={20} />
-              </a>
-              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="text-foreground/70 hover:text-accent transition-colors">
-                <Linkedin size={20} />
-              </a>
-              <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="text-foreground/70 hover:text-accent transition-colors">
-                <Youtube size={20} />
-              </a>
-              <a href="https://waze.com" target="_blank" rel="noopener noreferrer" className="text-foreground/70 hover:text-accent transition-colors">
-                <SiWaze size={20} />
-              </a>
+              {content["social.facebook_url"] && (
+                <a href={content["social.facebook_url"]} target="_blank" rel="noopener noreferrer" className="text-foreground/70 hover:text-accent transition-colors">
+                  <Facebook size={20} />
+                </a>
+              )}
+              {content["social.instagram_url"] && (
+                <a href={content["social.instagram_url"]} target="_blank" rel="noopener noreferrer" className="text-foreground/70 hover:text-accent transition-colors">
+                  <Instagram size={20} />
+                </a>
+              )}
+              {content["social.tiktok_url"] && (
+                <a href={content["social.tiktok_url"]} target="_blank" rel="noopener noreferrer" className="text-foreground/70 hover:text-accent transition-colors">
+                  <FaTiktok size={20} />
+                </a>
+              )}
+              {content["social.twitter_url"] && (
+                <a href={content["social.twitter_url"]} target="_blank" rel="noopener noreferrer" className="text-foreground/70 hover:text-accent transition-colors">
+                  <BsTwitterX size={20} />
+                </a>
+              )}
+              {content["social.linkedin_url"] && (
+                <a href={content["social.linkedin_url"]} target="_blank" rel="noopener noreferrer" className="text-foreground/70 hover:text-accent transition-colors">
+                  <Linkedin size={20} />
+                </a>
+              )}
+              {content["social.youtube_url"] && (
+                <a href={content["social.youtube_url"]} target="_blank" rel="noopener noreferrer" className="text-foreground/70 hover:text-accent transition-colors">
+                  <Youtube size={20} />
+                </a>
+              )}
+              {content["social.waze_url"] && (
+                <a href={content["social.waze_url"]} target="_blank" rel="noopener noreferrer" className="text-foreground/70 hover:text-accent transition-colors">
+                  <SiWaze size={20} />
+                </a>
+              )}
             </div>
           </nav>
         )}
