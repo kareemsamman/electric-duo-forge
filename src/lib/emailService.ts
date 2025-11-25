@@ -14,24 +14,27 @@ export async function sendEmailViaGmail(formData: EmailFormData): Promise<{ succ
   try {
     // Fetch Gmail credentials from admin settings
     const { data: settings, error: settingsError } = await supabase
-      .from('site_content')
-      .select('key, value_he')
-      .in('key', ['gmail_email', 'gmail_app_password']);
+      .from("site_content")
+      .select("key, value_he")
+      .in("key", ["gmail_email", "gmail_app_password"]);
 
     if (settingsError) {
-      throw new Error('Failed to fetch email settings');
+      throw new Error("Failed to fetch email settings");
     }
 
-    const settingsMap = settings.reduce((acc, item) => {
-      acc[item.key] = item.value_he;
-      return acc;
-    }, {} as Record<string, string>);
+    const settingsMap = settings.reduce(
+      (acc, item) => {
+        acc[item.key] = item.value_he;
+        return acc;
+      },
+      {} as Record<string, string>,
+    );
 
     const admin_email = settingsMap.gmail_email;
     const app_password = settingsMap.gmail_app_password;
 
     if (!admin_email || !app_password) {
-      throw new Error('Gmail credentials not configured in Admin Settings');
+      throw new Error("Gmail credentials not configured in Admin Settings");
     }
 
     // Prepare payload for PHP endpoint
@@ -43,14 +46,14 @@ export async function sendEmailViaGmail(formData: EmailFormData): Promise<{ succ
       email: formData.email,
       subject: formData.subject || `New ${formData.form_type} Form Submission`,
       message: formData.message,
-      ...formData // Include any additional fields
+      ...formData, // Include any additional fields
     };
 
     // Send to PHP endpoint
-    const response = await fetch('http://localhost/your-project-folder/send_gmail.php', {
-      method: 'POST',
+    const response = await fetch("https://www.kareemsamman.com/send_mail.php", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(payload),
     });
@@ -61,16 +64,16 @@ export async function sendEmailViaGmail(formData: EmailFormData): Promise<{ succ
     }
 
     const result = await response.json();
-    
+
     return {
       success: true,
-      message: result.message || 'Email sent successfully!'
+      message: result.message || "Email sent successfully!",
     };
   } catch (error) {
-    console.error('Email sending error:', error);
+    console.error("Email sending error:", error);
     return {
       success: false,
-      message: error instanceof Error ? error.message : 'Failed to send email'
+      message: error instanceof Error ? error.message : "Failed to send email",
     };
   }
 }
