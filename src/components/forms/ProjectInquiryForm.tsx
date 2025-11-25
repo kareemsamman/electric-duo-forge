@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Upload, X } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { sendEmailViaGmail } from "@/lib/emailService";
 
 const formSchema = z.object({
   companyName: z.string().min(2, "נא להזין שם חברה"),
@@ -134,33 +135,81 @@ export const ProjectInquiryForm = ({ onSuccess }: ProjectInquiryFormProps) => {
     setIsSubmitting(true);
 
     try {
-      const { data, error } = await supabase.functions.invoke("send-project-inquiry", {
-        body: {
-          companyName: values.companyName,
-          companyId: values.companyId,
+      // Save to database
+      const fileUrls = uploadedFiles.map((f) => f.url);
+      const { error: dbError } = await supabase
+        .from('project_inquiries')
+        .insert({
+          company_name: values.companyName,
+          company_id: values.companyId,
           street: values.street,
-          streetNumber: values.streetNumber,
+          street_number: values.streetNumber,
           city: values.city,
-          zipCode: values.zipCode,
-          contactName: values.contactName,
+          zip_code: values.zipCode || null,
+          contact_name: values.contactName,
           mobile: values.mobile,
           email: values.email,
-          accountantName: values.accountantName,
-          accountantPhone: values.accountantPhone,
-          notes: values.notes,
-          fileUrls: uploadedFiles.map((f) => f.url),
-        },
+          accountant_name: values.accountantName || null,
+          accountant_phone: values.accountantPhone || null,
+          notes: values.notes || null,
+          file_urls: fileUrls,
+          status: 'new'
+        });
+
+      if (dbError) throw dbError;
+
+      // Prepare email message
+      const emailMessage = `
+חברה: ${values.companyName}
+ח.פ/ע.מ: ${values.companyId}
+כתובת: ${values.street} ${values.streetNumber}, ${values.city}${values.zipCode ? `, ${values.zipCode}` : ''}
+
+איש קשר: ${values.contactName}
+נייד: ${values.mobile}
+אימייל: ${values.email}
+
+${values.accountantName ? `מנהל חשבונות: ${values.accountantName}\n` : ''}
+${values.accountantPhone ? `טלפון מנהל חשבונות: ${values.accountantPhone}\n` : ''}
+${values.notes ? `\nהערות:\n${values.notes}` : ''}
+
+${fileUrls.length > 0 ? `\nקבצים מצורפים (${fileUrls.length}):\n${fileUrls.join('\n')}` : ''}
+      `.trim();
+
+      // Send email via Gmail SMTP
+      const emailResult = await sendEmailViaGmail({
+        form_type: "New Project",
+        name: values.contactName,
+        email: values.email,
+        subject: language === 'he' ? 'פנייה חדשה - מתכננים פרויקט חדש' : 'New Project Inquiry',
+        message: emailMessage,
+        companyName: values.companyName,
+        companyId: values.companyId,
+        mobile: values.mobile,
+        fileUrls: fileUrls
       });
 
-      if (error) throw error;
+      if (!emailResult.success) {
+        console.error('Email error:', emailResult.message);
+        toast.warning(language === 'he' 
+          ? 'הפנייה נשמרה אך לא נשלח אימייל' 
+          : 'Inquiry saved but email not sent'
+        );
+      } else {
+        toast.success(language === 'he' 
+          ? 'הטופס נשלח בהצלחה! נחזור אליכם בקרוב' 
+          : 'Form submitted successfully! We will contact you soon'
+        );
+      }
 
-      toast.success("הטופס נשלח בהצלחה! נחזור אליכם בקרוב.");
       form.reset();
       setUploadedFiles([]);
       onSuccess?.();
     } catch (error) {
       console.error("Submission error:", error);
-      toast.error("משהו השתבש בשליחה. נסו שוב או צרו קשר.");
+      toast.error(language === 'he' 
+        ? 'משהו השתבש בשליחה. נסו שוב או צרו קשר.' 
+        : 'Something went wrong. Please try again or contact us.'
+      );
     } finally {
       setIsSubmitting(false);
     }
