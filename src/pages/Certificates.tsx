@@ -96,7 +96,7 @@ const Certificates = () => {
             {language === "he" ? "אין תעודות להצגה" : "No certificates to display"}
           </div>
         ) : (
-          <StaggerContainer className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 md:gap-8" staggerDelay={0.1}>
+          <StaggerContainer className="flex flex-col items-center gap-12 md:gap-16" staggerDelay={0.1}>
             {certificates.map((cert) => {
               const name = language === "he" ? cert.certificate_name : (cert.certificate_name_en || cert.certificate_name);
               const description = language === "he" ? cert.short_description : (cert.short_description_en || cert.short_description);
@@ -105,38 +105,38 @@ const Certificates = () => {
               const hasMultipleImages = (cert.images?.length || 0) > 0;
               
               return (
-                <StaggerItem key={cert.id}>
+                <StaggerItem key={cert.id} className="w-full max-w-3xl">
                   <div
                     onClick={() => handleCertificateClick(cert)}
                     className="group cursor-pointer"
                   >
-                    {/* Book-style PDF thumbnail */}
-                    <div className="relative aspect-[3/4] bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 rounded-lg shadow-lg overflow-hidden border border-border/50 transition-all duration-300 group-hover:shadow-xl group-hover:-translate-y-1">
+                    {/* Book-style PDF thumbnail - larger and centered */}
+                    <div className="relative aspect-[3/4] max-h-[70vh] mx-auto bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 rounded-xl shadow-2xl overflow-hidden border border-border/50 transition-all duration-300 group-hover:shadow-3xl group-hover:-translate-y-2">
                       {/* Certificate image */}
                       {mainImage ? (
                         <img
                           src={mainImage}
                           alt={name}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-contain bg-white"
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
-                          <FileText className="w-16 h-16 text-muted-foreground/50" />
+                          <FileText className="w-24 h-24 text-muted-foreground/50" />
                         </div>
                       )}
                       
                       {/* Book spine effect */}
-                      <div className="absolute inset-y-0 left-0 w-3 bg-gradient-to-r from-black/20 to-transparent" />
+                      <div className="absolute inset-y-0 left-0 w-4 bg-gradient-to-r from-black/20 to-transparent" />
                       
                       {/* Indicators */}
-                      <div className="absolute top-2 right-2 flex gap-1">
+                      <div className="absolute top-4 right-4 flex gap-2">
                         {hasPdf && (
-                          <span className="bg-primary/90 text-primary-foreground px-2 py-0.5 rounded text-xs">
+                          <span className="bg-primary/90 text-primary-foreground px-3 py-1 rounded-lg text-sm font-medium">
                             PDF
                           </span>
                         )}
                         {hasMultipleImages && (
-                          <span className="bg-black/70 text-white px-2 py-0.5 rounded text-xs">
+                          <span className="bg-black/70 text-white px-3 py-1 rounded-lg text-sm font-medium">
                             +{cert.images?.length}
                           </span>
                         )}
@@ -144,19 +144,19 @@ const Certificates = () => {
                       
                       {/* Hover overlay */}
                       <div className="absolute inset-0 bg-primary/0 group-hover:bg-primary/10 transition-colors duration-300 flex items-center justify-center">
-                        <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-background/90 text-foreground px-4 py-2 rounded-full text-sm font-medium shadow-lg">
+                        <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-background/90 text-foreground px-6 py-3 rounded-full text-lg font-medium shadow-lg">
                           {language === "he" ? "צפייה" : "View"}
                         </span>
                       </div>
                     </div>
                     
                     {/* Certificate info */}
-                    <div className="mt-4 text-center">
-                      <h3 className="font-bold text-foreground text-sm md:text-base line-clamp-2">
+                    <div className="mt-6 text-center">
+                      <h3 className="font-bold text-foreground text-xl md:text-2xl">
                         {name}
                       </h3>
                       {description && (
-                        <p className="text-muted-foreground text-xs md:text-sm mt-1 line-clamp-2">
+                        <p className="text-muted-foreground text-base md:text-lg mt-2 max-w-xl mx-auto">
                           {description}
                         </p>
                       )}
