@@ -5,11 +5,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
-import { ArrowRight, Plus, Pencil, Trash2, FileText, Upload } from "lucide-react";
+import { ArrowRight, Plus, Pencil, Trash2, FileText, X, Upload } from "lucide-react";
 
 interface Certificate {
   id: string;
@@ -18,7 +18,10 @@ interface Certificate {
   short_description: string;
   short_description_en: string | null;
   certificate_image: string;
+  certificate_image_en: string | null;
   pdf_file: string | null;
+  pdf_file_en: string | null;
+  images: string[] | null;
   created_at: string;
 }
 
@@ -33,7 +36,10 @@ const AdminCertificates = () => {
     short_description: "",
     short_description_en: "",
     certificate_image: "",
+    certificate_image_en: "",
     pdf_file: "",
+    pdf_file_en: "",
+    images: [] as string[],
   });
   const [uploading, setUploading] = useState(false);
 
@@ -51,28 +57,26 @@ const AdminCertificates = () => {
 
   const saveMutation = useMutation({
     mutationFn: async (data: typeof formData & { id?: string }) => {
+      const payload = {
+        certificate_name: data.certificate_name,
+        certificate_name_en: data.certificate_name_en || null,
+        short_description: data.short_description,
+        short_description_en: data.short_description_en || null,
+        certificate_image: data.certificate_image,
+        certificate_image_en: data.certificate_image_en || null,
+        pdf_file: data.pdf_file || null,
+        pdf_file_en: data.pdf_file_en || null,
+        images: data.images,
+      };
+
       if (data.id) {
         const { error } = await supabase
           .from("certificates")
-          .update({
-            certificate_name: data.certificate_name,
-            certificate_name_en: data.certificate_name_en || null,
-            short_description: data.short_description,
-            short_description_en: data.short_description_en || null,
-            certificate_image: data.certificate_image,
-            pdf_file: data.pdf_file || null,
-          })
+          .update(payload)
           .eq("id", data.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("certificates").insert({
-          certificate_name: data.certificate_name,
-          certificate_name_en: data.certificate_name_en || null,
-          short_description: data.short_description,
-          short_description_en: data.short_description_en || null,
-          certificate_image: data.certificate_image,
-          pdf_file: data.pdf_file || null,
-        });
+        const { error } = await supabase.from("certificates").insert(payload);
         if (error) throw error;
       }
     },
@@ -109,7 +113,10 @@ const AdminCertificates = () => {
       short_description: "",
       short_description_en: "",
       certificate_image: "",
+      certificate_image_en: "",
       pdf_file: "",
+      pdf_file_en: "",
+      images: [],
     });
     setEditingCertificate(null);
     setIsDialogOpen(false);
@@ -123,7 +130,10 @@ const AdminCertificates = () => {
       short_description: cert.short_description,
       short_description_en: cert.short_description_en || "",
       certificate_image: cert.certificate_image,
+      certificate_image_en: cert.certificate_image_en || "",
       pdf_file: cert.pdf_file || "",
+      pdf_file_en: cert.pdf_file_en || "",
+      images: cert.images || [],
     });
     setIsDialogOpen(true);
   };
@@ -140,30 +150,40 @@ const AdminCertificates = () => {
     });
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: "image" | "pdf") => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const handleFileUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    field: "certificate_image" | "certificate_image_en" | "pdf_file" | "pdf_file_en" | "images"
+  ) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
 
     setUploading(true);
     try {
-      const fileExt = file.name.split(".").pop();
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-      const bucket = "product-images"; // Using existing bucket
+      const bucket = "product-images";
+      const uploadedUrls: string[] = [];
 
-      const { error: uploadError } = await supabase.storage
-        .from(bucket)
-        .upload(`certificates/${fileName}`, file);
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const fileExt = file.name.split(".").pop();
+        const fileName = `certificates/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
 
-      if (uploadError) throw uploadError;
+        const { error: uploadError } = await supabase.storage
+          .from(bucket)
+          .upload(fileName, file);
 
-      const { data: urlData } = supabase.storage
-        .from(bucket)
-        .getPublicUrl(`certificates/${fileName}`);
+        if (uploadError) throw uploadError;
 
-      if (type === "image") {
-        setFormData((prev) => ({ ...prev, certificate_image: urlData.publicUrl }));
+        const { data: urlData } = supabase.storage
+          .from(bucket)
+          .getPublicUrl(fileName);
+
+        uploadedUrls.push(urlData.publicUrl);
+      }
+
+      if (field === "images") {
+        setFormData((prev) => ({ ...prev, images: [...prev.images, ...uploadedUrls] }));
       } else {
-        setFormData((prev) => ({ ...prev, pdf_file: urlData.publicUrl }));
+        setFormData((prev) => ({ ...prev, [field]: uploadedUrls[0] }));
       }
 
       toast({ title: "הקובץ הועלה בהצלחה" });
@@ -172,6 +192,13 @@ const AdminCertificates = () => {
     } finally {
       setUploading(false);
     }
+  };
+
+  const removeImage = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index),
+    }));
   };
 
   return (
@@ -198,11 +225,12 @@ const AdminCertificates = () => {
                 הוספת תעודה
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>{editingCertificate ? "עריכת תעודה" : "הוספת תעודה חדשה"}</DialogTitle>
               </DialogHeader>
-              <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+              <form onSubmit={handleSubmit} className="space-y-6 mt-4">
+                {/* Names */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>שם התעודה (עברית) *</Label>
@@ -223,6 +251,7 @@ const AdminCertificates = () => {
                   </div>
                 </div>
 
+                {/* Descriptions */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>תיאור קצר (עברית) *</Label>
@@ -243,61 +272,129 @@ const AdminCertificates = () => {
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label>תמונת התעודה *</Label>
-                  <div className="flex items-center gap-4">
+                {/* Main Images - Hebrew & English */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>תמונה ראשית (עברית) *</Label>
                     <Input
                       type="file"
                       accept="image/*"
-                      onChange={(e) => handleFileUpload(e, "image")}
+                      onChange={(e) => handleFileUpload(e, "certificate_image")}
                       disabled={uploading}
                     />
                     {formData.certificate_image && (
-                      <img
-                        src={formData.certificate_image}
-                        alt="Preview"
-                        className="w-16 h-20 object-cover rounded border"
-                      />
+                      <div className="flex items-center gap-2 mt-2">
+                        <img src={formData.certificate_image} alt="Preview" className="w-16 h-20 object-cover rounded border" />
+                        <Input
+                          value={formData.certificate_image}
+                          onChange={(e) => setFormData((prev) => ({ ...prev, certificate_image: e.target.value }))}
+                          placeholder="URL"
+                          className="flex-1"
+                        />
+                      </div>
                     )}
                   </div>
-                  <Input
-                    value={formData.certificate_image}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, certificate_image: e.target.value }))}
-                    placeholder="או הכנס URL לתמונה"
-                    className="mt-2"
-                  />
+                  <div className="space-y-2">
+                    <Label>תמונה ראשית (אנגלית)</Label>
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleFileUpload(e, "certificate_image_en")}
+                      disabled={uploading}
+                    />
+                    {formData.certificate_image_en && (
+                      <div className="flex items-center gap-2 mt-2">
+                        <img src={formData.certificate_image_en} alt="Preview EN" className="w-16 h-20 object-cover rounded border" />
+                        <Input
+                          value={formData.certificate_image_en}
+                          onChange={(e) => setFormData((prev) => ({ ...prev, certificate_image_en: e.target.value }))}
+                          placeholder="URL"
+                          className="flex-1"
+                        />
+                      </div>
+                    )}
+                  </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label>קובץ PDF</Label>
-                  <div className="flex items-center gap-4">
+                {/* PDFs - Hebrew & English */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>קובץ PDF (עברית)</Label>
                     <Input
                       type="file"
                       accept=".pdf"
-                      onChange={(e) => handleFileUpload(e, "pdf")}
+                      onChange={(e) => handleFileUpload(e, "pdf_file")}
                       disabled={uploading}
                     />
                     {formData.pdf_file && (
-                      <a
-                        href={formData.pdf_file}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-1 text-primary hover:underline"
-                      >
-                        <FileText className="w-4 h-4" />
-                        צפייה ב-PDF
-                      </a>
+                      <div className="flex items-center gap-2 mt-2">
+                        <a href={formData.pdf_file} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-primary hover:underline">
+                          <FileText className="w-4 h-4" />
+                          צפייה
+                        </a>
+                        <Input
+                          value={formData.pdf_file}
+                          onChange={(e) => setFormData((prev) => ({ ...prev, pdf_file: e.target.value }))}
+                          placeholder="URL"
+                          className="flex-1"
+                        />
+                      </div>
                     )}
                   </div>
-                  <Input
-                    value={formData.pdf_file}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, pdf_file: e.target.value }))}
-                    placeholder="או הכנס URL לקובץ PDF"
-                    className="mt-2"
-                  />
+                  <div className="space-y-2">
+                    <Label>קובץ PDF (אנגלית)</Label>
+                    <Input
+                      type="file"
+                      accept=".pdf"
+                      onChange={(e) => handleFileUpload(e, "pdf_file_en")}
+                      disabled={uploading}
+                    />
+                    {formData.pdf_file_en && (
+                      <div className="flex items-center gap-2 mt-2">
+                        <a href={formData.pdf_file_en} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-primary hover:underline">
+                          <FileText className="w-4 h-4" />
+                          View
+                        </a>
+                        <Input
+                          value={formData.pdf_file_en}
+                          onChange={(e) => setFormData((prev) => ({ ...prev, pdf_file_en: e.target.value }))}
+                          placeholder="URL"
+                          className="flex-1"
+                        />
+                      </div>
+                    )}
+                  </div>
                 </div>
 
-                <div className="flex justify-end gap-2 pt-4">
+                {/* Additional Images */}
+                <div className="space-y-2">
+                  <Label>תמונות נוספות</Label>
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={(e) => handleFileUpload(e, "images")}
+                    disabled={uploading}
+                  />
+                  {formData.images.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {formData.images.map((img, idx) => (
+                        <div key={idx} className="relative group">
+                          <img src={img} alt={`Image ${idx + 1}`} className="w-16 h-20 object-cover rounded border" />
+                          <button
+                            type="button"
+                            onClick={() => removeImage(idx)}
+                            className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex justify-end gap-2 pt-4 border-t">
                   <Button type="button" variant="outline" onClick={resetForm}>
                     ביטול
                   </Button>
@@ -361,11 +458,19 @@ const AdminCertificates = () => {
                     </Button>
                   </div>
 
-                  {/* PDF indicator */}
-                  {cert.pdf_file && (
-                    <div className="absolute top-2 right-2 bg-primary text-primary-foreground px-2 py-1 rounded text-xs">
-                      PDF
-                    </div>
+                  {/* Indicators */}
+                  <div className="absolute top-2 right-2 flex gap-1">
+                    {cert.pdf_file && (
+                      <span className="bg-primary text-primary-foreground px-2 py-0.5 rounded text-xs">HE</span>
+                    )}
+                    {cert.pdf_file_en && (
+                      <span className="bg-blue-500 text-white px-2 py-0.5 rounded text-xs">EN</span>
+                    )}
+                  </div>
+                  {cert.images && cert.images.length > 0 && (
+                    <span className="absolute bottom-2 right-2 bg-black/70 text-white px-2 py-0.5 rounded text-xs">
+                      +{cert.images.length}
+                    </span>
                   )}
                 </div>
                 <CardContent className="p-3">
