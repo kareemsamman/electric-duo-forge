@@ -334,12 +334,19 @@ export type Database = {
           display_order: number
           id: string
           image: string
+          images: string[] | null
           location: string
           location_en: string | null
+          panel_current: string | null
+          panel_name: string | null
+          panel_name_en: string | null
           project_name: string
           project_name_en: string | null
+          rich_content: string | null
+          rich_content_en: string | null
           tags: string[]
           tags_en: string[] | null
+          video_url: string | null
         }
         Insert: {
           created_at?: string
@@ -348,12 +355,19 @@ export type Database = {
           display_order?: number
           id?: string
           image: string
+          images?: string[] | null
           location: string
           location_en?: string | null
+          panel_current?: string | null
+          panel_name?: string | null
+          panel_name_en?: string | null
           project_name: string
           project_name_en?: string | null
+          rich_content?: string | null
+          rich_content_en?: string | null
           tags?: string[]
           tags_en?: string[] | null
+          video_url?: string | null
         }
         Update: {
           created_at?: string
@@ -362,12 +376,19 @@ export type Database = {
           display_order?: number
           id?: string
           image?: string
+          images?: string[] | null
           location?: string
           location_en?: string | null
+          panel_current?: string | null
+          panel_name?: string | null
+          panel_name_en?: string | null
           project_name?: string
           project_name_en?: string | null
+          rich_content?: string | null
+          rich_content_en?: string | null
           tags?: string[]
           tags_en?: string[] | null
+          video_url?: string | null
         }
         Relationships: []
       }

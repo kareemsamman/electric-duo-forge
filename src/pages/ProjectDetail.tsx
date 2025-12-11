@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, ArrowLeft, MapPin, Loader2 } from "lucide-react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { ArrowRight, ArrowLeft, MapPin, Loader2, ChevronLeft, ChevronRight, Play, Zap, X } from "lucide-react";
 import { motion } from "framer-motion";
 
 type Project = {
@@ -17,6 +19,13 @@ type Project = {
   tags?: string[];
   tags_en?: string[] | null;
   image: string;
+  images?: string[] | null;
+  video_url?: string | null;
+  panel_name?: string | null;
+  panel_name_en?: string | null;
+  panel_current?: string | null;
+  rich_content?: string | null;
+  rich_content_en?: string | null;
   created_at: string;
 };
 
@@ -39,10 +48,16 @@ const getImageUrl = (imagePath: string) => {
   }
 };
 
+const getYoutubeEmbedUrl = (url: string) => {
+  const match = url.match(/(?:youtu\.be\/|youtube\.com(?:\/embed\/|\/v\/|\/watch\?v=|\/watch\?.+&v=))([^&?\s]+)/);
+  return match ? `https://www.youtube.com/embed/${match[1]}` : url;
+};
+
 const ProjectDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const { language, t } = useLanguage();
+  const { language } = useLanguage();
   const isHebrew = language === "he";
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
 
   const { data: project, isLoading, error } = useQuery({
     queryKey: ["project", id],
@@ -89,7 +104,19 @@ const ProjectDetail = () => {
   const description = isHebrew ? project.description : project.description_en || project.description;
   const location = isHebrew ? project.location : project.location_en || project.location;
   const tags = isHebrew ? project.tags : project.tags_en || project.tags;
-  const imgSrc = getImageUrl(project.image);
+  const panelName = isHebrew ? project.panel_name : project.panel_name_en || project.panel_name;
+  const richContent = isHebrew ? project.rich_content : project.rich_content_en || project.rich_content;
+  const mainImage = getImageUrl(project.image);
+  const allImages = [mainImage, ...(project.images || []).map(getImageUrl)].filter(Boolean);
+
+  const navigateImage = (direction: 'prev' | 'next') => {
+    if (selectedImageIndex === null) return;
+    if (direction === 'prev') {
+      setSelectedImageIndex(selectedImageIndex === 0 ? allImages.length - 1 : selectedImageIndex - 1);
+    } else {
+      setSelectedImageIndex(selectedImageIndex === allImages.length - 1 ? 0 : selectedImageIndex + 1);
+    }
+  };
 
   return (
     <div className="min-h-screen pt-32 pb-20 bg-background" dir={isHebrew ? "rtl" : "ltr"}>
@@ -109,25 +136,47 @@ const ProjectDetail = () => {
           </Button>
         </motion.div>
 
-        {/* Project image */}
+        {/* Main image */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
-          className="mb-12"
+          className="mb-8"
         >
           <img
-            src={imgSrc}
+            src={mainImage}
             alt={title}
-            className="w-full h-[400px] md:h-[600px] object-cover rounded-2xl shadow-lg"
+            className="w-full h-[400px] md:h-[600px] object-cover rounded-2xl shadow-lg cursor-pointer hover:opacity-95 transition-opacity"
+            onClick={() => setSelectedImageIndex(0)}
             onError={(e) => {
-              console.error("Failed to load image:", project.image);
               e.currentTarget.src = "https://via.placeholder.com/1200x600?text=Image+Not+Found";
             }}
           />
         </motion.div>
 
-        {/* Project info */}
+        {/* Image gallery thumbnails */}
+        {allImages.length > 1 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.15 }}
+            className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3 mb-12"
+          >
+            {allImages.map((img, index) => (
+              <img
+                key={index}
+                src={img}
+                alt={`${title} ${index + 1}`}
+                className={`w-full h-20 object-cover rounded-lg cursor-pointer transition-all hover:opacity-80 ${
+                  index === 0 ? 'ring-2 ring-primary' : ''
+                }`}
+                onClick={() => setSelectedImageIndex(index)}
+              />
+            ))}
+          </motion.div>
+        )}
+
+        {/* Project info grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
           {/* Left column - Main content */}
           <motion.div
@@ -146,9 +195,62 @@ const ProjectDetail = () => {
               )}
             </div>
 
+            {/* Panel details */}
+            {(panelName || project.panel_current) && (
+              <div className="bg-primary/5 rounded-2xl p-6 border border-primary/20">
+                <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+                  <Zap className="h-5 w-5 text-primary" />
+                  {isHebrew ? "פרטי הלוח" : "Panel Details"}
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {panelName && (
+                    <div>
+                      <span className="text-sm text-muted-foreground">{isHebrew ? "שם לוח:" : "Panel Name:"}</span>
+                      <p className="font-semibold text-lg">{panelName}</p>
+                    </div>
+                  )}
+                  {project.panel_current && (
+                    <div>
+                      <span className="text-sm text-muted-foreground">{isHebrew ? "זרם הלוח:" : "Panel Current:"}</span>
+                      <p className="font-semibold text-lg">{project.panel_current}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Description */}
             <div className="prose prose-lg max-w-none">
               <p className="text-foreground leading-relaxed whitespace-pre-wrap">{description}</p>
             </div>
+
+            {/* Video */}
+            {project.video_url && (
+              <div className="mt-8">
+                <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                  <Play className="h-5 w-5" />
+                  {isHebrew ? "סרטון הפרויקט" : "Project Video"}
+                </h3>
+                <div className="aspect-video rounded-2xl overflow-hidden shadow-lg">
+                  <iframe
+                    src={getYoutubeEmbedUrl(project.video_url)}
+                    className="w-full h-full"
+                    allowFullScreen
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Rich content */}
+            {richContent && (
+              <div className="mt-8">
+                <div 
+                  className="prose prose-lg max-w-none"
+                  dangerouslySetInnerHTML={{ __html: richContent }}
+                />
+              </div>
+            )}
           </motion.div>
 
           {/* Right column - Tags and metadata */}
@@ -187,11 +289,60 @@ const ProjectDetail = () => {
                     {new Date(project.created_at).toLocaleDateString(isHebrew ? "he-IL" : "en-US")}
                   </span>
                 </div>
+                {allImages.length > 1 && (
+                  <div>
+                    <span className="font-medium">{isHebrew ? "תמונות:" : "Images:"}</span>
+                    <span className="text-muted-foreground mr-2">{allImages.length}</span>
+                  </div>
+                )}
               </div>
             </div>
           </motion.div>
         </div>
       </div>
+
+      {/* Lightbox modal */}
+      <Dialog open={selectedImageIndex !== null} onOpenChange={() => setSelectedImageIndex(null)}>
+        <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 bg-black/95 border-none">
+          <button
+            onClick={() => setSelectedImageIndex(null)}
+            className="absolute top-4 right-4 z-50 text-white/80 hover:text-white transition-colors"
+          >
+            <X className="h-8 w-8" />
+          </button>
+          
+          {selectedImageIndex !== null && (
+            <div className="relative w-full h-[90vh] flex items-center justify-center">
+              <img
+                src={allImages[selectedImageIndex]}
+                alt={`${title} ${selectedImageIndex + 1}`}
+                className="max-w-full max-h-full object-contain"
+              />
+              
+              {allImages.length > 1 && (
+                <>
+                  <button
+                    onClick={() => navigateImage('prev')}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 rounded-full p-3 transition-colors"
+                  >
+                    <ChevronLeft className="h-8 w-8 text-white" />
+                  </button>
+                  <button
+                    onClick={() => navigateImage('next')}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 rounded-full p-3 transition-colors"
+                  >
+                    <ChevronRight className="h-8 w-8 text-white" />
+                  </button>
+                  
+                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/80">
+                    {selectedImageIndex + 1} / {allImages.length}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
