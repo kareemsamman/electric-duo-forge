@@ -12,69 +12,19 @@ export interface EmailFormData {
 
 export async function sendEmailViaGmail(formData: EmailFormData): Promise<{ success: boolean; message: string }> {
   try {
-    // Fetch Gmail credentials from admin settings
-    const { data: settings, error: settingsError } = await supabase
-      .from("site_content")
-      .select("key, value_he")
-      .in("key", ["gmail_email", "gmail_app_password"]);
-
-    if (settingsError) {
-      throw new Error("Failed to fetch email settings");
-    }
-
-    const settingsMap = settings.reduce(
-      (acc, item) => {
-        acc[item.key] = item.value_he;
-        return acc;
-      },
-      {} as Record<string, string>,
-    );
-
-    const admin_email = settingsMap.gmail_email;
-    const app_password = settingsMap.gmail_app_password;
-
-    if (!admin_email || !app_password) {
-      throw new Error("Gmail credentials not configured in Admin Settings");
-    }
-
-    // Prepare payload for PHP endpoint with all fields at root level
-    const payload = {
-      admin_email,
-      app_password,
-      form_type: formData.form_type,
-      name: formData.name,
-      email: formData.email,
-      subject: formData.subject || `New ${formData.form_type} Form Submission`,
-      message: formData.message,
-      ...(formData.attachments && formData.attachments.length > 0 && { attachments: formData.attachments }),
-      ...Object.keys(formData).reduce((acc, key) => {
-        // Exclude already added fields and internal fields
-        if (!['form_type', 'name', 'email', 'subject', 'message', 'attachments'].includes(key)) {
-          acc[key] = formData[key];
-        }
-        return acc;
-      }, {} as Record<string, any>)
-    };
-
-    // Send to PHP endpoint
-    const response = await fetch("https://www.kareemsamman.com/send_mail.php", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
+    // Call the Edge Function to send email (credentials are stored securely in secrets)
+    const { data, error } = await supabase.functions.invoke('send-email', {
+      body: formData,
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Server error: ${errorText}`);
+    if (error) {
+      console.error('Edge function error:', error);
+      throw new Error(error.message || 'Failed to send email');
     }
 
-    const result = await response.json();
-
     return {
-      success: true,
-      message: result.message || "Email sent successfully!",
+      success: data?.success ?? true,
+      message: data?.message || "Email sent successfully!",
     };
   } catch (error) {
     console.error("Email sending error:", error);

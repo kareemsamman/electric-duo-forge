@@ -5,10 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowRight, ArrowLeft, Save } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Save, Info } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 export default function AdminSettings() {
   const { language } = useLanguage();
@@ -17,21 +18,16 @@ export default function AdminSettings() {
 
   const [settings, setSettings] = useState({
     admin_email: '',
-    grow_user: '',
-    grow_api_key: '',
-    grow_webhook_key: '',
-    gmail_email: '',
-    gmail_app_password: ''
   });
 
-  // Fetch current settings
+  // Fetch current settings (only non-sensitive ones)
   const { data: currentSettings } = useQuery({
     queryKey: ['admin-settings'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('site_content')
         .select('*')
-        .in('key', ['admin_email', 'grow_user', 'grow_api_key', 'grow_webhook_key', 'gmail_email', 'gmail_app_password']);
+        .in('key', ['admin_email']);
       
       if (error) throw error;
       
@@ -42,11 +38,6 @@ export default function AdminSettings() {
       
       setSettings({
         admin_email: settingsMap.admin_email || '',
-        grow_user: settingsMap.grow_user || '',
-        grow_api_key: settingsMap.grow_api_key || '',
-        grow_webhook_key: settingsMap.grow_webhook_key || '',
-        gmail_email: settingsMap.gmail_email || '',
-        gmail_app_password: settingsMap.gmail_app_password || ''
       });
       
       return settingsMap;
@@ -56,7 +47,7 @@ export default function AdminSettings() {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      // Update or insert admin_email
+      // Update or insert admin_email (non-sensitive)
       const { error: emailError } = await supabase
         .from('site_content')
         .upsert({
@@ -67,66 +58,6 @@ export default function AdminSettings() {
         }, { onConflict: 'key' });
 
       if (emailError) throw emailError;
-
-      // Update or insert grow_user
-      const { error: growUserError } = await supabase
-        .from('site_content')
-        .upsert({
-          key: 'grow_user',
-          section: 'settings',
-          value_he: settings.grow_user,
-          value_en: settings.grow_user
-        }, { onConflict: 'key' });
-
-      if (growUserError) throw growUserError;
-
-      // Update or insert grow_api_key
-      const { error: apiError } = await supabase
-        .from('site_content')
-        .upsert({
-          key: 'grow_api_key',
-          section: 'settings',
-          value_he: settings.grow_api_key,
-          value_en: settings.grow_api_key
-        }, { onConflict: 'key' });
-
-      if (apiError) throw apiError;
-
-      // Update or insert grow_webhook_key
-      const { error: webhookError } = await supabase
-        .from('site_content')
-        .upsert({
-          key: 'grow_webhook_key',
-          section: 'settings',
-          value_he: settings.grow_webhook_key,
-          value_en: settings.grow_webhook_key
-        }, { onConflict: 'key' });
-
-      if (webhookError) throw webhookError;
-
-      // Update or insert gmail_email
-      const { error: gmailEmailError } = await supabase
-        .from('site_content')
-        .upsert({
-          key: 'gmail_email',
-          section: 'settings',
-          value_he: settings.gmail_email,
-          value_en: settings.gmail_email
-        }, { onConflict: 'key' });
-
-      if (gmailEmailError) throw gmailEmailError;
-
-      // Update or insert gmail_app_password
-      const { error: gmailPasswordError } = await supabase
-        .from('site_content')
-        .upsert({
-          key: 'gmail_app_password',
-          section: 'settings',
-          value_he: settings.gmail_app_password,
-          value_en: settings.gmail_app_password
-        }, { onConflict: 'key' });
-
-      if (gmailPasswordError) throw gmailPasswordError;
 
       toast.success(language === 'he' ? 'ההגדרות נשמרו בהצלחה' : 'Settings saved successfully');
     } catch (error) {
@@ -162,17 +93,27 @@ export default function AdminSettings() {
             {language === 'he' ? 'הגדרות מערכת' : 'System Settings'}
           </h1>
           <p className="text-muted-foreground">
-            {language === 'he' ? 'עדכון הגדרות אימייל ו-API' : 'Update email and API settings'}
+            {language === 'he' ? 'עדכון הגדרות אימייל' : 'Update email settings'}
           </p>
         </div>
+
+        <Alert className="mb-6">
+          <Info className="h-4 w-4" />
+          <AlertTitle>{language === 'he' ? 'הגדרות מאובטחות' : 'Secure Settings'}</AlertTitle>
+          <AlertDescription>
+            {language === 'he' 
+              ? 'מפתחות API וסיסמאות (Grow, Gmail) מאוחסנים באופן מאובטח בשרת ואינם נגישים דרך הממשק.'
+              : 'API keys and passwords (Grow, Gmail) are stored securely on the server and are not accessible through this interface.'}
+          </AlertDescription>
+        </Alert>
 
         <Card>
           <CardHeader>
             <CardTitle>{language === 'he' ? 'הגדרות כלליות' : 'General Settings'}</CardTitle>
             <CardDescription>
               {language === 'he' 
-                ? 'הגדר את כתובת האימייל של המנהל ומפתח API של Grow'
-                : 'Configure admin email and Grow API key'}
+                ? 'הגדר את כתובת האימייל של המנהל'
+                : 'Configure admin email address'}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -192,101 +133,6 @@ export default function AdminSettings() {
                 {language === 'he' 
                   ? 'כתובת זו תקבל התראות על הזמנות חדשות'
                   : 'This address will receive notifications for new orders'}
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="grow_user">
-                {language === 'he' ? 'Grow User' : 'Grow User'}
-              </Label>
-              <Input
-                id="grow_user"
-                type="text"
-                value={settings.grow_user}
-                onChange={(e) => setSettings(prev => ({ ...prev, grow_user: e.target.value }))}
-                placeholder={language === 'he' ? 'הזן את Grow User' : 'Enter Grow User'}
-                dir="ltr"
-              />
-              <p className="text-sm text-muted-foreground">
-                {language === 'he' 
-                  ? 'שם המשתמש בגרואו לעיבוד תשלומים'
-                  : 'Grow username for payment processing'}
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="grow_api_key">
-                {language === 'he' ? 'מפתח API של Grow' : 'Grow API Key'}
-              </Label>
-              <Input
-                id="grow_api_key"
-                type="password"
-                value={settings.grow_api_key}
-                onChange={(e) => setSettings(prev => ({ ...prev, grow_api_key: e.target.value }))}
-                placeholder="••••••••••••••••"
-                dir="ltr"
-              />
-              <p className="text-sm text-muted-foreground">
-                {language === 'he' 
-                  ? 'מפתח API לעיבוד תשלומים בכרטיס אשראי'
-                  : 'API key for processing credit card payments'}
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="grow_webhook_key">
-                {language === 'he' ? 'Grow Webhook Key' : 'Grow Webhook Key'}
-              </Label>
-              <Input
-                id="grow_webhook_key"
-                type="password"
-                value={settings.grow_webhook_key}
-                onChange={(e) => setSettings(prev => ({ ...prev, grow_webhook_key: e.target.value }))}
-                placeholder="••••••••••••••••"
-                dir="ltr"
-              />
-              <p className="text-sm text-muted-foreground">
-                {language === 'he' 
-                  ? 'מפתח אימות להתראות מגרואו'
-                  : 'Webhook key for Grow notifications'}
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="gmail_email">
-                {language === 'he' ? 'כתובת Gmail' : 'Gmail Address'}
-              </Label>
-              <Input
-                id="gmail_email"
-                type="email"
-                value={settings.gmail_email}
-                onChange={(e) => setSettings(prev => ({ ...prev, gmail_email: e.target.value }))}
-                placeholder="example@gmail.com"
-                dir="ltr"
-              />
-              <p className="text-sm text-muted-foreground">
-                {language === 'he' 
-                  ? 'כתובת Gmail לשליחת הודעות דוא"ל'
-                  : 'Gmail address for sending emails'}
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="gmail_app_password">
-                {language === 'he' ? 'סיסמת אפליקציה של Gmail' : 'Gmail App Password'}
-              </Label>
-              <Input
-                id="gmail_app_password"
-                type="password"
-                value={settings.gmail_app_password}
-                onChange={(e) => setSettings(prev => ({ ...prev, gmail_app_password: e.target.value }))}
-                placeholder="•••• •••• •••• ••••"
-                dir="ltr"
-              />
-              <p className="text-sm text-muted-foreground">
-                {language === 'he' 
-                  ? 'סיסמת אפליקציה של Gmail (לא הסיסמה הרגילה)'
-                  : 'Gmail app password (not your regular password)'}
               </p>
             </div>
 
