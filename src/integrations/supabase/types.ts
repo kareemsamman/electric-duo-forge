@@ -17,31 +17,40 @@ export type Database = {
       certificates: {
         Row: {
           certificate_image: string
+          certificate_image_en: string | null
           certificate_name: string
           certificate_name_en: string | null
           created_at: string
           id: string
+          images: string[] | null
           pdf_file: string | null
+          pdf_file_en: string | null
           short_description: string
           short_description_en: string | null
         }
         Insert: {
           certificate_image: string
+          certificate_image_en?: string | null
           certificate_name: string
           certificate_name_en?: string | null
           created_at?: string
           id?: string
+          images?: string[] | null
           pdf_file?: string | null
+          pdf_file_en?: string | null
           short_description: string
           short_description_en?: string | null
         }
         Update: {
           certificate_image?: string
+          certificate_image_en?: string | null
           certificate_name?: string
           certificate_name_en?: string | null
           created_at?: string
           id?: string
+          images?: string[] | null
           pdf_file?: string | null
+          pdf_file_en?: string | null
           short_description?: string
           short_description_en?: string | null
         }
