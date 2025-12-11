@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Pencil, Trash2, GripVertical, ArrowRight, ArrowLeft, X, Video, Image as ImageIcon } from 'lucide-react';
+import { Plus, Pencil, Trash2, GripVertical, ArrowRight, ArrowLeft, X, Video, Image as ImageIcon, Copy } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -189,6 +189,37 @@ export default function AdminProjects() {
     }
   });
 
+  const duplicateMutation = useMutation({
+    mutationFn: async (project: any) => {
+      const duplicatedProject = {
+        project_name: `${project.project_name} (עותק)`,
+        project_name_en: project.project_name_en ? `${project.project_name_en} (Copy)` : null,
+        location: project.location,
+        location_en: project.location_en || null,
+        description: project.description,
+        description_en: project.description_en || null,
+        tags: project.tags || [],
+        tags_en: project.tags_en || [],
+        image: project.image,
+        images: project.images || [],
+        panel_name: project.panel_name || null,
+        panel_name_en: project.panel_name_en || null,
+        panel_current: project.panel_current || null,
+        video_url: project.video_url || null,
+        rich_content: project.rich_content || null,
+        rich_content_en: project.rich_content_en || null,
+        display_order: (projects?.length || 0) + 1,
+      };
+
+      const { error } = await supabase.from('projects').insert(duplicatedProject);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-projects'] });
+      toast.success('פרויקט שוכפל בהצלחה');
+    }
+  });
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (editingProject) {
@@ -293,6 +324,9 @@ export default function AdminProjects() {
                             </div>
                           </div>
                           <div className="flex gap-2">
+                            <Button variant="outline" size="sm" onClick={() => duplicateMutation.mutate(project)} title="שכפל">
+                              <Copy className="w-4 h-4" />
+                            </Button>
                             <Button variant="outline" size="sm" onClick={() => { setEditingProject(project); setIsDialogOpen(true); }}>
                               <Pencil className="w-4 h-4" />
                             </Button>

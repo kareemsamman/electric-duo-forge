@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Plus, Pencil, Trash2, GripVertical, ArrowRight, ArrowLeft, Upload } from 'lucide-react';
+import { Plus, Pencil, Trash2, GripVertical, ArrowRight, ArrowLeft, Upload, Copy } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -128,6 +128,39 @@ export default function AdminProducts() {
     }
   });
 
+  const duplicateMutation = useMutation({
+    mutationFn: async (product: any) => {
+      const duplicatedProduct = {
+        product_name: `${product.product_name} (עותק)`,
+        product_name_en: product.product_name_en ? `${product.product_name_en} (Copy)` : null,
+        price: product.price,
+        sku: product.sku ? `${product.sku}-copy` : null,
+        category: product.category,
+        short_description_he: product.short_description_he || null,
+        short_description_en: product.short_description_en || null,
+        product_description: product.product_description,
+        product_description_en: product.product_description_en || null,
+        product_specs: product.product_specs || '',
+        product_specs_en: product.product_specs_en || null,
+        product_image: product.product_image,
+        thumbnail: product.thumbnail || product.product_image,
+        images: product.images || [],
+        in_stock: product.in_stock ?? true,
+        stock_qty: product.stock_qty || 0,
+        is_featured: false,
+        slug: `product-${Date.now()}`,
+        display_order: (products?.length || 0) + 1,
+      };
+
+      const { error } = await supabase.from('products').insert(duplicatedProduct);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-products'] });
+      toast.success('מוצר שוכפל בהצלחה');
+    }
+  });
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -203,6 +236,9 @@ export default function AdminProducts() {
                             </div>
                           </div>
                           <div className="flex gap-2">
+                            <Button variant="outline" size="sm" onClick={() => duplicateMutation.mutate(product)} title="שכפל">
+                              <Copy className="w-4 h-4" />
+                            </Button>
                             <Button variant="outline" size="sm" onClick={() => { setEditingProduct(product); setImageFile(null); setIsDialogOpen(true); }}>
                               <Pencil className="w-4 h-4" />
                             </Button>
