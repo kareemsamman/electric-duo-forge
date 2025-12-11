@@ -18,7 +18,7 @@ const ProjectsSection = () => {
       const { data, error } = await supabase
         .from("projects")
         .select("*")
-        .order("created_at", { ascending: false })
+        .order("display_order", { ascending: true })
         .limit(6);
 
       if (error) throw error;
