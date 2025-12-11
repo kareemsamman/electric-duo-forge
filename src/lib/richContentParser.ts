@@ -54,6 +54,10 @@ const extractCleanUrl = (input: string): string => {
 /**
  * Find consecutive image shortcodes and group them for grid layout
  */
+/**
+ * Find all image shortcodes and group ALL consecutive ones together for grid layout
+ * Images are considered consecutive if only whitespace, newlines, or HTML tags separate them
+ */
 const parseImageShortcodes = (content: string): string => {
   // Find all image shortcodes with their positions
   const matches: { match: string; url: string; index: number }[] = [];
@@ -73,33 +77,36 @@ const parseImageShortcodes = (content: string): string => {
   
   if (matches.length === 0) return content;
   
-  // Group consecutive images (within 50 chars of each other, accounting for whitespace/tags)
-  const groups: { urls: string[]; startIndex: number; endIndex: number; originalMatches: string[] }[] = [];
-  let currentGroup: { urls: string[]; startIndex: number; endIndex: number; originalMatches: string[] } | null = null;
+  // Group consecutive images - check if only whitespace/tags between them
+  const groups: { urls: string[]; startIndex: number; endIndex: number }[] = [];
+  let currentGroup: { urls: string[]; startIndex: number; endIndex: number } | null = null;
   
   for (let i = 0; i < matches.length; i++) {
     const current = matches[i];
     const prev = matches[i - 1];
     
-    // Check if this image is close enough to the previous to be in the same group
-    const isConsecutive = prev && (current.index - (prev.index + prev.match.length) < 100);
+    // Check if this image is consecutive to the previous one
+    // Allow whitespace, newlines, <p>, </p>, <br>, etc between images
+    let isConsecutive = false;
+    if (prev) {
+      const between = content.substring(prev.index + prev.match.length, current.index);
+      // Only whitespace, paragraph tags, br tags, or nothing between = consecutive
+      const cleanBetween = between.replace(/<\/?p>|<br\s*\/?>|\s+/gi, '').trim();
+      isConsecutive = cleanBetween === '';
+    }
     
     if (!currentGroup || !isConsecutive) {
-      // Start a new group
       if (currentGroup) {
         groups.push(currentGroup);
       }
       currentGroup = {
         urls: [current.url],
         startIndex: current.index,
-        endIndex: current.index + current.match.length,
-        originalMatches: [current.match]
+        endIndex: current.index + current.match.length
       };
     } else {
-      // Add to current group
       currentGroup.urls.push(current.url);
       currentGroup.endIndex = current.index + current.match.length;
-      currentGroup.originalMatches.push(current.match);
     }
   }
   
@@ -119,14 +126,21 @@ const parseImageShortcodes = (content: string): string => {
     else if (imageCount === 3) gridClass = 'grid-cols-3';
     else if (imageCount >= 4) gridClass = 'grid-cols-4';
     
-    // Build grid HTML
-    const imagesHtml = group.urls.map(url => `
-      <div class="overflow-hidden rounded-lg">
+    // Generate unique gallery ID for this group
+    const galleryId = `gallery-${Date.now()}-${i}`;
+    const urlsJson = JSON.stringify(group.urls).replace(/"/g, '&quot;');
+    
+    // Build grid HTML with data attributes for lightbox
+    const imagesHtml = group.urls.map((url, idx) => `
+      <div class="overflow-hidden rounded-lg aspect-square">
         <img 
           src="${url}" 
           alt="" 
-          class="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
+          class="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform duration-300 rich-content-image"
           loading="lazy"
+          data-gallery="${galleryId}"
+          data-gallery-urls="${urlsJson}"
+          data-index="${idx}"
         />
       </div>
     `).join('');
@@ -137,11 +151,11 @@ const parseImageShortcodes = (content: string): string => {
       </div>
     `;
     
-    // Find the full range to replace (including any whitespace/tags between shortcodes)
+    // Find and replace the entire range including content between shortcodes
     const beforeGroup = result.substring(0, group.startIndex);
     const afterGroup = result.substring(group.endIndex);
     
-    // Clean up any paragraph tags or whitespace that wrapped the shortcodes
+    // Clean up paragraph tags that wrapped the shortcodes
     const cleanedBefore = beforeGroup.replace(/<p>\s*$/, '');
     const cleanedAfter = afterGroup.replace(/^\s*<\/p>/, '');
     

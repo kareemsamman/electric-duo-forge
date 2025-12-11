@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -59,6 +59,8 @@ const ProjectDetail = () => {
   const { language } = useLanguage();
   const isHebrew = language === "he";
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
+  const [richContentGallery, setRichContentGallery] = useState<string[] | null>(null);
+  const [richContentImageIndex, setRichContentImageIndex] = useState<number | null>(null);
 
   const { data: project, isLoading, error } = useQuery({
     queryKey: ["project", id],
@@ -118,6 +120,38 @@ const ProjectDetail = () => {
       setSelectedImageIndex(selectedImageIndex === allImages.length - 1 ? 0 : selectedImageIndex + 1);
     }
   };
+
+  const navigateRichContentImage = (direction: 'prev' | 'next') => {
+    if (richContentImageIndex === null || !richContentGallery) return;
+    if (direction === 'prev') {
+      setRichContentImageIndex(richContentImageIndex === 0 ? richContentGallery.length - 1 : richContentImageIndex - 1);
+    } else {
+      setRichContentImageIndex(richContentImageIndex === richContentGallery.length - 1 ? 0 : richContentImageIndex + 1);
+    }
+  };
+
+  // Handle clicks on rich content images
+  const handleRichContentClick = useCallback((e: MouseEvent) => {
+    const target = e.target as HTMLElement;
+    if (target.classList.contains('rich-content-image')) {
+      const galleryUrls = target.getAttribute('data-gallery-urls');
+      const index = parseInt(target.getAttribute('data-index') || '0', 10);
+      if (galleryUrls) {
+        try {
+          const urls = JSON.parse(galleryUrls.replace(/&quot;/g, '"'));
+          setRichContentGallery(urls);
+          setRichContentImageIndex(index);
+        } catch (err) {
+          console.error('Failed to parse gallery urls', err);
+        }
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    document.addEventListener('click', handleRichContentClick);
+    return () => document.removeEventListener('click', handleRichContentClick);
+  }, [handleRichContentClick]);
 
   return (
     <div className="min-h-screen pt-32 pb-20 bg-background" dir={isHebrew ? "rtl" : "ltr"}>
@@ -303,6 +337,7 @@ const ProjectDetail = () => {
       </div>
 
       {/* Lightbox modal */}
+      {/* Lightbox modal for gallery images */}
       <Dialog open={selectedImageIndex !== null} onOpenChange={() => setSelectedImageIndex(null)}>
         <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 bg-black/95 border-none">
           <button
@@ -337,6 +372,49 @@ const ProjectDetail = () => {
                   
                   <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/80">
                     {selectedImageIndex + 1} / {allImages.length}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Lightbox modal for rich content images */}
+      <Dialog open={richContentImageIndex !== null} onOpenChange={() => { setRichContentImageIndex(null); setRichContentGallery(null); }}>
+        <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 bg-black/95 border-none">
+          <button
+            onClick={() => { setRichContentImageIndex(null); setRichContentGallery(null); }}
+            className="absolute top-4 right-4 z-50 text-white/80 hover:text-white transition-colors"
+          >
+            <X className="h-8 w-8" />
+          </button>
+          
+          {richContentImageIndex !== null && richContentGallery && (
+            <div className="relative w-full h-[90vh] flex items-center justify-center">
+              <img
+                src={richContentGallery[richContentImageIndex]}
+                alt={`Image ${richContentImageIndex + 1}`}
+                className="max-w-full max-h-full object-contain"
+              />
+              
+              {richContentGallery.length > 1 && (
+                <>
+                  <button
+                    onClick={() => navigateRichContentImage('prev')}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 rounded-full p-3 transition-colors"
+                  >
+                    <ChevronLeft className="h-8 w-8 text-white" />
+                  </button>
+                  <button
+                    onClick={() => navigateRichContentImage('next')}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 rounded-full p-3 transition-colors"
+                  >
+                    <ChevronRight className="h-8 w-8 text-white" />
+                  </button>
+                  
+                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/80">
+                    {richContentImageIndex + 1} / {richContentGallery.length}
                   </div>
                 </>
               )}
