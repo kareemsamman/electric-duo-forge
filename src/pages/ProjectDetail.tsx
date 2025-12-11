@@ -6,6 +6,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { ArrowRight, ArrowLeft, MapPin, Loader2, ChevronLeft, ChevronRight, Play, Zap, X } from "lucide-react";
+import { parseRichContent } from "@/lib/richContentParser";
 import { motion } from "framer-motion";
 
 type Project = {
@@ -246,8 +247,8 @@ const ProjectDetail = () => {
             {richContent && (
               <div className="mt-8">
                 <div 
-                  className="prose prose-lg max-w-none"
-                  dangerouslySetInnerHTML={{ __html: richContent }}
+                  className="prose prose-lg max-w-none [&_video]:rounded-xl [&_iframe]:rounded-xl"
+                  dangerouslySetInnerHTML={{ __html: parseRichContent(richContent) }}
                 />
               </div>
             )}
