@@ -77,6 +77,29 @@ const ProjectDetail = () => {
     enabled: !!id,
   });
 
+  // Handle clicks on rich content images - MUST be before early returns
+  const handleRichContentClick = useCallback((e: MouseEvent) => {
+    const target = e.target as HTMLElement;
+    if (target.classList.contains('rich-content-image')) {
+      const galleryUrls = target.getAttribute('data-gallery-urls');
+      const index = parseInt(target.getAttribute('data-index') || '0', 10);
+      if (galleryUrls) {
+        try {
+          const urls = JSON.parse(galleryUrls.replace(/&quot;/g, '"'));
+          setRichContentGallery(urls);
+          setRichContentImageIndex(index);
+        } catch (err) {
+          console.error('Failed to parse gallery urls', err);
+        }
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    document.addEventListener('click', handleRichContentClick);
+    return () => document.removeEventListener('click', handleRichContentClick);
+  }, [handleRichContentClick]);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -130,28 +153,6 @@ const ProjectDetail = () => {
     }
   };
 
-  // Handle clicks on rich content images
-  const handleRichContentClick = useCallback((e: MouseEvent) => {
-    const target = e.target as HTMLElement;
-    if (target.classList.contains('rich-content-image')) {
-      const galleryUrls = target.getAttribute('data-gallery-urls');
-      const index = parseInt(target.getAttribute('data-index') || '0', 10);
-      if (galleryUrls) {
-        try {
-          const urls = JSON.parse(galleryUrls.replace(/&quot;/g, '"'));
-          setRichContentGallery(urls);
-          setRichContentImageIndex(index);
-        } catch (err) {
-          console.error('Failed to parse gallery urls', err);
-        }
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    document.addEventListener('click', handleRichContentClick);
-    return () => document.removeEventListener('click', handleRichContentClick);
-  }, [handleRichContentClick]);
 
   return (
     <div className="min-h-screen pt-32 pb-20 bg-background" dir={isHebrew ? "rtl" : "ltr"}>
