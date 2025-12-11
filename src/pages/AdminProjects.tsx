@@ -30,14 +30,14 @@ interface ProjectFormData {
   video_url: string;
   rich_content: string;
   rich_content_en: string;
+  image_url: string;
 }
 
 export default function AdminProjects() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<any>(null);
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [additionalImages, setAdditionalImages] = useState<string[]>([]);
-  const [newImageFiles, setNewImageFiles] = useState<File[]>([]);
+  const [galleryImages, setGalleryImages] = useState<string[]>([]);
+  const [newImageUrl, setNewImageUrl] = useState('');
   const [formData, setFormData] = useState<ProjectFormData>({
     project_name: '',
     project_name_en: '',
@@ -53,6 +53,7 @@ export default function AdminProjects() {
     video_url: '',
     rich_content: '',
     rich_content_en: '',
+    image_url: '',
   });
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -88,8 +89,9 @@ export default function AdminProjects() {
         video_url: editingProject.video_url || '',
         rich_content: editingProject.rich_content || '',
         rich_content_en: editingProject.rich_content_en || '',
+        image_url: editingProject.image || '',
       });
-      setAdditionalImages(editingProject.images || []);
+      setGalleryImages(editingProject.images || []);
     } else {
       setFormData({
         project_name: '',
@@ -106,33 +108,15 @@ export default function AdminProjects() {
         video_url: '',
         rich_content: '',
         rich_content_en: '',
+        image_url: '',
       });
-      setAdditionalImages([]);
+      setGalleryImages([]);
     }
-    setNewImageFiles([]);
+    setNewImageUrl('');
   }, [editingProject]);
-
-  const uploadImage = async (file: File): Promise<string> => {
-    const fileExt = file.name.split('.').pop();
-    const fileName = `project-${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-    const { error } = await supabase.storage.from('product-images').upload(fileName, file);
-    if (error) throw error;
-    const { data } = supabase.storage.from('product-images').getPublicUrl(fileName);
-    return data.publicUrl;
-  };
 
   const createMutation = useMutation({
     mutationFn: async () => {
-      let mainImageUrl = '';
-      if (imageFile) mainImageUrl = await uploadImage(imageFile);
-
-      // Upload additional images
-      const uploadedImages: string[] = [...additionalImages];
-      for (const file of newImageFiles) {
-        const url = await uploadImage(file);
-        uploadedImages.push(url);
-      }
-
       const projectData = {
         project_name: formData.project_name,
         project_name_en: formData.project_name_en || null,
@@ -142,8 +126,8 @@ export default function AdminProjects() {
         description_en: formData.description_en || null,
         tags: formData.tags.split(',').map(t => t.trim()).filter(Boolean),
         tags_en: formData.tags_en.split(',').map(t => t.trim()).filter(Boolean),
-        image: mainImageUrl,
-        images: uploadedImages,
+        image: formData.image_url,
+        images: galleryImages,
         panel_name: formData.panel_name || null,
         panel_name_en: formData.panel_name_en || null,
         panel_current: formData.panel_current || null,
@@ -159,23 +143,11 @@ export default function AdminProjects() {
       queryClient.invalidateQueries({ queryKey: ['admin-projects'] });
       toast.success('פרויקט נוצר בהצלחה');
       setIsDialogOpen(false);
-      setImageFile(null);
-      setNewImageFiles([]);
     }
   });
 
   const updateMutation = useMutation({
     mutationFn: async (id: string) => {
-      let mainImageUrl = editingProject?.image || '';
-      if (imageFile) mainImageUrl = await uploadImage(imageFile);
-
-      // Upload additional images
-      const uploadedImages: string[] = [...additionalImages];
-      for (const file of newImageFiles) {
-        const url = await uploadImage(file);
-        uploadedImages.push(url);
-      }
-
       const projectData = {
         project_name: formData.project_name,
         project_name_en: formData.project_name_en || null,
@@ -185,8 +157,8 @@ export default function AdminProjects() {
         description_en: formData.description_en || null,
         tags: formData.tags.split(',').map(t => t.trim()).filter(Boolean),
         tags_en: formData.tags_en.split(',').map(t => t.trim()).filter(Boolean),
-        image: mainImageUrl,
-        images: uploadedImages,
+        image: formData.image_url,
+        images: galleryImages,
         panel_name: formData.panel_name || null,
         panel_name_en: formData.panel_name_en || null,
         panel_current: formData.panel_current || null,
@@ -203,8 +175,6 @@ export default function AdminProjects() {
       toast.success('פרויקט עודכן בהצלחה');
       setIsDialogOpen(false);
       setEditingProject(null);
-      setImageFile(null);
-      setNewImageFiles([]);
     }
   });
 
@@ -243,18 +213,23 @@ export default function AdminProjects() {
     toast.success('סדר הפרויקטים עודכן');
   };
 
-  const removeAdditionalImage = (index: number) => {
-    setAdditionalImages(prev => prev.filter((_, i) => i !== index));
-  };
-
-  const handleNewImagesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setNewImageFiles(prev => [...prev, ...Array.from(e.target.files!)]);
+  const addGalleryImage = () => {
+    if (newImageUrl.trim()) {
+      setGalleryImages(prev => [...prev, newImageUrl.trim()]);
+      setNewImageUrl('');
     }
   };
 
-  const removeNewImage = (index: number) => {
-    setNewImageFiles(prev => prev.filter((_, i) => i !== index));
+  const removeGalleryImage = (index: number) => {
+    setGalleryImages(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleGalleryDragEnd = (result: any) => {
+    if (!result.destination) return;
+    const items = Array.from(galleryImages);
+    const [reorderedItem] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, reorderedItem);
+    setGalleryImages(items);
   };
 
   return (
@@ -273,7 +248,7 @@ export default function AdminProjects() {
             <h1 className="text-4xl font-bold mb-2">ניהול פרויקטים</h1>
             <p className="text-muted-foreground">גרור לסידור מחדש, לחץ לעריכה</p>
           </div>
-          <Button onClick={() => { setEditingProject(null); setImageFile(null); setIsDialogOpen(true); }}>
+          <Button onClick={() => { setEditingProject(null); setIsDialogOpen(true); }}>
             <Plus className="w-4 h-4 ml-2" />הוסף פרויקט חדש
           </Button>
         </div>
@@ -318,7 +293,7 @@ export default function AdminProjects() {
                             </div>
                           </div>
                           <div className="flex gap-2">
-                            <Button variant="outline" size="sm" onClick={() => { setEditingProject(project); setImageFile(null); setIsDialogOpen(true); }}>
+                            <Button variant="outline" size="sm" onClick={() => { setEditingProject(project); setIsDialogOpen(true); }}>
                               <Pencil className="w-4 h-4" />
                             </Button>
                             <Button variant="destructive" size="sm" onClick={() => { if (confirm('למחוק פרויקט זה?')) deleteMutation.mutate(project.id); }}>
@@ -461,20 +436,30 @@ export default function AdminProjects() {
                 </TabsContent>
 
                 <TabsContent value="media" className="space-y-6 mt-4">
-                  {/* Main image */}
+                  {/* Main image URL */}
                   <div>
-                    <Label className="text-lg font-semibold">תמונה ראשית</Label>
-                    <div className="flex items-center gap-4 mt-2">
-                      <Input type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files?.[0] || null)} />
-                      {editingProject?.image && !imageFile && (
-                        <img src={editingProject.image} alt="Current" className="w-24 h-16 object-cover rounded" />
-                      )}
-                    </div>
+                    <Label className="text-lg font-semibold">תמונה ראשית (URL)</Label>
+                    <Input 
+                      value={formData.image_url} 
+                      onChange={(e) => setFormData(prev => ({ ...prev, image_url: e.target.value }))} 
+                      placeholder="https://cdn.example.com/image.jpg"
+                      className="mt-2"
+                    />
+                    {formData.image_url && (
+                      <div className="mt-3">
+                        <img 
+                          src={formData.image_url} 
+                          alt="Preview" 
+                          className="w-48 h-32 object-cover rounded-lg border"
+                          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                        />
+                      </div>
+                    )}
                   </div>
 
                   {/* Video URL */}
                   <div>
-                    <Label className="text-lg font-semibold">וידאו</Label>
+                    <Label className="text-lg font-semibold">וידאו (URL)</Label>
                     <Input 
                       value={formData.video_url} 
                       onChange={(e) => setFormData(prev => ({ ...prev, video_url: e.target.value }))} 
@@ -484,54 +469,73 @@ export default function AdminProjects() {
                     <p className="text-sm text-muted-foreground mt-1">ניתן להזין קישור YouTube או URL של וידאו</p>
                   </div>
 
-                  {/* Additional images */}
+                  {/* Gallery images repeater */}
                   <div>
-                    <Label className="text-lg font-semibold">תמונות נוספות (גלריה)</Label>
+                    <Label className="text-lg font-semibold">גלריית תמונות</Label>
+                    <p className="text-sm text-muted-foreground mb-3">הוסף קישורים לתמונות וגרור לשינוי סדר</p>
                     
-                    {/* Existing images */}
-                    {additionalImages.length > 0 && (
-                      <div className="grid grid-cols-4 gap-3 mt-3">
-                        {additionalImages.map((img, index) => (
-                          <div key={index} className="relative group">
-                            <img src={img} alt={`Gallery ${index + 1}`} className="w-full h-24 object-cover rounded-lg" />
-                            <button
-                              type="button"
-                              onClick={() => removeAdditionalImage(index)}
-                              className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                            >
-                              <X className="w-3 h-3" />
-                            </button>
-                          </div>
-                        ))}
-                      </div>
+                    {/* Add new image URL */}
+                    <div className="flex gap-2 mb-4">
+                      <Input 
+                        value={newImageUrl}
+                        onChange={(e) => setNewImageUrl(e.target.value)}
+                        placeholder="https://cdn.example.com/gallery-image.jpg"
+                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addGalleryImage(); } }}
+                      />
+                      <Button type="button" onClick={addGalleryImage} disabled={!newImageUrl.trim()}>
+                        <Plus className="w-4 h-4 ml-1" />הוסף
+                      </Button>
+                    </div>
+
+                    {/* Draggable gallery list */}
+                    {galleryImages.length > 0 && (
+                      <DragDropContext onDragEnd={handleGalleryDragEnd}>
+                        <Droppable droppableId="gallery-images">
+                          {(provided) => (
+                            <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
+                              {galleryImages.map((img, index) => (
+                                <Draggable key={`gallery-${index}`} draggableId={`gallery-${index}`} index={index}>
+                                  {(provided, snapshot) => (
+                                    <div
+                                      ref={provided.innerRef}
+                                      {...provided.draggableProps}
+                                      className={`flex items-center gap-3 p-2 bg-muted/50 rounded-lg border ${snapshot.isDragging ? 'shadow-lg ring-2 ring-primary' : ''}`}
+                                    >
+                                      <div {...provided.dragHandleProps} className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground">
+                                        <GripVertical className="w-4 h-4" />
+                                      </div>
+                                      <img 
+                                        src={img} 
+                                        alt={`Gallery ${index + 1}`} 
+                                        className="w-16 h-12 object-cover rounded"
+                                        onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }}
+                                      />
+                                      <span className="flex-1 text-sm truncate">{img}</span>
+                                      <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => removeGalleryImage(index)}
+                                        className="text-destructive hover:text-destructive"
+                                      >
+                                        <X className="w-4 h-4" />
+                                      </Button>
+                                    </div>
+                                  )}
+                                </Draggable>
+                              ))}
+                              {provided.placeholder}
+                            </div>
+                          )}
+                        </Droppable>
+                      </DragDropContext>
                     )}
 
-                    {/* New images to upload */}
-                    {newImageFiles.length > 0 && (
-                      <div className="grid grid-cols-4 gap-3 mt-3">
-                        {newImageFiles.map((file, index) => (
-                          <div key={index} className="relative group">
-                            <img src={URL.createObjectURL(file)} alt={`New ${index + 1}`} className="w-full h-24 object-cover rounded-lg border-2 border-dashed border-primary" />
-                            <button
-                              type="button"
-                              onClick={() => removeNewImage(index)}
-                              className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                            >
-                              <X className="w-3 h-3" />
-                            </button>
-                          </div>
-                        ))}
+                    {galleryImages.length === 0 && (
+                      <div className="text-center py-8 text-muted-foreground border-2 border-dashed rounded-lg">
+                        אין תמונות בגלריה. הוסף קישורים לתמונות למעלה.
                       </div>
                     )}
-
-                    <Input 
-                      type="file" 
-                      accept="image/*" 
-                      multiple 
-                      onChange={handleNewImagesChange} 
-                      className="mt-3"
-                    />
-                    <p className="text-sm text-muted-foreground mt-1">ניתן לבחור מספר תמונות בו-זמנית</p>
                   </div>
                 </TabsContent>
 
