@@ -1,0 +1,386 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { toast } from "@/hooks/use-toast";
+import { ArrowRight, Plus, Pencil, Trash2, FileText, Upload } from "lucide-react";
+
+interface Certificate {
+  id: string;
+  certificate_name: string;
+  certificate_name_en: string | null;
+  short_description: string;
+  short_description_en: string | null;
+  certificate_image: string;
+  pdf_file: string | null;
+  created_at: string;
+}
+
+const AdminCertificates = () => {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingCertificate, setEditingCertificate] = useState<Certificate | null>(null);
+  const [formData, setFormData] = useState({
+    certificate_name: "",
+    certificate_name_en: "",
+    short_description: "",
+    short_description_en: "",
+    certificate_image: "",
+    pdf_file: "",
+  });
+  const [uploading, setUploading] = useState(false);
+
+  const { data: certificates = [], isLoading } = useQuery({
+    queryKey: ["admin-certificates"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("certificates")
+        .select("*")
+        .order("created_at", { ascending: true });
+      if (error) throw error;
+      return data as Certificate[];
+    },
+  });
+
+  const saveMutation = useMutation({
+    mutationFn: async (data: typeof formData & { id?: string }) => {
+      if (data.id) {
+        const { error } = await supabase
+          .from("certificates")
+          .update({
+            certificate_name: data.certificate_name,
+            certificate_name_en: data.certificate_name_en || null,
+            short_description: data.short_description,
+            short_description_en: data.short_description_en || null,
+            certificate_image: data.certificate_image,
+            pdf_file: data.pdf_file || null,
+          })
+          .eq("id", data.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("certificates").insert({
+          certificate_name: data.certificate_name,
+          certificate_name_en: data.certificate_name_en || null,
+          short_description: data.short_description,
+          short_description_en: data.short_description_en || null,
+          certificate_image: data.certificate_image,
+          pdf_file: data.pdf_file || null,
+        });
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-certificates"] });
+      queryClient.invalidateQueries({ queryKey: ["certificates"] });
+      toast({ title: editingCertificate ? "התעודה עודכנה" : "התעודה נוספה" });
+      resetForm();
+    },
+    onError: (error) => {
+      toast({ title: "שגיאה", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("certificates").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-certificates"] });
+      queryClient.invalidateQueries({ queryKey: ["certificates"] });
+      toast({ title: "התעודה נמחקה" });
+    },
+    onError: (error) => {
+      toast({ title: "שגיאה", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const resetForm = () => {
+    setFormData({
+      certificate_name: "",
+      certificate_name_en: "",
+      short_description: "",
+      short_description_en: "",
+      certificate_image: "",
+      pdf_file: "",
+    });
+    setEditingCertificate(null);
+    setIsDialogOpen(false);
+  };
+
+  const handleEdit = (cert: Certificate) => {
+    setEditingCertificate(cert);
+    setFormData({
+      certificate_name: cert.certificate_name,
+      certificate_name_en: cert.certificate_name_en || "",
+      short_description: cert.short_description,
+      short_description_en: cert.short_description_en || "",
+      certificate_image: cert.certificate_image,
+      pdf_file: cert.pdf_file || "",
+    });
+    setIsDialogOpen(true);
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.certificate_name || !formData.short_description || !formData.certificate_image) {
+      toast({ title: "נא למלא את כל השדות הנדרשים", variant: "destructive" });
+      return;
+    }
+    saveMutation.mutate({
+      ...formData,
+      id: editingCertificate?.id,
+    });
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: "image" | "pdf") => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+      const bucket = "product-images"; // Using existing bucket
+
+      const { error: uploadError } = await supabase.storage
+        .from(bucket)
+        .upload(`certificates/${fileName}`, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = supabase.storage
+        .from(bucket)
+        .getPublicUrl(`certificates/${fileName}`);
+
+      if (type === "image") {
+        setFormData((prev) => ({ ...prev, certificate_image: urlData.publicUrl }));
+      } else {
+        setFormData((prev) => ({ ...prev, pdf_file: urlData.publicUrl }));
+      }
+
+      toast({ title: "הקובץ הועלה בהצלחה" });
+    } catch (error: any) {
+      toast({ title: "שגיאה בהעלאת הקובץ", description: error.message, variant: "destructive" });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen pt-28 md:pt-32 pb-20 bg-background">
+      <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-[1360px]">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate("/admin")}
+              className="hover:bg-muted"
+            >
+              <ArrowRight className="h-5 w-5" />
+            </Button>
+            <h1 className="text-2xl md:text-3xl font-bold">ניהול תעודות</h1>
+          </div>
+
+          <Dialog open={isDialogOpen} onOpenChange={(open) => { if (!open) resetForm(); else setIsDialogOpen(true); }}>
+            <DialogTrigger asChild>
+              <Button onClick={() => setIsDialogOpen(true)}>
+                <Plus className="h-4 w-4 ml-2" />
+                הוספת תעודה
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>{editingCertificate ? "עריכת תעודה" : "הוספת תעודה חדשה"}</DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>שם התעודה (עברית) *</Label>
+                    <Input
+                      value={formData.certificate_name}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, certificate_name: e.target.value }))}
+                      placeholder="ISO 9001:2015"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>שם התעודה (אנגלית)</Label>
+                    <Input
+                      value={formData.certificate_name_en}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, certificate_name_en: e.target.value }))}
+                      placeholder="ISO 9001:2015"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>תיאור קצר (עברית) *</Label>
+                    <Textarea
+                      value={formData.short_description}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, short_description: e.target.value }))}
+                      placeholder="תקן איכות בינלאומי"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>תיאור קצר (אנגלית)</Label>
+                    <Textarea
+                      value={formData.short_description_en}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, short_description_en: e.target.value }))}
+                      placeholder="International quality standard"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>תמונת התעודה *</Label>
+                  <div className="flex items-center gap-4">
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleFileUpload(e, "image")}
+                      disabled={uploading}
+                    />
+                    {formData.certificate_image && (
+                      <img
+                        src={formData.certificate_image}
+                        alt="Preview"
+                        className="w-16 h-20 object-cover rounded border"
+                      />
+                    )}
+                  </div>
+                  <Input
+                    value={formData.certificate_image}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, certificate_image: e.target.value }))}
+                    placeholder="או הכנס URL לתמונה"
+                    className="mt-2"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>קובץ PDF</Label>
+                  <div className="flex items-center gap-4">
+                    <Input
+                      type="file"
+                      accept=".pdf"
+                      onChange={(e) => handleFileUpload(e, "pdf")}
+                      disabled={uploading}
+                    />
+                    {formData.pdf_file && (
+                      <a
+                        href={formData.pdf_file}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1 text-primary hover:underline"
+                      >
+                        <FileText className="w-4 h-4" />
+                        צפייה ב-PDF
+                      </a>
+                    )}
+                  </div>
+                  <Input
+                    value={formData.pdf_file}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, pdf_file: e.target.value }))}
+                    placeholder="או הכנס URL לקובץ PDF"
+                    className="mt-2"
+                  />
+                </div>
+
+                <div className="flex justify-end gap-2 pt-4">
+                  <Button type="button" variant="outline" onClick={resetForm}>
+                    ביטול
+                  </Button>
+                  <Button type="submit" disabled={saveMutation.isPending || uploading}>
+                    {saveMutation.isPending ? "שומר..." : editingCertificate ? "עדכון" : "הוספה"}
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
+
+        {/* Certificates Grid */}
+        {isLoading ? (
+          <div className="flex justify-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          </div>
+        ) : certificates.length === 0 ? (
+          <Card>
+            <CardContent className="py-20 text-center">
+              <FileText className="w-16 h-16 mx-auto text-muted-foreground/50 mb-4" />
+              <p className="text-muted-foreground">אין תעודות עדיין</p>
+              <Button className="mt-4" onClick={() => setIsDialogOpen(true)}>
+                <Plus className="h-4 w-4 ml-2" />
+                הוספת תעודה ראשונה
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+            {certificates.map((cert) => (
+              <Card key={cert.id} className="group overflow-hidden">
+                <div className="relative aspect-[3/4] bg-muted">
+                  {cert.certificate_image ? (
+                    <img
+                      src={cert.certificate_image}
+                      alt={cert.certificate_name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <FileText className="w-12 h-12 text-muted-foreground/50" />
+                    </div>
+                  )}
+                  
+                  {/* Actions overlay */}
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                    <Button size="icon" variant="secondary" onClick={() => handleEdit(cert)}>
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="destructive"
+                      onClick={() => {
+                        if (confirm("האם למחוק את התעודה?")) {
+                          deleteMutation.mutate(cert.id);
+                        }
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+
+                  {/* PDF indicator */}
+                  {cert.pdf_file && (
+                    <div className="absolute top-2 right-2 bg-primary text-primary-foreground px-2 py-1 rounded text-xs">
+                      PDF
+                    </div>
+                  )}
+                </div>
+                <CardContent className="p-3">
+                  <h3 className="font-medium text-sm line-clamp-1">{cert.certificate_name}</h3>
+                  <p className="text-xs text-muted-foreground line-clamp-1 mt-1">
+                    {cert.short_description}
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default AdminCertificates;
