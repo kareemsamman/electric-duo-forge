@@ -20,14 +20,8 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Get Grow webhook key from settings
-    const { data: settings } = await supabase
-      .from('site_content')
-      .select('*')
-      .eq('key', 'grow_webhook_key')
-      .single();
-
-    const growWebhookKey = settings?.value_he;
+    // Get Grow webhook key from environment variables (Supabase Secrets)
+    const growWebhookKey = Deno.env.get('GROW_WEBHOOK_KEY');
 
     // Validate webhook key
     if (!payload.webhookKey || payload.webhookKey !== growWebhookKey) {

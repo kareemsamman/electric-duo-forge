@@ -41,27 +41,14 @@ serve(async (req) => {
       );
     }
 
-    // Get Grow settings from site_content
-    const { data: settings, error: settingsError } = await supabase
-      .from('site_content')
-      .select('*')
-      .in('key', ['grow_user', 'grow_api_key']);
-
-    if (settingsError || !settings || settings.length === 0) {
-      console.error('Grow settings not configured:', settingsError);
-      return new Response(
-        JSON.stringify({ error: 'Grow payment gateway not configured' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const growUser = settings.find(s => s.key === 'grow_user')?.value_he;
-    const growApiKey = settings.find(s => s.key === 'grow_api_key')?.value_he;
+    // Get Grow settings from environment variables (Supabase Secrets)
+    const growUser = Deno.env.get('GROW_USER');
+    const growApiKey = Deno.env.get('GROW_API_KEY');
 
     if (!growUser || !growApiKey) {
-      console.error('Grow credentials missing');
+      console.error('Grow credentials not configured in secrets');
       return new Response(
-        JSON.stringify({ error: 'Grow credentials not configured' }),
+        JSON.stringify({ error: 'Grow payment gateway not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
