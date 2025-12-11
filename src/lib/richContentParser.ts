@@ -56,10 +56,10 @@ export const parseRichContent = (content: string): string => {
     if (!cleanUrl) return match;
     
     return `
-      <div class="my-6">
+      <div class="my-6 aspect-video">
         <video 
           controls 
-          class="w-full rounded-xl shadow-lg" 
+          class="w-full h-full rounded-xl shadow-lg object-contain bg-black" 
           preload="metadata"
         >
           <source src="${cleanUrl}" type="video/mp4" />
