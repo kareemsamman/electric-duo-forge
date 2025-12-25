@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
-import { Resend } from "https://esm.sh/resend@2.0.0";
+import { SmtpClient } from "https://deno.land/x/smtp@v0.7.0/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -122,59 +122,70 @@ serve(async (req) => {
     const formData: EmailRequest = await req.json();
     console.log('Email request received:', { form_type: formData.form_type, name: formData.name });
 
-    // Get Resend API key
-    const resendApiKey = Deno.env.get('RESEND_API_KEY');
-    if (!resendApiKey) {
-      console.error('RESEND_API_KEY not configured');
-      return new Response(
-        JSON.stringify({ error: 'Email service not configured. RESEND_API_KEY is missing.' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Create Supabase client to fetch admin email from database
+    // Create Supabase client to fetch settings from database
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Get admin email from database
+    // Get Gmail settings and admin email from database
     const { data: dbSettings, error: dbError } = await supabase
       .from('site_content')
       .select('key, value_he')
-      .eq('key', 'admin_email');
+      .in('key', ['admin_email', 'gmail_email', 'gmail_app_password']);
 
-    let adminEmail = formData.email; // fallback to sender email
-    if (!dbError && dbSettings && dbSettings.length > 0) {
-      adminEmail = dbSettings[0].value_he || formData.email;
+    if (dbError) {
+      console.error('Error fetching settings:', dbError);
+      throw new Error('Failed to fetch email settings from database');
     }
 
-    console.log('Sending email to:', adminEmail);
+    const settings: Record<string, string> = {};
+    dbSettings?.forEach(item => {
+      settings[item.key] = item.value_he || '';
+    });
+
+    const gmailEmail = settings.gmail_email;
+    const gmailPassword = settings.gmail_app_password;
+    const adminEmail = settings.admin_email || formData.email;
+
+    if (!gmailEmail || !gmailPassword) {
+      console.error('Gmail settings not configured');
+      return new Response(
+        JSON.stringify({ error: 'Gmail settings not configured in admin settings' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log('Sending email via Gmail from:', gmailEmail, 'to:', adminEmail);
 
     // Build email
     const emailSubject = formData.subject || `הזמנה חדשה (${formData.form_type})`;
     const htmlContent = buildEmailHtml(formData);
 
-    // Send email using Resend
-    const resend = new Resend(resendApiKey);
-    const { data, error } = await resend.emails.send({
-      from: 'Orders <onboarding@resend.dev>',
-      to: [adminEmail],
+    // Create SMTP client and connect to Gmail
+    const client = new SmtpClient();
+    
+    await client.connectTLS({
+      hostname: "smtp.gmail.com",
+      port: 465,
+      username: gmailEmail,
+      password: gmailPassword,
+    });
+
+    // Send the email
+    await client.send({
+      from: gmailEmail,
+      to: adminEmail,
       subject: emailSubject,
+      content: "Please view this email in an HTML-compatible email client.",
       html: htmlContent,
     });
 
-    if (error) {
-      console.error('Resend error:', error);
-      return new Response(
-        JSON.stringify({ error: error.message }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    await client.close();
 
-    console.log('Email sent successfully:', data);
+    console.log('Email sent successfully via Gmail');
 
     return new Response(
-      JSON.stringify({ success: true, message: 'Email sent successfully!', id: data?.id }),
+      JSON.stringify({ success: true, message: 'Email sent successfully!' }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
