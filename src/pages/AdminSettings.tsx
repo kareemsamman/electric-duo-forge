@@ -18,8 +18,6 @@ export default function AdminSettings() {
 
   const [settings, setSettings] = useState({
     admin_email: '',
-    gmail_email: '',
-    gmail_app_password: '',
   });
 
   // Fetch current settings
@@ -29,7 +27,7 @@ export default function AdminSettings() {
       const { data, error } = await supabase
         .from('site_content')
         .select('*')
-        .in('key', ['admin_email', 'gmail_email', 'gmail_app_password']);
+        .in('key', ['admin_email']);
       
       if (error) throw error;
       
@@ -40,8 +38,6 @@ export default function AdminSettings() {
       
       setSettings({
         admin_email: settingsMap.admin_email || '',
-        gmail_email: settingsMap.gmail_email || '',
-        gmail_app_password: settingsMap.gmail_app_password || '',
       });
       
       return settingsMap;
@@ -51,25 +47,16 @@ export default function AdminSettings() {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      // Update or insert all settings
-      const settingsToSave = [
-        { key: 'admin_email', value: settings.admin_email },
-        { key: 'gmail_email', value: settings.gmail_email },
-        { key: 'gmail_app_password', value: settings.gmail_app_password },
-      ];
+      const { error } = await supabase
+        .from('site_content')
+        .upsert({
+          key: 'admin_email',
+          section: 'settings',
+          value_he: settings.admin_email,
+          value_en: settings.admin_email
+        }, { onConflict: 'key' });
 
-      for (const setting of settingsToSave) {
-        const { error } = await supabase
-          .from('site_content')
-          .upsert({
-            key: setting.key,
-            section: 'settings',
-            value_he: setting.value,
-            value_en: setting.value
-          }, { onConflict: 'key' });
-
-        if (error) throw error;
-      }
+      if (error) throw error;
 
       toast.success(language === 'he' ? 'ההגדרות נשמרו בהצלחה' : 'Settings saved successfully');
     } catch (error) {
@@ -111,11 +98,11 @@ export default function AdminSettings() {
 
         <Alert className="mb-6">
           <Info className="h-4 w-4" />
-          <AlertTitle>{language === 'he' ? 'הגדרות Gmail' : 'Gmail Settings'}</AlertTitle>
+          <AlertTitle>{language === 'he' ? 'הגדרות אימייל' : 'Email Settings'}</AlertTitle>
           <AlertDescription>
             {language === 'he' 
-              ? 'הגדר את פרטי Gmail לשליחת הודעות אימייל. השתמש ב-App Password מחשבון Google שלך.'
-              : 'Configure Gmail credentials for sending emails. Use an App Password from your Google account.'}
+              ? 'הגדר את כתובת האימייל לקבלת התראות על הזמנות חדשות.'
+              : 'Configure the email address to receive notifications for new orders.'}
           </AlertDescription>
         </Alert>
 
@@ -145,44 +132,6 @@ export default function AdminSettings() {
                 {language === 'he' 
                   ? 'כתובת זו תקבל התראות על הזמנות חדשות'
                   : 'This address will receive notifications for new orders'}
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="gmail_email">
-                {language === 'he' ? 'כתובת Gmail לשליחה' : 'Gmail Address for Sending'}
-              </Label>
-              <Input
-                id="gmail_email"
-                type="email"
-                value={settings.gmail_email}
-                onChange={(e) => setSettings(prev => ({ ...prev, gmail_email: e.target.value }))}
-                placeholder="your-email@gmail.com"
-                dir="ltr"
-              />
-              <p className="text-sm text-muted-foreground">
-                {language === 'he' 
-                  ? 'כתובת Gmail ממנה יישלחו האימיילים'
-                  : 'Gmail address from which emails will be sent'}
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="gmail_app_password">
-                {language === 'he' ? 'סיסמת אפליקציה Gmail' : 'Gmail App Password'}
-              </Label>
-              <Input
-                id="gmail_app_password"
-                type="password"
-                value={settings.gmail_app_password}
-                onChange={(e) => setSettings(prev => ({ ...prev, gmail_app_password: e.target.value }))}
-                placeholder="xxxx xxxx xxxx xxxx"
-                dir="ltr"
-              />
-              <p className="text-sm text-muted-foreground">
-                {language === 'he' 
-                  ? 'App Password מחשבון Google שלך (16 תווים בלי רווחים)'
-                  : 'App Password from your Google account (16 characters without spaces)'}
               </p>
             </div>
 
