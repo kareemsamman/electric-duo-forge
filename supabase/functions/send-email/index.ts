@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
-import { SmtpClient } from "https://deno.land/x/smtp@v0.7.0/mod.ts";
+import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -161,14 +161,17 @@ serve(async (req) => {
     const emailSubject = formData.subject || `הזמנה חדשה (${formData.form_type})`;
     const htmlContent = buildEmailHtml(formData);
 
-    // Create SMTP client and connect to Gmail
-    const client = new SmtpClient();
-    
-    await client.connectTLS({
-      hostname: "smtp.gmail.com",
-      port: 465,
-      username: gmailEmail,
-      password: gmailPassword,
+    // Create SMTP client with denomailer
+    const client = new SMTPClient({
+      connection: {
+        hostname: "smtp.gmail.com",
+        port: 465,
+        tls: true,
+        auth: {
+          username: gmailEmail,
+          password: gmailPassword,
+        },
+      },
     });
 
     // Send the email
@@ -176,7 +179,6 @@ serve(async (req) => {
       from: gmailEmail,
       to: adminEmail,
       subject: emailSubject,
-      content: "Please view this email in an HTML-compatible email client.",
       html: htmlContent,
     });
 
