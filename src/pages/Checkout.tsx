@@ -253,15 +253,15 @@ ${formData.customer_notes ? `הערות:\n${formData.customer_notes}` : ''}
   if (items.length === 0 && showSuccessDialog) {
     return (
       <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
-        <DialogContent className="sm:max-w-md text-center" dir={language === 'he' ? 'rtl' : 'ltr'}>
+        <DialogContent className="sm:max-w-md" dir={language === 'he' ? 'rtl' : 'ltr'}>
           <DialogHeader className="space-y-4">
             <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
               <CheckCircle className="w-10 h-10 text-green-600" />
             </div>
-            <DialogTitle className="text-2xl">
+            <DialogTitle className={`text-2xl ${language === 'he' ? 'text-right' : 'text-left'}`}>
               {language === 'he' ? 'ההזמנה התקבלה!' : 'Order Received!'}
             </DialogTitle>
-            <DialogDescription className="text-base">
+            <DialogDescription className={`text-base ${language === 'he' ? 'text-right' : 'text-left'}`}>
               {language === 'he' 
                 ? 'תודה על הזמנתך! קיבלנו את פרטי ההזמנה שלך. נציג שלנו יצור איתך קשר בהקדם להשלמת התשלום ואישור ההזמנה.'
                 : 'Thank you for your order! We have received your order details. Our representative will contact you shortly to complete the payment and confirm your order.'

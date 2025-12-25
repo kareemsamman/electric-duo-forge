@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -24,14 +25,43 @@ serve(async (req) => {
     const formData: EmailRequest = await req.json();
     console.log('Email request received:', { form_type: formData.form_type, name: formData.name });
 
-    // Get credentials from environment variables (Supabase Secrets)
-    const gmailEmail = Deno.env.get('GMAIL_EMAIL');
-    const gmailAppPassword = Deno.env.get('GMAIL_APP_PASSWORD');
+    // Create Supabase client to fetch credentials from database
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // First try to get credentials from database (admin settings)
+    const { data: dbSettings, error: dbError } = await supabase
+      .from('site_content')
+      .select('key, value_he')
+      .in('key', ['gmail_email', 'gmail_app_password']);
+
+    let gmailEmail = '';
+    let gmailAppPassword = '';
+
+    if (!dbError && dbSettings && dbSettings.length > 0) {
+      const settingsMap: Record<string, string> = {};
+      dbSettings.forEach((item: any) => {
+        settingsMap[item.key] = item.value_he;
+      });
+      
+      gmailEmail = settingsMap['gmail_email'] || '';
+      gmailAppPassword = settingsMap['gmail_app_password'] || '';
+      
+      console.log('Loaded Gmail settings from database');
+    }
+
+    // Fallback to environment variables (Supabase Secrets) if not in database
+    if (!gmailEmail || !gmailAppPassword) {
+      gmailEmail = gmailEmail || Deno.env.get('GMAIL_EMAIL') || '';
+      gmailAppPassword = gmailAppPassword || Deno.env.get('GMAIL_APP_PASSWORD') || '';
+      console.log('Using Gmail settings from environment variables');
+    }
 
     if (!gmailEmail || !gmailAppPassword) {
-      console.error('Gmail credentials not configured in secrets');
+      console.error('Gmail credentials not configured');
       return new Response(
-        JSON.stringify({ error: 'Email service not configured' }),
+        JSON.stringify({ error: 'Email service not configured. Please set Gmail credentials in admin settings.' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
