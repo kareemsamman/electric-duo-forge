@@ -1,7 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 
 export interface EmailFormData {
-  form_type: "Contact" | "Shop Order" | "New Project";
+  form_type: "Contact" | "Shop Order" | "Shop Order - Credit Card" | "New Project";
   name: string;
   email: string;
   subject?: string;

@@ -7,10 +7,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { FadeIn } from '@/components/animations/FadeIn';
-import { Home, CreditCard, Banknote, Loader2, Truck } from 'lucide-react';
+import { Home, CreditCard, Loader2, Truck, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { useQuery } from '@tanstack/react-query';
@@ -24,7 +24,6 @@ const checkoutSchema = z.object({
   customer_city: z.string().trim().min(2, 'עיר חייבת להכיל לפחות 2 תווים'),
   customer_address: z.string().trim().min(5, 'כתובת חייבת להכיל לפחות 5 תווים'),
   customer_notes: z.string().optional(),
-  payment_method: z.enum(['cash', 'visa']),
   shipping_method_id: z.string().uuid('נא לבחור שיטת משלוח')
 });
 
@@ -34,6 +33,7 @@ export default function Checkout() {
   const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   
   const [formData, setFormData] = useState({
     customer_name: '',
@@ -42,7 +42,6 @@ export default function Checkout() {
     customer_city: '',
     customer_address: '',
     customer_notes: '',
-    payment_method: 'cash' as 'cash' | 'visa',
     shipping_method_id: ''
   });
 
@@ -127,7 +126,7 @@ export default function Checkout() {
       // Get current user if logged in
       const { data: { user } } = await supabase.auth.getUser();
 
-      // Create order
+      // Create order with visa payment method
       const { data: order, error } = await supabase
         .from('orders')
         .insert({
@@ -137,7 +136,7 @@ export default function Checkout() {
           customer_city: formData.customer_city,
           customer_address: formData.customer_address,
           customer_notes: formData.customer_notes || null,
-          payment_method: formData.payment_method,
+          payment_method: 'visa',
           payment_status: 'pending',
           status: 'pending',
           total_items: totalItems,
@@ -159,38 +158,7 @@ export default function Checkout() {
 
       if (error) throw error;
 
-      // If payment method is Visa, redirect to Grow payment
-      if (formData.payment_method === 'visa') {
-        try {
-          const { data: paymentData, error: paymentError } = await supabase.functions.invoke(
-            'grow-payment-start',
-            {
-              body: { orderId: order.id }
-            }
-          );
-
-          if (paymentError || !paymentData?.paymentUrl) {
-            console.error('Grow payment error:', paymentError);
-            toast.error(language === 'he' ? 'שגיאה בהפניה לתשלום בכרטיס אשראי' : 'Error initiating card payment');
-            setIsProcessing(false);
-            return;
-          }
-
-          // Clear cart before redirecting to payment
-          clearCart();
-          
-          // Redirect to Grow payment page
-          window.location.href = paymentData.paymentUrl;
-          return;
-        } catch (paymentRedirectError) {
-          console.error('Payment redirect error:', paymentRedirectError);
-          toast.error(language === 'he' ? 'שגיאה בהפניה לדף התשלום' : 'Error redirecting to payment page');
-          setIsProcessing(false);
-          return;
-        }
-      }
-
-      // Send order confirmation email via Gmail SMTP
+      // Send order notification email to admin
       let emailStatus = 'sent';
       let emailError = null;
       
@@ -208,7 +176,7 @@ export default function Checkout() {
 אימייל: ${formData.customer_email}
 כתובת: ${formData.customer_address}, ${formData.customer_city}
 שיטת משלוח: ${selectedShipping?.name || 'רגיל'} (${formatPrice(deliveryFee)})
-אמצעי תשלום: ${formData.payment_method === 'cash' ? 'מזומן' : 'כרטיס אשראי'}
+אמצעי תשלום: כרטיס אשראי (ממתין לאישור)
 
 פריטים:
 ${orderItemsList}
@@ -218,14 +186,16 @@ ${orderItemsList}
 סה"כ לתשלום: ${formatPrice(total)}
 
 ${formData.customer_notes ? `הערות:\n${formData.customer_notes}` : ''}
+
+⚠️ הלקוח בחר תשלום בכרטיס אשראי - יש ליצור קשר עם הלקוח להמשך התהליך.
         `.trim();
 
         const { sendEmailViaGmail } = await import('@/lib/emailService');
         const emailResult = await sendEmailViaGmail({
-          form_type: "Shop Order",
+          form_type: "Shop Order - Credit Card",
           name: formData.customer_name,
           email: formData.customer_email,
-          subject: `הזמנה חדשה #${order.id}`,
+          subject: `הזמנה חדשה (כרטיס אשראי) #${order.id}`,
           message: orderDetails,
           Phone: formData.customer_phone,
           City: formData.customer_city,
@@ -247,7 +217,7 @@ ${formData.customer_notes ? `הערות:\n${formData.customer_notes}` : ''}
       await supabase
         .from('orders')
         .update({
-          email_last_type: 'new_order',
+          email_last_type: 'new_order_visa',
           email_last_status: emailStatus,
           email_last_error: emailError,
           email_last_sent_at: new Date().toISOString()
@@ -257,14 +227,8 @@ ${formData.customer_notes ? `הערות:\n${formData.customer_notes}` : ''}
       // Clear cart
       clearCart();
 
-      // Show success message for cash payment
-      toast.success(language === 'he' 
-        ? 'ההזמנה נקלטה בהצלחה! נשלח אליך אישור למייל. התשלום יבוצע במזומן בעת האספקה.'
-        : 'Order placed successfully! A confirmation has been sent to your email. Payment will be collected in cash upon delivery.'
-      );
-
-      // Navigate to order confirmation
-      navigate(`/order/${order.id}`);
+      // Show success dialog
+      setShowSuccessDialog(true);
     } catch (error) {
       console.error('Error creating order:', error);
       toast.error(language === 'he' 
@@ -274,6 +238,11 @@ ${formData.customer_notes ? `הערות:\n${formData.customer_notes}` : ''}
     } finally {
       setIsProcessing(false);
     }
+  };
+
+  const handleCloseSuccessDialog = () => {
+    setShowSuccessDialog(false);
+    navigate('/');
   };
 
   if (items.length === 0) {
@@ -463,52 +432,25 @@ ${formData.customer_notes ? `הערות:\n${formData.customer_notes}` : ''}
                   </div>
                 </div>
 
-                {/* Payment Method */}
+                {/* Payment Method - Credit Card Only */}
                 <div className="bg-card rounded-2xl border shadow-sm p-6">
                   <h2 className="text-2xl font-semibold mb-4">
                     {language === 'he' ? 'אמצעי תשלום' : 'Payment Method'}
                   </h2>
                   
-                  <RadioGroup
-                    value={formData.payment_method}
-                    onValueChange={(value) => setFormData(prev => ({ ...prev, payment_method: value as 'cash' | 'visa' }))}
-                    dir={language === 'he' ? 'rtl' : 'ltr'}
-                    className="text-right"
-                  >
-                    <div className="flex items-center gap-3 p-4 border rounded-lg hover:bg-accent cursor-pointer">
-                      <RadioGroupItem value="cash" id="cash" />
-                      <Label 
-                        htmlFor="cash" 
-                        className="flex-1 flex items-center justify-between cursor-pointer text-right"
-                      >
-                        <span className="flex items-center gap-2">
-                          <Banknote className="w-5 h-5" />
-                          <span>{language === 'he' ? 'מזומן במשלוח' : 'Cash on Delivery'}</span>
-                        </span>
-                      </Label>
-                    </div>
-                    <div className="flex items-center gap-3 p-4 border rounded-lg hover:bg-accent cursor-pointer">
-                      <RadioGroupItem value="visa" id="visa" />
-                      <Label 
-                        htmlFor="visa" 
-                        className="flex-1 flex items-center justify-between cursor-pointer text-right"
-                      >
-                        <span className="flex items-center gap-2">
-                          <CreditCard className="w-5 h-5" />
-                          <span>{language === 'he' ? 'כרטיס אשראי' : 'Credit Card'}</span>
-                        </span>
-                      </Label>
-                    </div>
-                  </RadioGroup>
+                  <div className="flex items-center gap-3 p-4 border rounded-lg bg-accent/50">
+                    <CreditCard className="w-6 h-6 text-primary" />
+                    <span className="font-medium">
+                      {language === 'he' ? 'כרטיס אשראי' : 'Credit Card'}
+                    </span>
+                  </div>
 
-                  {formData.payment_method === 'visa' && (
-                    <p className="mt-4 text-sm text-muted-foreground bg-muted p-3 rounded-lg">
-                      {language === 'he' 
-                        ? 'לאחר לחיצה על "סיום הזמנה" תועבר לדף תשלום מאובטח לביצוע התשלום בכרטיס אשראי.'
-                        : 'After clicking "Complete Order" you will be redirected to a secure payment page to complete your card payment.'
-                      }
-                    </p>
-                  )}
+                  <p className="mt-4 text-sm text-muted-foreground bg-muted p-3 rounded-lg">
+                    {language === 'he' 
+                      ? 'לאחר מילוי הפרטים, נציג יצור איתך קשר להשלמת התשלום.'
+                      : 'After filling in your details, a representative will contact you to complete the payment.'
+                    }
+                  </p>
                 </div>
 
                 <Button 
@@ -584,6 +526,29 @@ ${formData.customer_notes ? `הערות:\n${formData.customer_notes}` : ''}
           </div>
         </div>
       </div>
+
+      {/* Success Dialog */}
+      <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
+        <DialogContent className="sm:max-w-md text-center" dir={language === 'he' ? 'rtl' : 'ltr'}>
+          <DialogHeader className="space-y-4">
+            <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+              <CheckCircle className="w-10 h-10 text-green-600" />
+            </div>
+            <DialogTitle className="text-2xl">
+              {language === 'he' ? 'ההזמנה התקבלה!' : 'Order Received!'}
+            </DialogTitle>
+            <DialogDescription className="text-base">
+              {language === 'he' 
+                ? 'קיבלנו את פרטי ההזמנה שלך. נציג שלנו יצור איתך קשר בהקדם להשלמת התשלום ואישור ההזמנה.'
+                : 'We have received your order details. Our representative will contact you shortly to complete the payment and confirm your order.'
+              }
+            </DialogDescription>
+          </DialogHeader>
+          <Button onClick={handleCloseSuccessDialog} className="w-full mt-4">
+            {language === 'he' ? 'לדף הבית' : 'Go to Home'}
+          </Button>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
