@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
+import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -48,7 +49,7 @@ serve(async (req) => {
       gmailEmail = settingsMap['gmail_email'] || '';
       gmailAppPassword = settingsMap['gmail_app_password'] || '';
       
-      console.log('Loaded Gmail settings from database');
+      console.log('Loaded Gmail settings from database, email:', gmailEmail ? 'configured' : 'not configured');
     }
 
     // Fallback to environment variables (Supabase Secrets) if not in database
@@ -66,54 +67,84 @@ serve(async (req) => {
       );
     }
 
-    // Build payload for PHP endpoint
-    const payload = {
-      admin_email: gmailEmail,
-      app_password: gmailAppPassword,
-      form_type: formData.form_type,
-      name: formData.name,
-      email: formData.email,
-      subject: formData.subject || `New ${formData.form_type} Form Submission`,
-      message: formData.message,
-      ...(formData.attachments && formData.attachments.length > 0 && { attachments: formData.attachments }),
-      ...Object.keys(formData).reduce((acc, key) => {
-        if (!['form_type', 'name', 'email', 'subject', 'message', 'attachments'].includes(key)) {
-          acc[key] = formData[key];
-        }
-        return acc;
-      }, {} as Record<string, any>)
-    };
+    // Build email content
+    const emailSubject = formData.subject || `New ${formData.form_type} Form Submission`;
+    
+    // Build HTML content with all form data
+    let htmlContent = `
+      <div style="font-family: Arial, sans-serif; direction: rtl; text-align: right;">
+        <h2 style="color: #333;">טופס חדש: ${formData.form_type}</h2>
+        <table style="border-collapse: collapse; width: 100%; margin-top: 20px;">
+          <tr style="background-color: #f5f5f5;">
+            <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold;">שם</td>
+            <td style="padding: 10px; border: 1px solid #ddd;">${formData.name}</td>
+          </tr>
+          <tr>
+            <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold;">אימייל</td>
+            <td style="padding: 10px; border: 1px solid #ddd;">${formData.email}</td>
+          </tr>
+    `;
 
-    // Send to PHP endpoint
-    const response = await fetch("https://www.kareemsamman.com/send_mail.php", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
+    // Add additional fields
+    const excludeFields = ['form_type', 'name', 'email', 'subject', 'message', 'attachments'];
+    Object.keys(formData).forEach(key => {
+      if (!excludeFields.includes(key) && formData[key]) {
+        htmlContent += `
+          <tr>
+            <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold;">${key}</td>
+            <td style="padding: 10px; border: 1px solid #ddd;">${formData[key]}</td>
+          </tr>
+        `;
+      }
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('PHP endpoint error:', errorText);
-      return new Response(
-        JSON.stringify({ error: 'Failed to send email' }),
-        { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    htmlContent += `
+          <tr style="background-color: #f5f5f5;">
+            <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold;">הודעה</td>
+            <td style="padding: 10px; border: 1px solid #ddd;">${formData.message.replace(/\n/g, '<br>')}</td>
+          </tr>
+        </table>
+      </div>
+    `;
 
-    const result = await response.json();
-    console.log('Email sent successfully');
+    // Create SMTP client for Gmail
+    const client = new SMTPClient({
+      connection: {
+        hostname: "smtp.gmail.com",
+        port: 465,
+        tls: true,
+        auth: {
+          username: gmailEmail,
+          password: gmailAppPassword,
+        },
+      },
+    });
+
+    console.log('Sending email via Gmail SMTP...');
+
+    // Send email
+    await client.send({
+      from: gmailEmail,
+      to: gmailEmail, // Send to admin email
+      subject: emailSubject,
+      content: "auto",
+      html: htmlContent,
+    });
+
+    await client.close();
+
+    console.log('Email sent successfully via Gmail SMTP');
 
     return new Response(
-      JSON.stringify({ success: true, message: result.message || 'Email sent successfully!' }),
+      JSON.stringify({ success: true, message: 'Email sent successfully!' }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error in send-email function:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Internal server error';
     return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
+      JSON.stringify({ error: errorMessage }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
