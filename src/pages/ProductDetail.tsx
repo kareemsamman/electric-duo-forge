@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -6,8 +6,9 @@ import { useCart } from '@/contexts/CartContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { FadeIn } from '@/components/animations/FadeIn';
-import { Minus, Plus, ShoppingCart, Home, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Minus, Plus, ShoppingCart, Home, ChevronLeft, ChevronRight, X, ZoomIn } from 'lucide-react';
 import { Card } from '@/components/ui/card';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 export default function ProductDetail() {
   const { slug } = useParams();
@@ -16,6 +17,7 @@ export default function ProductDetail() {
   const { language } = useLanguage();
   const [quantity, setQuantity] = useState(1);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
 
   const { data: product, isLoading } = useQuery({
     queryKey: ['product', slug],
@@ -132,14 +134,21 @@ export default function ProductDetail() {
           <FadeIn delay={0.1}>
             <div className="space-y-4">
               {/* Main Image */}
-              <div className="relative aspect-square rounded-2xl overflow-hidden bg-muted">
+              <div 
+                className="relative aspect-square rounded-2xl overflow-hidden bg-muted cursor-zoom-in group"
+                onClick={() => setIsGalleryOpen(true)}
+              >
                 {images.length > 0 && (
                   <>
                     <img
                       src={images[selectedImageIndex]}
                       alt={language === 'he' ? product.product_name : product.product_name_en || product.product_name}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover transition-transform group-hover:scale-105"
                     />
+                    
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                      <ZoomIn className="w-10 h-10 text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-lg" />
+                    </div>
                     
                     {images.length > 1 && (
                       <>
@@ -147,7 +156,7 @@ export default function ProductDetail() {
                           variant="secondary"
                           size="icon"
                           className="absolute left-4 top-1/2 -translate-y-1/2"
-                          onClick={prevImage}
+                          onClick={(e) => { e.stopPropagation(); prevImage(); }}
                         >
                           <ChevronLeft className="w-5 h-5" />
                         </Button>
@@ -155,7 +164,7 @@ export default function ProductDetail() {
                           variant="secondary"
                           size="icon"
                           className="absolute right-4 top-1/2 -translate-y-1/2"
-                          onClick={nextImage}
+                          onClick={(e) => { e.stopPropagation(); nextImage(); }}
                         >
                           <ChevronRight className="w-5 h-5" />
                         </Button>
@@ -349,6 +358,74 @@ export default function ProductDetail() {
             </div>
           </div>
         )}
+
+        {/* Gallery Lightbox */}
+        <Dialog open={isGalleryOpen} onOpenChange={setIsGalleryOpen}>
+          <DialogContent className="max-w-5xl p-0 bg-black/95 border-none">
+            <div className="relative w-full h-[80vh] flex items-center justify-center">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute top-4 right-4 text-white hover:bg-white/20 z-10"
+                onClick={() => setIsGalleryOpen(false)}
+              >
+                <X className="w-6 h-6" />
+              </Button>
+              
+              {images.length > 0 && (
+                <>
+                  <img
+                    src={images[selectedImageIndex]}
+                    alt={language === 'he' ? product.product_name : product.product_name_en || product.product_name}
+                    className="max-w-full max-h-full object-contain"
+                  />
+                  
+                  {images.length > 1 && (
+                    <>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="absolute left-4 top-1/2 -translate-y-1/2 text-white hover:bg-white/20"
+                        onClick={prevImage}
+                      >
+                        <ChevronLeft className="w-8 h-8" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-white hover:bg-white/20"
+                        onClick={nextImage}
+                      >
+                        <ChevronRight className="w-8 h-8" />
+                      </Button>
+                    </>
+                  )}
+                </>
+              )}
+              
+              {/* Thumbnails in lightbox */}
+              {images.length > 1 && (
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                  {images.map((image, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setSelectedImageIndex(index)}
+                      className={`w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${
+                        selectedImageIndex === index ? 'border-white' : 'border-transparent opacity-60 hover:opacity-100'
+                      }`}
+                    >
+                      <img
+                        src={image}
+                        alt={`${product.product_name} ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

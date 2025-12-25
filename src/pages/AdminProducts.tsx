@@ -7,16 +7,19 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Plus, Pencil, Trash2, GripVertical, ArrowRight, ArrowLeft, Upload, Copy } from 'lucide-react';
+import { Plus, Pencil, Trash2, GripVertical, ArrowRight, ArrowLeft, Copy, X, Image } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 
 export default function AdminProducts() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [galleryUrls, setGalleryUrls] = useState<string[]>([]);
+  const [newGalleryUrl, setNewGalleryUrl] = useState('');
+  const [mainImageUrl, setMainImageUrl] = useState('');
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { language } = useLanguage();
@@ -50,6 +53,8 @@ export default function AdminProducts() {
       let imageUrl = formData.get('product_image') as string;
       if (imageFile) imageUrl = await uploadImage(imageFile);
 
+      const finalImageUrl = mainImageUrl || imageUrl;
+      
       const productData = {
         product_name: formData.get('product_name') as string,
         product_name_en: formData.get('product_name_en') as string || null,
@@ -62,8 +67,9 @@ export default function AdminProducts() {
         product_description_en: formData.get('product_description_en') as string || null,
         product_specs: formData.get('product_specs') as string || '',
         product_specs_en: formData.get('product_specs_en') as string || null,
-        product_image: imageUrl,
-        thumbnail: imageUrl,
+        product_image: finalImageUrl,
+        thumbnail: finalImageUrl,
+        images: galleryUrls.length > 0 ? galleryUrls : [finalImageUrl],
         in_stock: formData.get('in_stock') === 'true',
         stock_qty: Number(formData.get('stock_qty')) || 0,
         is_featured: formData.get('is_featured') === 'true',
@@ -78,6 +84,8 @@ export default function AdminProducts() {
       toast.success('מוצר נוצר בהצלחה');
       setIsDialogOpen(false);
       setImageFile(null);
+      setGalleryUrls([]);
+      setMainImageUrl('');
     }
   });
 
@@ -85,6 +93,7 @@ export default function AdminProducts() {
     mutationFn: async ({ id, formData }: { id: string; formData: FormData }) => {
       let imageUrl = formData.get('product_image') as string;
       if (imageFile) imageUrl = await uploadImage(imageFile);
+      const finalImageUrl = mainImageUrl || imageUrl;
 
       const productData = {
         product_name: formData.get('product_name') as string,
@@ -98,8 +107,9 @@ export default function AdminProducts() {
         product_description_en: formData.get('product_description_en') as string || null,
         product_specs: formData.get('product_specs') as string || null,
         product_specs_en: formData.get('product_specs_en') as string || null,
-        product_image: imageUrl,
-        thumbnail: imageUrl,
+        product_image: finalImageUrl,
+        thumbnail: finalImageUrl,
+        images: galleryUrls.length > 0 ? galleryUrls : [finalImageUrl],
         in_stock: formData.get('in_stock') === 'true',
         stock_qty: Number(formData.get('stock_qty')) || 0,
         is_featured: formData.get('is_featured') === 'true'
@@ -114,6 +124,8 @@ export default function AdminProducts() {
       setIsDialogOpen(false);
       setEditingProduct(null);
       setImageFile(null);
+      setGalleryUrls([]);
+      setMainImageUrl('');
     }
   });
 
@@ -202,7 +214,13 @@ export default function AdminProducts() {
             <h1 className="text-4xl font-bold mb-2">ניהול מוצרים</h1>
             <p className="text-muted-foreground">גרור לסידור מחדש, לחץ לעריכה</p>
           </div>
-          <Button onClick={() => { setEditingProduct(null); setImageFile(null); setIsDialogOpen(true); }}>
+          <Button onClick={() => { 
+            setEditingProduct(null); 
+            setImageFile(null); 
+            setGalleryUrls([]); 
+            setMainImageUrl(''); 
+            setIsDialogOpen(true); 
+          }}>
             <Plus className="w-4 h-4 ml-2" />הוסף מוצר חדש
           </Button>
         </div>
@@ -239,7 +257,13 @@ export default function AdminProducts() {
                             <Button variant="outline" size="sm" onClick={() => duplicateMutation.mutate(product)} title="שכפל">
                               <Copy className="w-4 h-4" />
                             </Button>
-                            <Button variant="outline" size="sm" onClick={() => { setEditingProduct(product); setImageFile(null); setIsDialogOpen(true); }}>
+                            <Button variant="outline" size="sm" onClick={() => { 
+                              setEditingProduct(product); 
+                              setImageFile(null); 
+                              setGalleryUrls(product.images || []); 
+                              setMainImageUrl(product.product_image || '');
+                              setIsDialogOpen(true); 
+                            }}>
                               <Pencil className="w-4 h-4" />
                             </Button>
                             <Button variant="destructive" size="sm" onClick={() => { if (confirm('למחוק מוצר זה?')) deleteMutation.mutate(product.id); }}>
@@ -325,15 +349,104 @@ export default function AdminProducts() {
                 </div>
               </div>
 
+              {/* Main Image URL */}
               <div>
-                <Label>תמונת מוצר</Label>
-                <div className="flex items-center gap-4">
-                  <Input type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files?.[0] || null)} />
-                  {editingProduct?.product_image && !imageFile && (
-                    <img src={editingProduct.product_image} alt="Current" className="w-16 h-16 object-cover rounded" />
-                  )}
+                <Label>תמונה ראשית (URL)</Label>
+                <Input 
+                  value={mainImageUrl} 
+                  onChange={(e) => setMainImageUrl(e.target.value)} 
+                  placeholder="https://example.com/image.jpg"
+                />
+                {mainImageUrl && (
+                  <img src={mainImageUrl} alt="Preview" className="w-20 h-20 object-cover rounded mt-2" />
+                )}
+                <input type="hidden" name="product_image" value={mainImageUrl || editingProduct?.product_image || ''} />
+              </div>
+
+              {/* Gallery URLs */}
+              <div className="space-y-4">
+                <Label className="flex items-center gap-2">
+                  <Image className="w-4 h-4" />
+                  גלריית תמונות (URLs)
+                </Label>
+                
+                <div className="flex gap-2">
+                  <Input
+                    value={newGalleryUrl}
+                    onChange={(e) => setNewGalleryUrl(e.target.value)}
+                    placeholder="הוסף URL לתמונה"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (newGalleryUrl.trim()) {
+                          setGalleryUrls([...galleryUrls, newGalleryUrl.trim()]);
+                          setNewGalleryUrl('');
+                        }
+                      }
+                    }}
+                  />
+                  <Button 
+                    type="button" 
+                    variant="outline"
+                    onClick={() => {
+                      if (newGalleryUrl.trim()) {
+                        setGalleryUrls([...galleryUrls, newGalleryUrl.trim()]);
+                        setNewGalleryUrl('');
+                      }
+                    }}
+                  >
+                    <Plus className="w-4 h-4" />
+                  </Button>
                 </div>
-                <input type="hidden" name="product_image" value={editingProduct?.product_image || ''} />
+
+                {galleryUrls.length > 0 && (
+                  <DragDropContext onDragEnd={(result: DropResult) => {
+                    if (!result.destination) return;
+                    const items = Array.from(galleryUrls);
+                    const [reorderedItem] = items.splice(result.source.index, 1);
+                    items.splice(result.destination.index, 0, reorderedItem);
+                    setGalleryUrls(items);
+                  }}>
+                    <Droppable droppableId="gallery-images" direction="horizontal">
+                      {(provided) => (
+                        <div 
+                          {...provided.droppableProps} 
+                          ref={provided.innerRef}
+                          className="flex gap-2 flex-wrap"
+                        >
+                          {galleryUrls.map((url, index) => (
+                            <Draggable key={`${url}-${index}`} draggableId={`${url}-${index}`} index={index}>
+                              {(provided, snapshot) => (
+                                <div
+                                  ref={provided.innerRef}
+                                  {...provided.draggableProps}
+                                  {...provided.dragHandleProps}
+                                  className={`relative group ${snapshot.isDragging ? 'ring-2 ring-primary' : ''}`}
+                                >
+                                  <img
+                                    src={url}
+                                    alt={`Gallery ${index + 1}`}
+                                    className="w-20 h-20 object-cover rounded border cursor-grab"
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => setGalleryUrls(galleryUrls.filter((_, i) => i !== index))}
+                                    className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                  >
+                                    <X className="w-3 h-3" />
+                                  </button>
+                                </div>
+                              )}
+                            </Draggable>
+                          ))}
+                          {provided.placeholder}
+                        </div>
+                      )}
+                    </Droppable>
+                  </DragDropContext>
+                )}
+                
+                <p className="text-xs text-muted-foreground">גרור לסידור מחדש. התמונה הראשונה תהיה התמונה הראשית אם לא הוגדרה תמונה ראשית.</p>
               </div>
 
               <div className="grid grid-cols-3 gap-4">
