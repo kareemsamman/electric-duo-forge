@@ -60,12 +60,12 @@ export default function Checkout() {
     }
   });
 
-  // Redirect if cart is empty
+  // Redirect if cart is empty (but not if showing success dialog)
   useEffect(() => {
-    if (items.length === 0) {
+    if (items.length === 0 && !showSuccessDialog) {
       navigate('/cart');
     }
-  }, [items, navigate]);
+  }, [items, navigate, showSuccessDialog]);
 
   const selectedShipping = shippingMethods?.find(s => s.id === formData.shipping_method_id);
   const deliveryFee = selectedShipping?.price || 0;
@@ -245,8 +245,35 @@ ${formData.customer_notes ? `הערות:\n${formData.customer_notes}` : ''}
     navigate('/');
   };
 
-  if (items.length === 0) {
+  if (items.length === 0 && !showSuccessDialog) {
     return null;
+  }
+
+  // Show only success dialog when cart is empty but dialog should be visible
+  if (items.length === 0 && showSuccessDialog) {
+    return (
+      <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
+        <DialogContent className="sm:max-w-md text-center" dir={language === 'he' ? 'rtl' : 'ltr'}>
+          <DialogHeader className="space-y-4">
+            <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+              <CheckCircle className="w-10 h-10 text-green-600" />
+            </div>
+            <DialogTitle className="text-2xl">
+              {language === 'he' ? 'ההזמנה התקבלה!' : 'Order Received!'}
+            </DialogTitle>
+            <DialogDescription className="text-base">
+              {language === 'he' 
+                ? 'תודה על הזמנתך! קיבלנו את פרטי ההזמנה שלך. נציג שלנו יצור איתך קשר בהקדם להשלמת התשלום ואישור ההזמנה.'
+                : 'Thank you for your order! We have received your order details. Our representative will contact you shortly to complete the payment and confirm your order.'
+              }
+            </DialogDescription>
+          </DialogHeader>
+          <Button onClick={handleCloseSuccessDialog} className="w-full mt-4">
+            {language === 'he' ? 'לדף הבית' : 'Go to Home'}
+          </Button>
+        </DialogContent>
+      </Dialog>
+    );
   }
 
   return (
@@ -445,7 +472,7 @@ ${formData.customer_notes ? `הערות:\n${formData.customer_notes}` : ''}
                     </span>
                   </div>
 
-                  <p className="mt-4 text-sm text-muted-foreground bg-muted p-3 rounded-lg">
+                  <p className="mt-4 text-sm text-foreground bg-primary/10 p-3 rounded-lg border border-primary/20">
                     {language === 'he' 
                       ? 'לאחר מילוי הפרטים, נציג יצור איתך קשר להשלמת התשלום.'
                       : 'After filling in your details, a representative will contact you to complete the payment.'
