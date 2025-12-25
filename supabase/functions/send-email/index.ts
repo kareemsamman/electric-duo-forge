@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
-import { Resend } from "https://esm.sh/resend@2.0.0";
+import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -31,37 +31,40 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Get admin email from database
+    // Get settings from database
     const { data: dbSettings, error: dbError } = await supabase
       .from('site_content')
       .select('key, value_he')
-      .in('key', ['admin_email']);
+      .in('key', ['admin_email', 'gmail_email', 'gmail_app_password']);
 
     let adminEmail = '';
+    let gmailEmail = '';
+    let gmailAppPassword = '';
+
     if (!dbError && dbSettings && dbSettings.length > 0) {
       const settingsMap: Record<string, string> = {};
       dbSettings.forEach((item: any) => {
         settingsMap[item.key] = item.value_he;
       });
       adminEmail = settingsMap['admin_email'] || '';
+      gmailEmail = settingsMap['gmail_email'] || '';
+      gmailAppPassword = settingsMap['gmail_app_password'] || '';
     }
 
-    // Get Resend API key from environment
-    const resendApiKey = Deno.env.get('RESEND_API_KEY');
-    if (!resendApiKey) {
-      console.error('Resend API key not configured');
+    console.log('Settings loaded - Admin email:', adminEmail, 'Gmail:', gmailEmail);
+
+    if (!gmailEmail || !gmailAppPassword) {
+      console.error('Gmail credentials not configured in admin settings');
       return new Response(
-        JSON.stringify({ error: 'Email service not configured. Please set RESEND_API_KEY.' }),
+        JSON.stringify({ error: 'Email service not configured. Please set Gmail credentials in admin settings.' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     if (!adminEmail) {
-      adminEmail = formData.email; // Fallback to sender email
+      adminEmail = formData.email;
       console.log('Admin email not configured, using sender email');
     }
-
-    const resend = new Resend(resendApiKey);
 
     // Build email subject
     const emailSubject = formData.subject || `הזמנה חדשה (${formData.form_type}) #${Date.now().toString(36)}`;
@@ -157,17 +160,32 @@ serve(async (req) => {
 </body>
 </html>`;
 
-    console.log('Sending email via Resend to:', adminEmail);
+    console.log('Sending email via Gmail SMTP to:', adminEmail);
 
-    // Send email using Resend
-    const emailResponse = await resend.emails.send({
-      from: 'הזמנות <onboarding@resend.dev>',
-      to: [adminEmail],
+    // Send email using Gmail SMTP
+    const client = new SMTPClient({
+      connection: {
+        hostname: "smtp.gmail.com",
+        port: 465,
+        tls: true,
+        auth: {
+          username: gmailEmail,
+          password: gmailAppPassword,
+        },
+      },
+    });
+
+    await client.send({
+      from: gmailEmail,
+      to: adminEmail,
       subject: emailSubject,
+      content: "auto",
       html: htmlContent,
     });
 
-    console.log('Email sent successfully via Resend:', emailResponse);
+    await client.close();
+
+    console.log('Email sent successfully via Gmail SMTP');
 
     return new Response(
       JSON.stringify({ success: true, message: 'Email sent successfully!' }),
