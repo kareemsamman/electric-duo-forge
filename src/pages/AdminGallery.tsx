@@ -70,13 +70,28 @@ export default function AdminGallery() {
     },
   });
 
+  const uploadVideoMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `video-${Date.now()}.${fileExt}`;
+      const { error: uploadError } = await supabase.storage
+        .from('gallery')
+        .upload(fileName, file);
+      if (uploadError) throw uploadError;
+      const { data: { publicUrl } } = supabase.storage
+        .from('gallery')
+        .getPublicUrl(fileName);
+      return publicUrl;
+    },
+  });
+
   const createMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
       const maxOrder = gallery.reduce((max, item) => Math.max(max, item.display_order || 0), 0);
       const { error } = await supabase.from('gallery').insert({
-        image: data.image || 'placeholder',
+        image: data.image || '/placeholder.svg',
         video_url: data.video_url || null,
-        title: data.title,
+        title: data.title || '',
         title_en: data.title_en || null,
         description: data.description || null,
         description_en: data.description_en || null,
@@ -158,6 +173,23 @@ export default function AdminGallery() {
       }
     } catch (error) {
       toast.error(language === 'he' ? 'שגיאה בהעלאת הקובץ' : 'Error uploading file');
+    }
+  };
+
+  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>, itemId?: string) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const publicUrl = await uploadVideoMutation.mutateAsync(file);
+      if (itemId) {
+        updateMutation.mutate({ id: itemId, data: { video_url: publicUrl } });
+      } else {
+        setFormData(prev => ({ ...prev, video_url: publicUrl }));
+      }
+      toast.success(language === 'he' ? 'סרטון הועלה בהצלחה' : 'Video uploaded successfully');
+    } catch (error) {
+      toast.error(language === 'he' ? 'שגיאה בהעלאת הסרטון' : 'Error uploading video');
     }
   };
 
@@ -269,12 +301,35 @@ export default function AdminGallery() {
                     </Select>
                   </div>
                   <div>
-                    <Label>{language === 'he' ? 'קישור וידאו (אופציונלי)' : 'Video URL (optional)'}</Label>
-                    <Input
-                      value={formData.video_url}
-                      onChange={(e) => setFormData(prev => ({ ...prev, video_url: e.target.value }))}
-                      placeholder="https://youtube.com/..."
-                    />
+                    <Label>{language === 'he' ? 'סרטון MP4 (אופציונלי)' : 'Video MP4 (optional)'}</Label>
+                    <div className="flex gap-2 items-center">
+                      {formData.video_url ? (
+                        <div className="flex items-center gap-2 flex-1">
+                          <Video className="w-4 h-4 text-primary" />
+                          <span className="text-sm truncate flex-1">{language === 'he' ? 'סרטון הועלה' : 'Video uploaded'}</span>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => setFormData(prev => ({ ...prev, video_url: '' }))}
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <label className="cursor-pointer flex items-center gap-2 px-3 py-2 border rounded-md hover:bg-muted transition-colors flex-1">
+                          <Upload className="w-4 h-4" />
+                          <span className="text-sm">{language === 'he' ? 'העלה סרטון' : 'Upload Video'}</span>
+                          <input 
+                            type="file" 
+                            accept="video/mp4,video/webm" 
+                            className="hidden" 
+                            onChange={(e) => handleVideoUpload(e)} 
+                          />
+                        </label>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -302,7 +357,7 @@ export default function AdminGallery() {
                 </Button>
                 <Button
                   onClick={() => createMutation.mutate(formData)}
-                  disabled={!formData.title || createMutation.isPending}
+                  disabled={(!formData.image && !formData.video_url) || createMutation.isPending}
                 >
                   {language === 'he' ? 'שמור' : 'Save'}
                 </Button>
@@ -402,13 +457,35 @@ export default function AdminGallery() {
                                   />
                                 </div>
                                 <div>
-                                  <Label className="text-xs">{language === 'he' ? 'קישור וידאו' : 'Video URL'}</Label>
-                                  <Input
-                                    value={formData.video_url}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, video_url: e.target.value }))}
-                                    placeholder="https://..."
-                                    className="h-9"
-                                  />
+                                  <Label className="text-xs">{language === 'he' ? 'סרטון MP4' : 'Video MP4'}</Label>
+                                  <div className="flex gap-2 items-center">
+                                    {formData.video_url ? (
+                                      <div className="flex items-center gap-2 flex-1">
+                                        <Video className="w-4 h-4 text-primary" />
+                                        <span className="text-xs truncate flex-1">{language === 'he' ? 'סרטון הועלה' : 'Video uploaded'}</span>
+                                        <Button
+                                          type="button"
+                                          variant="ghost"
+                                          size="icon"
+                                          className="h-6 w-6"
+                                          onClick={() => setFormData(prev => ({ ...prev, video_url: '' }))}
+                                        >
+                                          <X className="w-3 h-3" />
+                                        </Button>
+                                      </div>
+                                    ) : (
+                                      <label className="cursor-pointer flex items-center gap-2 px-2 py-1 border rounded-md hover:bg-muted transition-colors flex-1 h-9">
+                                        <Upload className="w-3 h-3" />
+                                        <span className="text-xs">{language === 'he' ? 'העלה' : 'Upload'}</span>
+                                        <input 
+                                          type="file" 
+                                          accept="video/mp4,video/webm" 
+                                          className="hidden" 
+                                          onChange={(e) => handleVideoUpload(e, editingId!)} 
+                                        />
+                                      </label>
+                                    )}
+                                  </div>
                                 </div>
                               </div>
                               <div className="flex gap-2 justify-end">
@@ -439,7 +516,7 @@ export default function AdminGallery() {
                                 )}
                               </div>
                               <div className="flex-1">
-                                <h4 className="font-semibold">{item.title}</h4>
+                                <h4 className="font-semibold">{item.title || (language === 'he' ? '(ללא כותרת)' : '(No title)')}</h4>
                                 <p className="text-sm text-muted-foreground">{item.category}</p>
                               </div>
                               <div className="flex gap-2">
