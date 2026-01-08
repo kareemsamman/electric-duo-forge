@@ -128,6 +128,7 @@ const Projects = () => {
                   <img
                     src={imgSrc}
                     alt={title}
+                    loading="lazy"
                     className="w-full h-full object-cover"
                     onError={(e) => {
                       console.error("Failed to load image:", project.image);
