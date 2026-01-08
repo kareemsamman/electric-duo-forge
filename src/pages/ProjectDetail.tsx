@@ -182,6 +182,8 @@ const ProjectDetail = () => {
           <img
             src={mainImage}
             alt={title}
+            loading="eager"
+            decoding="async"
             className="w-full h-[400px] md:h-[600px] object-cover rounded-2xl shadow-lg cursor-pointer hover:opacity-95 transition-opacity"
             onClick={() => setSelectedImageIndex(0)}
             onError={(e) => {
@@ -203,6 +205,8 @@ const ProjectDetail = () => {
                 key={index}
                 src={img}
                 alt={`${title} ${index + 1}`}
+                loading="lazy"
+                decoding="async"
                 className={`w-full h-20 object-cover rounded-lg cursor-pointer transition-all hover:opacity-80 ${
                   index === 0 ? 'ring-2 ring-primary' : ''
                 }`}
