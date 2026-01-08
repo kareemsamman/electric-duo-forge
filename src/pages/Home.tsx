@@ -8,15 +8,17 @@ import TeamPreview from "@/components/home/TeamPreview";
 import ProjectsSection from "@/components/home/ProjectsSection";
 import ClientLogos from "@/components/home/ClientLogos";
 import CTASection from "@/components/home/CTASection";
+import HeroGallerySlider from "@/components/home/HeroGallerySlider";
 
 const Home = () => {
   return (
     <div className="min-h-screen">
       <HeroSection />
+      <HeroGallerySlider />
+      <ServicesSection />
       <FeaturedProducts />
       <StatsStrip />
       <WhyUsSection />
-      <ServicesSection />
       <VideoSection />
       <TeamPreview />
       <ProjectsSection />
