@@ -3,7 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useNavigate } from 'react-router-dom';
-import { Package, ShoppingCart, Truck, FolderKanban, Image, Users, LogOut, Settings, Mail, Award } from 'lucide-react';
+import { Package, ShoppingCart, Truck, FolderKanban, Image, Users, LogOut, Settings, Mail, Award, UserCog } from 'lucide-react';
 
 export default function AdminDashboard() {
   const { language } = useLanguage();
@@ -78,6 +78,13 @@ export default function AdminDashboard() {
       icon: Award,
       path: '/admin/certificates',
       color: 'text-yellow-500',
+    },
+    {
+      title: language === 'he' ? 'צוות' : 'Team',
+      description: language === 'he' ? 'ניהול חברי הצוות' : 'Manage team members',
+      icon: UserCog,
+      path: '/admin/team',
+      color: 'text-teal-500',
     },
   ];
 

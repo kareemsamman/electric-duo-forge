@@ -38,6 +38,7 @@ import AdminProducts from "./pages/AdminProducts";
 import AdminOrders from "./pages/AdminOrders";
 import AdminShipping from "./pages/AdminShipping";
 import AdminCertificates from "./pages/AdminCertificates";
+import AdminTeam from "./pages/AdminTeam";
 import NewProject from "./pages/NewProject";
 
 const queryClient = new QueryClient();
@@ -92,6 +93,7 @@ const App = () => (
           <Route path="/admin/settings" element={<ProtectedRoute><AdminSettings /></ProtectedRoute>} />
           <Route path="/admin/inquiries" element={<ProtectedRoute><AdminInquiries /></ProtectedRoute>} />
           <Route path="/admin/certificates" element={<ProtectedRoute><AdminCertificates /></ProtectedRoute>} />
+          <Route path="/admin/team" element={<ProtectedRoute><AdminTeam /></ProtectedRoute>} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </main>

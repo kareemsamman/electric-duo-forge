@@ -67,8 +67,8 @@ const Footer = () => {
             </h4>
             <p className="text-primary-foreground/80 leading-relaxed text-base">
               {language === "he" 
-                ? "עטרות 52 - ירושלים, Jerusalem, Israel 9711400"
-                : "52 Atarot - Jerusalem, Jerusalem, Israel 9711400"}
+                ? "עטרות 52 - ירושלים"
+                : "52 Atarot - Jerusalem"}
             </p>
           </div>
 
