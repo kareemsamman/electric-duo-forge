@@ -1,10 +1,14 @@
 import { useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useContent } from "@/contexts/ContentContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Phone, Mail, MapPin, Clock, Facebook, Instagram, Linkedin, Youtube } from "lucide-react";
+import { FaTiktok } from "react-icons/fa";
+import { BsTwitterX } from "react-icons/bs";
+import { SiWaze } from "react-icons/si";
 import { FadeIn } from "@/components/animations/FadeIn";
 import { AnimatedButton } from "@/components/animations/AnimatedButton";
 import { motion } from "framer-motion";
@@ -13,6 +17,7 @@ import { toast } from "sonner";
 
 const Contact = () => {
   const { t, language } = useLanguage();
+  const { content } = useContent();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -170,19 +175,77 @@ const Contact = () => {
 
             <Card className="animate-fade-in hover:shadow-xl transition-all" style={{ animationDelay: "300ms" }}>
               <CardContent className="pt-6 pb-6">
-                <div className="flex gap-4 justify-center">
-                  <a href="#" className="w-10 h-10 rounded-full bg-secondary hover:bg-accent hover:text-white hover:scale-110 flex items-center justify-center transition-all">
-                    <Facebook size={20} />
-                  </a>
-                  <a href="#" className="w-10 h-10 rounded-full bg-secondary hover:bg-accent hover:text-white hover:scale-110 flex items-center justify-center transition-all">
-                    <Instagram size={20} />
-                  </a>
-                  <a href="#" className="w-10 h-10 rounded-full bg-secondary hover:bg-accent hover:text-white hover:scale-110 flex items-center justify-center transition-all">
-                    <Linkedin size={20} />
-                  </a>
-                  <a href="#" className="w-10 h-10 rounded-full bg-secondary hover:bg-accent hover:text-white hover:scale-110 flex items-center justify-center transition-all">
-                    <Youtube size={20} />
-                  </a>
+                <div className="flex gap-4 justify-center flex-wrap">
+                  {content["social.facebook_url"] && (
+                    <a
+                      href={content["social.facebook_url"]}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-12 h-12 rounded-full bg-secondary hover:bg-accent hover:text-white hover:scale-110 flex items-center justify-center transition-all"
+                    >
+                      <Facebook size={22} />
+                    </a>
+                  )}
+                  {content["social.instagram_url"] && (
+                    <a
+                      href={content["social.instagram_url"]}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-12 h-12 rounded-full bg-secondary hover:bg-accent hover:text-white hover:scale-110 flex items-center justify-center transition-all"
+                    >
+                      <Instagram size={22} />
+                    </a>
+                  )}
+                  {content["social.linkedin_url"] && (
+                    <a
+                      href={content["social.linkedin_url"]}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-12 h-12 rounded-full bg-secondary hover:bg-accent hover:text-white hover:scale-110 flex items-center justify-center transition-all"
+                    >
+                      <Linkedin size={22} />
+                    </a>
+                  )}
+                  {content["social.youtube_url"] && (
+                    <a
+                      href={content["social.youtube_url"]}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-12 h-12 rounded-full bg-secondary hover:bg-accent hover:text-white hover:scale-110 flex items-center justify-center transition-all"
+                    >
+                      <Youtube size={22} />
+                    </a>
+                  )}
+                  {content["social.tiktok_url"] && (
+                    <a
+                      href={content["social.tiktok_url"]}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-12 h-12 rounded-full bg-secondary hover:bg-accent hover:text-white hover:scale-110 flex items-center justify-center transition-all"
+                    >
+                      <FaTiktok size={20} />
+                    </a>
+                  )}
+                  {content["social.twitter_url"] && (
+                    <a
+                      href={content["social.twitter_url"]}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-12 h-12 rounded-full bg-secondary hover:bg-accent hover:text-white hover:scale-110 flex items-center justify-center transition-all"
+                    >
+                      <BsTwitterX size={20} />
+                    </a>
+                  )}
+                  {content["social.waze_url"] && (
+                    <a
+                      href={content["social.waze_url"]}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-12 h-12 rounded-full bg-secondary hover:bg-accent hover:text-white hover:scale-110 flex items-center justify-center transition-all"
+                    >
+                      <SiWaze size={22} />
+                    </a>
+                  )}
                 </div>
               </CardContent>
             </Card>
