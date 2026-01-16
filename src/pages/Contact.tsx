@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Phone, Mail, MapPin, Clock, Facebook, Instagram, Linkedin, Youtube } from "lucide-react";
+import { Phone, Mail, MapPin, Facebook, Instagram, Linkedin, Youtube } from "lucide-react";
 import { FaTiktok } from "react-icons/fa";
 import { BsTwitterX } from "react-icons/bs";
 import { SiWaze } from "react-icons/si";
@@ -111,7 +111,7 @@ const Contact = () => {
                     type="button"
                     variant="outline" 
                     className="flex-1 hover:scale-105 transition-all"
-                    onClick={() => window.open('https://wa.me/972501234567', '_blank')}
+                    onClick={() => window.open('https://wa.me/972525080994', '_blank')}
                   >
                     {t("contact.form.whatsapp")}
                   </Button>
@@ -129,7 +129,7 @@ const Contact = () => {
                     <Phone className="text-accent" />
                     <div>
                       <p className="font-medium">{t("contact.info.phone")}</p>
-                      <p className="text-muted-foreground">+972-50-123-4567</p>
+                      <p className="text-muted-foreground">+972 52-508-0994</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
@@ -144,16 +144,7 @@ const Contact = () => {
                     <div>
                       <p className="font-medium">{t("contact.info.address")}</p>
                       <p className="text-muted-foreground">
-                        {language === "he" ? "רחוב התעשייה 1, תל אביב" : "1 Industry St, Tel Aviv"}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Clock className="text-accent" />
-                    <div>
-                      <p className="font-medium">{t("contact.info.hours")}</p>
-                      <p className="text-muted-foreground">
-                        {language === "he" ? "א׳-ה׳: 08:00-17:00" : "Sun-Thu: 08:00-17:00"}
+                        {language === "he" ? "עטרות 52 - ירושלים" : "52 Atarot - Jerusalem"}
                       </p>
                     </div>
                   </div>
@@ -257,7 +248,7 @@ const Contact = () => {
           <CardContent className="p-0">
             <div className="h-96 bg-secondary rounded-lg overflow-hidden">
               <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3380.8296739569724!2d34.78057831516893!3d32.06494098119056!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzLCsDAzJzUzLjgiTiAzNMKwNDYnNTcuNiJF!5e0!3m2!1sen!2sil!4v1234567890"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3388.5!2d35.2133!3d31.8267!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x150328f9b8a8a8a9%3A0x0!2sAtarot%2052%2C%20Jerusalem!5e0!3m2!1sen!2sil!4v1705000000000"
                 width="100%"
                 height="100%"
                 style={{ border: 0 }}
