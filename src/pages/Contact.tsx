@@ -160,10 +160,10 @@ const Contact = () => {
               <CardContent className="pt-6 pb-6">
                 <h3 className="font-semibold mb-4">{t("contact.bank.title")}</h3>
                 <div className="space-y-2 text-sm">
-                  <p><span className="text-muted-foreground">{t("contact.bank.name")}:</span> Bank Leumi</p>
-                  <p><span className="text-muted-foreground">{t("contact.bank.branch")}:</span> 123</p>
-                  <p><span className="text-muted-foreground">{t("contact.bank.account")}:</span> 456789</p>
-                  <p><span className="text-muted-foreground">{t("contact.bank.holder")}:</span> Global Electric Ltd</p>
+                  <p><span className="text-muted-foreground">{t("contact.bank.name")}:</span> דיסקונט (Discount)</p>
+                  <p><span className="text-muted-foreground">{t("contact.bank.branch")}:</span> 303</p>
+                  <p><span className="text-muted-foreground">{t("contact.bank.account")}:</span> 173370316</p>
+                  <p><span className="text-muted-foreground">{t("contact.bank.holder")}:</span> גלובל אלקטריק הנדסת חשמל בע"מ</p>
                 </div>
               </CardContent>
             </Card>
