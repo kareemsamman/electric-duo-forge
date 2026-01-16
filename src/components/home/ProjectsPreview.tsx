@@ -52,7 +52,12 @@ const ProjectsPreview = () => {
     },
   });
 
-  if (!projects || projects.length === 0) return null;
+  // Filter out projects with placeholder images
+  const filteredProjects = projects?.filter(
+    (project) => project.image && !project.image.includes("placeholder")
+  );
+
+  if (!filteredProjects || filteredProjects.length === 0) return null;
 
   return (
     <section className="py-20 md:py-32" dir={isHebrew ? "rtl" : "ltr"}>
@@ -102,7 +107,7 @@ const ProjectsPreview = () => {
               className="w-full"
             >
               <CarouselContent>
-                {projects.map((project) => (
+                {filteredProjects.map((project) => (
                   <CarouselItem key={project.id}>
                     <div className="relative aspect-[3/2] overflow-hidden group">
                       {/* Project Image */}
