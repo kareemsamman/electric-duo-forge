@@ -69,6 +69,11 @@ const HeroGallerySlider = () => {
     },
   });
 
+  // Filter out items with placeholder images
+  const filteredGalleryItems = (galleryItems || []).filter(
+    (item) => item.image && !item.image.includes("placeholder")
+  );
+
   // Combine gallery items and videos into slides
   const slides = [
     ...(videoSections || []).map((video) => ({
@@ -78,7 +83,7 @@ const HeroGallerySlider = () => {
       title: language === "he" ? video.video_title : video.video_title_en || video.video_title,
       description: language === "he" ? video.video_description : video.video_description_en || video.video_description,
     })),
-    ...(galleryItems || []).map((item) => ({
+    ...filteredGalleryItems.map((item) => ({
       id: item.id,
       type: "image" as const,
       url: item.image,
