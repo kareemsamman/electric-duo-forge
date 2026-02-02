@@ -341,6 +341,7 @@ export type Database = {
           id: string
           image: string
           images: string[] | null
+          is_visible: boolean
           location: string
           location_en: string | null
           panel_current: string | null
@@ -362,6 +363,7 @@ export type Database = {
           id?: string
           image: string
           images?: string[] | null
+          is_visible?: boolean
           location: string
           location_en?: string | null
           panel_current?: string | null
@@ -383,6 +385,7 @@ export type Database = {
           id?: string
           image?: string
           images?: string[] | null
+          is_visible?: boolean
           location?: string
           location_en?: string | null
           panel_current?: string | null
@@ -395,6 +398,48 @@ export type Database = {
           tags?: string[]
           tags_en?: string[] | null
           video_url?: string | null
+        }
+        Relationships: []
+      }
+      services: {
+        Row: {
+          created_at: string
+          description_en: string | null
+          description_he: string
+          display_order: number
+          icon: string
+          id: string
+          is_active: boolean
+          link_url: string | null
+          title_en: string | null
+          title_he: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description_en?: string | null
+          description_he: string
+          display_order?: number
+          icon?: string
+          id?: string
+          is_active?: boolean
+          link_url?: string | null
+          title_en?: string | null
+          title_he: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description_en?: string | null
+          description_he?: string
+          display_order?: number
+          icon?: string
+          id?: string
+          is_active?: boolean
+          link_url?: string | null
+          title_en?: string | null
+          title_he?: string
+          updated_at?: string
         }
         Relationships: []
       }
