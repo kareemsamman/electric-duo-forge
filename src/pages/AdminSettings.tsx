@@ -17,6 +17,7 @@ export default function AdminSettings() {
   const navigate = useNavigate();
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingFavicon, setIsUploadingFavicon] = useState(false);
+  const [isUploadingOgImage, setIsUploadingOgImage] = useState(false);
 
   const [settings, setSettings] = useState({
     admin_email: '',
@@ -27,6 +28,7 @@ export default function AdminSettings() {
     meta_description: '',
     meta_description_en: '',
     favicon_url: '',
+    og_image_url: '',
   });
 
   // Fetch current settings
@@ -42,7 +44,8 @@ export default function AdminSettings() {
           'gmail_app_password',
           'site_title',
           'meta_description',
-          'favicon_url'
+          'favicon_url',
+          'og_image_url'
         ]);
       
       if (error) throw error;
@@ -64,6 +67,7 @@ export default function AdminSettings() {
         meta_description: settingsMap.meta_description?.he || '',
         meta_description_en: settingsMap.meta_description?.en || '',
         favicon_url: settingsMap.favicon_url?.he || '',
+        og_image_url: settingsMap.og_image_url?.he || '',
       });
       
       return settingsMap;
@@ -96,6 +100,17 @@ export default function AdminSettings() {
       }
       link.href = settings.favicon_url;
     }
+
+    // Update OG image meta tag
+    if (settings.og_image_url) {
+      let ogImage = document.querySelector('meta[property="og:image"]') as HTMLMetaElement;
+      if (!ogImage) {
+        ogImage = document.createElement('meta');
+        ogImage.setAttribute('property', 'og:image');
+        document.head.appendChild(ogImage);
+      }
+      ogImage.setAttribute('content', settings.og_image_url);
+    }
   }, [settings, language]);
 
   const handleFaviconUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -127,6 +142,35 @@ export default function AdminSettings() {
     }
   };
 
+  const handleOgImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingOgImage(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `og-image-${Date.now()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('gallery')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('gallery')
+        .getPublicUrl(fileName);
+
+      setSettings(prev => ({ ...prev, og_image_url: publicUrl }));
+      toast.success(language === 'he' ? 'תמונת OG הועלתה בהצלחה' : 'OG image uploaded successfully');
+    } catch (error) {
+      console.error('Error uploading OG image:', error);
+      toast.error(language === 'he' ? 'שגיאה בהעלאת תמונת OG' : 'Error uploading OG image');
+    } finally {
+      setIsUploadingOgImage(false);
+    }
+  };
+
   const handleSave = async () => {
     setIsSaving(true);
     try {
@@ -137,6 +181,7 @@ export default function AdminSettings() {
         { key: 'site_title', section: 'seo', value_he: settings.site_title, value_en: settings.site_title_en },
         { key: 'meta_description', section: 'seo', value_he: settings.meta_description, value_en: settings.meta_description_en },
         { key: 'favicon_url', section: 'seo', value_he: settings.favicon_url, value_en: settings.favicon_url },
+        { key: 'og_image_url', section: 'seo', value_he: settings.og_image_url, value_en: settings.og_image_url },
       ];
 
       for (const setting of settingsToSave) {
@@ -240,6 +285,51 @@ export default function AdminSettings() {
                 {language === 'he' 
                   ? 'מומלץ להעלות תמונה בגודל 32x32 או 64x64 פיקסלים'
                   : 'Recommended size: 32x32 or 64x64 pixels'}
+              </p>
+            </div>
+
+            {/* OG Image */}
+            <div className="space-y-2">
+              <Label>{language === 'he' ? 'תמונת OG (לשיתוף ברשתות חברתיות)' : 'OG Image (for social sharing)'}</Label>
+              <div className="flex items-center gap-4">
+                {settings.og_image_url && (
+                  <div className="w-32 h-20 border rounded-lg flex items-center justify-center bg-muted overflow-hidden">
+                    <img 
+                      src={settings.og_image_url} 
+                      alt="OG Image" 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+                <div className="flex-1">
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleOgImageUpload}
+                    disabled={isUploadingOgImage}
+                    className="hidden"
+                    id="og-image-upload"
+                  />
+                  <Label htmlFor="og-image-upload" className="cursor-pointer">
+                    <Button 
+                      variant="outline" 
+                      disabled={isUploadingOgImage}
+                      asChild
+                    >
+                      <span>
+                        <Upload className="mr-2 h-4 w-4" />
+                        {isUploadingOgImage 
+                          ? (language === 'he' ? 'מעלה...' : 'Uploading...') 
+                          : (language === 'he' ? 'העלה תמונת OG' : 'Upload OG Image')}
+                      </span>
+                    </Button>
+                  </Label>
+                </div>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {language === 'he' 
+                  ? 'מומלץ להעלות תמונה בגודל 1200x630 פיקסלים לתצוגה מיטבית'
+                  : 'Recommended size: 1200x630 pixels for optimal display'}
               </p>
             </div>
 
