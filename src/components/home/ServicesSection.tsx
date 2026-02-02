@@ -1,41 +1,53 @@
 import { useLanguage } from "@/contexts/LanguageContext";
-import { ClipboardCheck, Factory, Wrench, FlaskConical, Headphones } from "lucide-react";
+import { ClipboardCheck, Factory, Wrench, FlaskConical, Headphones, Zap, Settings, Shield, Cpu, Cable, LucideIcon } from "lucide-react";
 import { FadeIn } from "@/components/animations/FadeIn";
 import { StaggerContainer } from "@/components/animations/StaggerContainer";
 import { StaggerItem } from "@/components/animations/StaggerItem";
 import { Link } from "react-router-dom";
 import { ArrowLeft, ArrowRight } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
-const services = [
-  {
-    icon: ClipboardCheck,
-    titleKey: "services.planning.title",
-    descKey: "services.planning.desc",
-  },
-  {
-    icon: Factory,
-    titleKey: "services.manufacturing.title",
-    descKey: "services.manufacturing.desc",
-  },
-  {
-    icon: Wrench,
-    titleKey: "services.integration.title",
-    descKey: "services.integration.desc",
-  },
-  {
-    icon: FlaskConical,
-    titleKey: "services.testing.title",
-    descKey: "services.testing.desc",
-  },
-  {
-    icon: Headphones,
-    titleKey: "services.maintenance.title",
-    descKey: "services.maintenance.desc",
-  },
-];
+const iconMap: Record<string, LucideIcon> = {
+  ClipboardCheck,
+  Factory,
+  Wrench,
+  FlaskConical,
+  Headphones,
+  Zap,
+  Settings,
+  Shield,
+  Cpu,
+  Cable,
+};
+
+interface Service {
+  id: string;
+  icon: string;
+  title_he: string;
+  title_en: string | null;
+  description_he: string;
+  description_en: string | null;
+  link_url: string | null;
+  display_order: number;
+  is_active: boolean;
+}
 
 const ServicesSection = () => {
   const { t, language } = useLanguage();
+
+  const { data: services } = useQuery({
+    queryKey: ['services-public'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('services')
+        .select('*')
+        .eq('is_active', true)
+        .order('display_order', { ascending: true });
+      if (error) throw error;
+      return data as Service[];
+    }
+  });
 
   return (
     <section className="py-20 md:py-28 bg-gradient-to-b from-secondary/20 to-background" dir="rtl">
@@ -68,23 +80,49 @@ const ServicesSection = () => {
 
           {/* Left Column - Services List */}
           <StaggerContainer className="space-y-1" staggerDelay={0.1}>
-            {services.map((service, index) => {
-              const Icon = service.icon;
-              return (
-                <StaggerItem key={index}>
-                  <div className="flex items-start gap-6 py-6 border-b border-border/40 last:border-b-0">
-                    <div className="flex-shrink-0 w-14 h-14 bg-[#1A73E8]/10 rounded-full flex items-center justify-center">
-                      <Icon className="text-[#1A73E8]" size={24} />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-xl font-bold mb-2 tracking-tight">
-                        {t(service.titleKey)}
-                      </h3>
-                      <p className="text-muted-foreground leading-relaxed">
-                        {t(service.descKey)}
-                      </p>
-                    </div>
+            {services?.map((service) => {
+              const Icon = iconMap[service.icon] || ClipboardCheck;
+              const title = language === "he" ? service.title_he : (service.title_en || service.title_he);
+              const description = language === "he" ? service.description_he : (service.description_en || service.description_he);
+              
+              const content = (
+                <div className={`flex items-start gap-6 py-6 border-b border-border/40 last:border-b-0 ${service.link_url ? 'cursor-pointer hover:bg-muted/50 -mx-4 px-4 rounded-lg transition-colors' : ''}`}>
+                  <div className="flex-shrink-0 w-14 h-14 bg-[#1A73E8]/10 rounded-full flex items-center justify-center">
+                    <Icon className="text-[#1A73E8]" size={24} />
                   </div>
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold mb-2 tracking-tight flex items-center gap-2">
+                      {title}
+                      {service.link_url && (
+                        language === "he" ? (
+                          <ArrowLeft className="w-4 h-4 text-[#1A73E8]" />
+                        ) : (
+                          <ArrowRight className="w-4 h-4 text-[#1A73E8]" />
+                        )
+                      )}
+                    </h3>
+                    <p className="text-muted-foreground leading-relaxed">
+                      {description}
+                    </p>
+                  </div>
+                </div>
+              );
+
+              return (
+                <StaggerItem key={service.id}>
+                  {service.link_url ? (
+                    service.link_url.startsWith('http') ? (
+                      <a href={service.link_url} target="_blank" rel="noopener noreferrer">
+                        {content}
+                      </a>
+                    ) : (
+                      <Link to={service.link_url}>
+                        {content}
+                      </Link>
+                    )
+                  ) : (
+                    content
+                  )}
                 </StaggerItem>
               );
             })}

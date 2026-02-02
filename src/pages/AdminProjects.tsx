@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Pencil, Trash2, GripVertical, ArrowRight, ArrowLeft, X, Video, Image as ImageIcon, Copy } from 'lucide-react';
+import { Plus, Pencil, Trash2, GripVertical, ArrowRight, ArrowLeft, X, Video, Image as ImageIcon, Copy, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -300,9 +300,21 @@ export default function AdminProjects() {
                           <div {...provided.dragHandleProps} className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground">
                             <GripVertical className="w-5 h-5" />
                           </div>
-                          <img src={project.image} alt={project.project_name} className="w-32 h-20 object-cover rounded-lg" />
+                          <div className="relative">
+                            <img src={project.image} alt={project.project_name} className={`w-32 h-20 object-cover rounded-lg ${project.is_visible === false ? 'opacity-50' : ''}`} />
+                            {project.is_visible === false && (
+                              <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-lg">
+                                <EyeOff className="w-6 h-6 text-white" />
+                              </div>
+                            )}
+                          </div>
                           <div className="flex-1">
-                            <h3 className="text-lg font-semibold">{project.project_name}</h3>
+                            <div className="flex items-center gap-2">
+                              <h3 className="text-lg font-semibold">{project.project_name}</h3>
+                              {project.is_visible === false && (
+                                <span className="text-xs px-2 py-1 bg-orange-100 text-orange-700 rounded-full">מוסתר</span>
+                              )}
+                            </div>
                             <p className="text-sm text-muted-foreground">{project.location}</p>
                             {project.panel_name && (
                               <p className="text-sm text-primary">לוח: {project.panel_name} | זרם: {project.panel_current}</p>
@@ -324,6 +336,19 @@ export default function AdminProjects() {
                             </div>
                           </div>
                           <div className="flex gap-2">
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={async () => {
+                                const newVisibility = !(project.is_visible ?? true);
+                                await supabase.from('projects').update({ is_visible: newVisibility }).eq('id', project.id);
+                                queryClient.invalidateQueries({ queryKey: ['admin-projects'] });
+                                toast.success(newVisibility ? 'פרויקט מוצג באתר' : 'פרויקט הוסתר מהאתר');
+                              }}
+                              title={project.is_visible !== false ? 'הסתר מהאתר' : 'הצג באתר'}
+                            >
+                              {project.is_visible !== false ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                            </Button>
                             <Button variant="outline" size="sm" onClick={() => duplicateMutation.mutate(project)} title="שכפל">
                               <Copy className="w-4 h-4" />
                             </Button>

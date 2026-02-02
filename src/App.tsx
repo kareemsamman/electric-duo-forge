@@ -40,6 +40,7 @@ import AdminShipping from "./pages/AdminShipping";
 import AdminCertificates from "./pages/AdminCertificates";
 import AdminTeam from "./pages/AdminTeam";
 import AdminGallery from "./pages/AdminGallery";
+import AdminServices from "./pages/AdminServices";
 import NewProject from "./pages/NewProject";
 
 const queryClient = new QueryClient();
@@ -96,6 +97,7 @@ const App = () => (
           <Route path="/admin/certificates" element={<ProtectedRoute><AdminCertificates /></ProtectedRoute>} />
           <Route path="/admin/team" element={<ProtectedRoute><AdminTeam /></ProtectedRoute>} />
           <Route path="/admin/gallery" element={<ProtectedRoute><AdminGallery /></ProtectedRoute>} />
+          <Route path="/admin/services" element={<ProtectedRoute><AdminServices /></ProtectedRoute>} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </main>

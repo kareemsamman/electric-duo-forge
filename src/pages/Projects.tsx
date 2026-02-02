@@ -16,6 +16,7 @@ type Project = {
   location_en?: string | null;
   image: string;
   created_at: string;
+  is_visible?: boolean;
 };
 
 const getImageUrl = (imagePath: string) => {
@@ -56,7 +57,7 @@ const Projects = () => {
   } = useQuery({
     queryKey: ["projects-page"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("projects").select("*").order("display_order", { ascending: true });
+      const { data, error } = await supabase.from("projects").select("*").eq("is_visible", true).order("display_order", { ascending: true });
 
       if (error) throw error;
       return data as Project[];
