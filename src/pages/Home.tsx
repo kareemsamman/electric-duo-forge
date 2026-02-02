@@ -4,7 +4,6 @@ import FeaturedProducts from "@/components/home/FeaturedProducts";
 import ServicesSection from "@/components/home/ServicesSection";
 import WhyUsSection from "@/components/home/WhyUsSection";
 import VideoSection from "@/components/home/VideoSection";
-import TeamPreview from "@/components/home/TeamPreview";
 import ProjectsSection from "@/components/home/ProjectsSection";
 import ClientLogos from "@/components/home/ClientLogos";
 import CTASection from "@/components/home/CTASection";
@@ -20,7 +19,6 @@ const Home = () => {
       <StatsStrip />
       <WhyUsSection />
       <VideoSection />
-      <TeamPreview />
       <ProjectsSection />
       <ClientLogos />
       <CTASection />
