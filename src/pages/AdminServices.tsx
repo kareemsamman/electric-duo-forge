@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { Plus, Pencil, Trash2, GripVertical, ArrowRight, ArrowLeft, Save, X, Link as LinkIcon } from 'lucide-react';
+import { Plus, Pencil, Trash2, GripVertical, ArrowRight, ArrowLeft, Save, X, Link as LinkIcon, Image, Upload, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Switch } from '@/components/ui/switch';
 import { useNavigate } from 'react-router-dom';
@@ -14,6 +14,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ClipboardCheck, Factory, Wrench, FlaskConical, Headphones, Zap, Settings, Shield, Cpu, Cable } from 'lucide-react';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 const iconOptions = [
   { value: 'ClipboardCheck', label: 'תכנון', Icon: ClipboardCheck },
@@ -35,7 +36,9 @@ const getIconComponent = (iconName: string) => {
 
 interface ServiceLink {
   text: string;
-  url: string;
+  type: 'url' | 'popup';
+  url?: string;
+  images?: string[];
 }
 
 interface Service {
@@ -57,6 +60,7 @@ export default function AdminServices() {
   const { language } = useLanguage();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
+  const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
   const [formData, setFormData] = useState({
     icon: 'ClipboardCheck',
     title_he: '',
@@ -75,7 +79,14 @@ export default function AdminServices() {
         .select('*')
         .order('display_order', { ascending: true });
       if (error) throw error;
-      return data as unknown as Service[];
+      // Migrate old format to new format
+      return (data as unknown as Service[]).map(service => ({
+        ...service,
+        links: (service.links as ServiceLink[] | null)?.map(link => ({
+          ...link,
+          type: link.type || 'url' // Default to 'url' for old links
+        })) || []
+      }));
     }
   });
 
@@ -159,14 +170,28 @@ export default function AdminServices() {
   const addLink = () => {
     setFormData(prev => ({
       ...prev,
-      links: [...prev.links, { text: '', url: '' }]
+      links: [...prev.links, { text: '', type: 'url', url: '' }]
     }));
   };
 
-  const updateLink = (index: number, field: 'text' | 'url', value: string) => {
+  const updateLink = (index: number, field: keyof ServiceLink, value: any) => {
     setFormData(prev => ({
       ...prev,
-      links: prev.links.map((link, i) => i === index ? { ...link, [field]: value } : link)
+      links: prev.links.map((link, i) => {
+        if (i !== index) return link;
+        const updated = { ...link, [field]: value };
+        // Reset fields when switching type
+        if (field === 'type') {
+          if (value === 'url') {
+            updated.images = undefined;
+            updated.url = '';
+          } else {
+            updated.url = undefined;
+            updated.images = [];
+          }
+        }
+        return updated;
+      })
     }));
   };
 
@@ -174,6 +199,63 @@ export default function AdminServices() {
     setFormData(prev => ({
       ...prev,
       links: prev.links.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleImageUpload = async (index: number, files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    
+    setUploadingIndex(index);
+    const uploadedUrls: string[] = [];
+    
+    try {
+      for (const file of Array.from(files)) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('service-images')
+          .upload(fileName, file);
+        
+        if (uploadError) throw uploadError;
+        
+        const { data: { publicUrl } } = supabase.storage
+          .from('service-images')
+          .getPublicUrl(fileName);
+        
+        uploadedUrls.push(publicUrl);
+      }
+      
+      setFormData(prev => ({
+        ...prev,
+        links: prev.links.map((link, i) => {
+          if (i !== index) return link;
+          return {
+            ...link,
+            images: [...(link.images || []), ...uploadedUrls]
+          };
+        })
+      }));
+      
+      toast.success(`${uploadedUrls.length} תמונות הועלו בהצלחה`);
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast.error('שגיאה בהעלאת תמונות');
+    } finally {
+      setUploadingIndex(null);
+    }
+  };
+
+  const removeImage = (linkIndex: number, imageIndex: number) => {
+    setFormData(prev => ({
+      ...prev,
+      links: prev.links.map((link, i) => {
+        if (i !== linkIndex) return link;
+        return {
+          ...link,
+          images: (link.images || []).filter((_, idx) => idx !== imageIndex)
+        };
+      })
     }));
   };
 
@@ -245,36 +327,124 @@ export default function AdminServices() {
           {formData.links.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-4">אין קישורים. לחץ על "הוסף קישור" כדי להוסיף.</p>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-4">
               {formData.links.map((link, index) => (
-                <div key={index} className="flex items-start gap-3 bg-background p-3 rounded-md border">
-                  <div className="flex-1 grid sm:grid-cols-2 gap-3">
-                    <div>
-                      <Label className="text-xs">טקסט הקישור</Label>
-                      <Input 
-                        value={link.text} 
-                        onChange={(e) => updateLink(index, 'text', e.target.value)}
-                        placeholder="לדוגמה: לוחות חשמל"
-                      />
+                <div key={index} className="bg-background p-4 rounded-md border">
+                  <div className="flex items-start gap-3">
+                    <div className="flex-1 space-y-3">
+                      {/* Link Text */}
+                      <div>
+                        <Label className="text-xs">טקסט הקישור</Label>
+                        <Input 
+                          value={link.text} 
+                          onChange={(e) => updateLink(index, 'text', e.target.value)}
+                          placeholder="לדוגמה: לוחות חשמל"
+                        />
+                      </div>
+                      
+                      {/* Link Type */}
+                      <div>
+                        <Label className="text-xs mb-2 block">סוג הקישור</Label>
+                        <RadioGroup 
+                          value={link.type || 'url'} 
+                          onValueChange={(value) => updateLink(index, 'type', value)}
+                          className="flex gap-4"
+                        >
+                          <div className="flex items-center space-x-2 space-x-reverse">
+                            <RadioGroupItem value="url" id={`url-${index}`} />
+                            <Label htmlFor={`url-${index}`} className="flex items-center gap-1 cursor-pointer">
+                              <LinkIcon className="w-3 h-3" />
+                              קישור URL
+                            </Label>
+                          </div>
+                          <div className="flex items-center space-x-2 space-x-reverse">
+                            <RadioGroupItem value="popup" id={`popup-${index}`} />
+                            <Label htmlFor={`popup-${index}`} className="flex items-center gap-1 cursor-pointer">
+                              <Image className="w-3 h-3" />
+                              גלריית תמונות (פופאפ)
+                            </Label>
+                          </div>
+                        </RadioGroup>
+                      </div>
+                      
+                      {/* URL Field */}
+                      {(link.type === 'url' || !link.type) && (
+                        <div>
+                          <Label className="text-xs">כתובת URL</Label>
+                          <Input 
+                            value={link.url || ''} 
+                            onChange={(e) => updateLink(index, 'url', e.target.value)}
+                            placeholder="/projects או https://..."
+                          />
+                        </div>
+                      )}
+                      
+                      {/* Images Upload */}
+                      {link.type === 'popup' && (
+                        <div>
+                          <Label className="text-xs mb-2 block">תמונות לגלריה</Label>
+                          
+                          {/* Upload Button */}
+                          <div className="mb-3">
+                            <label className="cursor-pointer">
+                              <div className="flex items-center gap-2 px-4 py-2 border-2 border-dashed rounded-lg hover:border-primary hover:bg-primary/5 transition-colors w-fit">
+                                {uploadingIndex === index ? (
+                                  <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                  <Upload className="w-4 h-4" />
+                                )}
+                                <span className="text-sm">העלה תמונות</span>
+                              </div>
+                              <input
+                                type="file"
+                                accept="image/*"
+                                multiple
+                                className="hidden"
+                                onChange={(e) => handleImageUpload(index, e.target.files)}
+                                disabled={uploadingIndex === index}
+                              />
+                            </label>
+                          </div>
+                          
+                          {/* Uploaded Images Grid */}
+                          {link.images && link.images.length > 0 && (
+                            <div className="grid grid-cols-4 gap-2">
+                              {link.images.map((img, imgIndex) => (
+                                <div key={imgIndex} className="relative group">
+                                  <img 
+                                    src={img} 
+                                    alt={`תמונה ${imgIndex + 1}`}
+                                    className="w-full h-20 object-cover rounded-md"
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => removeImage(index, imgIndex)}
+                                    className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                  >
+                                    <X className="w-3 h-3" />
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          
+                          {(!link.images || link.images.length === 0) && (
+                            <p className="text-xs text-muted-foreground">טרם הועלו תמונות</p>
+                          )}
+                        </div>
+                      )}
                     </div>
-                    <div>
-                      <Label className="text-xs">כתובת URL</Label>
-                      <Input 
-                        value={link.url} 
-                        onChange={(e) => updateLink(index, 'url', e.target.value)}
-                        placeholder="/projects או https://..."
-                      />
-                    </div>
+                    
+                    <Button 
+                      type="button" 
+                      variant="ghost" 
+                      size="icon" 
+                      className="text-destructive hover:bg-destructive/10 mt-5"
+                      onClick={() => removeLink(index)}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
                   </div>
-                  <Button 
-                    type="button" 
-                    variant="ghost" 
-                    size="icon" 
-                    className="text-destructive hover:bg-destructive/10 mt-5"
-                    onClick={() => removeLink(index)}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
                 </div>
               ))}
             </div>
@@ -308,7 +478,7 @@ export default function AdminServices() {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-4xl font-bold mb-2">ניהול שירותים</h1>
-            <p className="text-muted-foreground">גרור לסידור מחדש. הוסף קישורים לכל שירות.</p>
+            <p className="text-muted-foreground">גרור לסידור מחדש. הוסף קישורים או גלריות תמונות לכל שירות.</p>
           </div>
           <Button onClick={() => { setIsAdding(true); resetForm(); }} disabled={isAdding || editingId !== null}>
             <Plus className="w-4 h-4 ml-2" />הוסף שירות
@@ -324,6 +494,8 @@ export default function AdminServices() {
                 {services?.map((service, index) => {
                   const IconComp = getIconComponent(service.icon);
                   const linksArray = (service.links as ServiceLink[] | null) || [];
+                  const urlLinks = linksArray.filter(l => l.type === 'url' || !l.type);
+                  const popupLinks = linksArray.filter(l => l.type === 'popup');
                   return (
                     <Draggable key={service.id} draggableId={service.id} index={index}>
                       {(provided, snapshot) => (
@@ -346,10 +518,16 @@ export default function AdminServices() {
                                 <div className="flex items-center gap-3 mb-1">
                                   <h3 className="text-lg font-semibold">{service.title_he}</h3>
                                   {!service.is_active && <span className="text-xs bg-muted px-2 py-1 rounded">לא פעיל</span>}
-                                  {linksArray.length > 0 && (
+                                  {urlLinks.length > 0 && (
                                     <span className="flex items-center gap-1 text-xs text-[#1A73E8]">
                                       <LinkIcon className="w-3 h-3" />
-                                      {linksArray.length} קישורים
+                                      {urlLinks.length} קישורים
+                                    </span>
+                                  )}
+                                  {popupLinks.length > 0 && (
+                                    <span className="flex items-center gap-1 text-xs text-green-600">
+                                      <Image className="w-3 h-3" />
+                                      {popupLinks.length} גלריות
                                     </span>
                                   )}
                                 </div>
@@ -367,7 +545,10 @@ export default function AdminServices() {
                                       title_en: service.title_en || '',
                                       description_he: service.description_he,
                                       description_en: service.description_en || '',
-                                      links: linksArray,
+                                      links: linksArray.map(l => ({
+                                        ...l,
+                                        type: l.type || 'url'
+                                      })),
                                       is_active: service.is_active
                                     });
                                   }}
