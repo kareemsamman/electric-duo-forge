@@ -1,6 +1,7 @@
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { FadeIn } from "@/components/animations/FadeIn";
+import founderPhoto from "@/assets/founder-photo.jpg";
 
 const About = () => {
   const { t } = useLanguage();
@@ -23,7 +24,7 @@ const About = () => {
         <FadeIn delay={0.3}>
           <Card className="max-w-2xl mx-auto hover:shadow-xl transition-shadow">
             <CardContent className="pt-8 pb-8 text-center">
-              <div className="w-48 h-48 md:w-64 md:h-64 bg-secondary rounded-2xl mx-auto mb-6" />
+              <img src={founderPhoto} alt="עאצם עודה" className="w-48 h-48 md:w-64 md:h-64 rounded-2xl mx-auto mb-6 object-cover" />
               <h3 className="text-2xl font-bold mb-2">עאצם עודה</h3>
               <p className="text-accent mb-4">{t("about.founder.title")}</p>
               <p className="text-muted-foreground">
