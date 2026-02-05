@@ -33,6 +33,11 @@ const getIconComponent = (iconName: string) => {
   return found ? found.Icon : ClipboardCheck;
 };
 
+interface ServiceLink {
+  text: string;
+  url: string;
+}
+
 interface Service {
   id: string;
   icon: string;
@@ -41,6 +46,7 @@ interface Service {
   description_he: string;
   description_en: string | null;
   link_url: string | null;
+  links: ServiceLink[] | null;
   display_order: number;
   is_active: boolean;
 }
@@ -57,7 +63,7 @@ export default function AdminServices() {
     title_en: '',
     description_he: '',
     description_en: '',
-    link_url: '',
+    links: [] as ServiceLink[],
     is_active: true
   });
 
@@ -69,14 +75,23 @@ export default function AdminServices() {
         .select('*')
         .order('display_order', { ascending: true });
       if (error) throw error;
-      return data as Service[];
+      return data as unknown as Service[];
     }
   });
 
   const createMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
       const maxOrder = services?.length ? Math.max(...services.map(s => s.display_order)) + 1 : 0;
-      const { error } = await supabase.from('services').insert([{ ...data, display_order: maxOrder }]);
+      const { error } = await supabase.from('services').insert([{ 
+        icon: data.icon,
+        title_he: data.title_he,
+        title_en: data.title_en || null,
+        description_he: data.description_he,
+        description_en: data.description_en || null,
+        links: data.links as unknown as any,
+        is_active: data.is_active,
+        display_order: maxOrder 
+      }]);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -88,8 +103,12 @@ export default function AdminServices() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Partial<Service> }) => {
-      const { error } = await supabase.from('services').update(data).eq('id', id);
+    mutationFn: async ({ id, data }: { id: string; data: Partial<typeof formData> }) => {
+      const updateData = {
+        ...data,
+        links: data.links as unknown as any
+      };
+      const { error } = await supabase.from('services').update(updateData).eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -112,7 +131,7 @@ export default function AdminServices() {
   });
 
   const resetForm = () => {
-    setFormData({ icon: 'ClipboardCheck', title_he: '', title_en: '', description_he: '', description_en: '', link_url: '', is_active: true });
+    setFormData({ icon: 'ClipboardCheck', title_he: '', title_en: '', description_he: '', description_en: '', links: [], is_active: true });
   };
 
   const handleSave = () => {
@@ -135,6 +154,27 @@ export default function AdminServices() {
       await supabase.from('services').update({ display_order: index }).eq('id', item.id);
     }
     toast.success('סדר השירותים עודכן');
+  };
+
+  const addLink = () => {
+    setFormData(prev => ({
+      ...prev,
+      links: [...prev.links, { text: '', url: '' }]
+    }));
+  };
+
+  const updateLink = (index: number, field: 'text' | 'url', value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      links: prev.links.map((link, i) => i === index ? { ...link, [field]: value } : link)
+    }));
+  };
+
+  const removeLink = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      links: prev.links.filter((_, i) => i !== index)
+    }));
   };
 
   const ServiceForm = ({ isNew = false }: { isNew?: boolean }) => (
@@ -188,18 +228,60 @@ export default function AdminServices() {
             <Textarea value={formData.description_en} onChange={(e) => setFormData(prev => ({ ...prev, description_en: e.target.value }))} rows={3} />
           </div>
         </div>
-        <div>
-          <Label className="flex items-center gap-2">
-            <LinkIcon className="w-4 h-4" />
-            קישור (אופציונלי)
-          </Label>
-          <Input 
-            value={formData.link_url} 
-            onChange={(e) => setFormData(prev => ({ ...prev, link_url: e.target.value }))} 
-            placeholder="https://example.com או /contact"
-          />
-          <p className="text-xs text-muted-foreground mt-1">הזן כתובת URL כדי להפוך את הכרטיס ללחיץ</p>
+        
+        {/* Links Repeater */}
+        <div className="border rounded-lg p-4 bg-muted/30">
+          <div className="flex items-center justify-between mb-3">
+            <Label className="flex items-center gap-2 text-base">
+              <LinkIcon className="w-4 h-4" />
+              קישורים
+            </Label>
+            <Button type="button" variant="outline" size="sm" onClick={addLink}>
+              <Plus className="w-4 h-4 ml-1" />
+              הוסף קישור
+            </Button>
+          </div>
+          
+          {formData.links.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-4">אין קישורים. לחץ על "הוסף קישור" כדי להוסיף.</p>
+          ) : (
+            <div className="space-y-3">
+              {formData.links.map((link, index) => (
+                <div key={index} className="flex items-start gap-3 bg-background p-3 rounded-md border">
+                  <div className="flex-1 grid sm:grid-cols-2 gap-3">
+                    <div>
+                      <Label className="text-xs">טקסט הקישור</Label>
+                      <Input 
+                        value={link.text} 
+                        onChange={(e) => updateLink(index, 'text', e.target.value)}
+                        placeholder="לדוגמה: לוחות חשמל"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs">כתובת URL</Label>
+                      <Input 
+                        value={link.url} 
+                        onChange={(e) => updateLink(index, 'url', e.target.value)}
+                        placeholder="/projects או https://..."
+                      />
+                    </div>
+                  </div>
+                  <Button 
+                    type="button" 
+                    variant="ghost" 
+                    size="icon" 
+                    className="text-destructive hover:bg-destructive/10 mt-5"
+                    onClick={() => removeLink(index)}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+          <p className="text-xs text-muted-foreground mt-2">הקישורים יופיעו מתחת לתיאור השירות</p>
         </div>
+
         <div className="flex gap-2">
           <Button onClick={handleSave} disabled={!formData.title_he || !formData.description_he}>
             <Save className="w-4 h-4 ml-2" />שמור
@@ -226,7 +308,7 @@ export default function AdminServices() {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-4xl font-bold mb-2">ניהול שירותים</h1>
-            <p className="text-muted-foreground">גרור לסידור מחדש, לחץ לעריכה. הוסף קישור להפוך לכרטיס לחיץ.</p>
+            <p className="text-muted-foreground">גרור לסידור מחדש. הוסף קישורים לכל שירות.</p>
           </div>
           <Button onClick={() => { setIsAdding(true); resetForm(); }} disabled={isAdding || editingId !== null}>
             <Plus className="w-4 h-4 ml-2" />הוסף שירות
@@ -241,6 +323,7 @@ export default function AdminServices() {
               <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-3">
                 {services?.map((service, index) => {
                   const IconComp = getIconComponent(service.icon);
+                  const linksArray = (service.links as ServiceLink[] | null) || [];
                   return (
                     <Draggable key={service.id} draggableId={service.id} index={index}>
                       {(provided, snapshot) => (
@@ -263,12 +346,14 @@ export default function AdminServices() {
                                 <div className="flex items-center gap-3 mb-1">
                                   <h3 className="text-lg font-semibold">{service.title_he}</h3>
                                   {!service.is_active && <span className="text-xs bg-muted px-2 py-1 rounded">לא פעיל</span>}
-                                  {service.link_url && <LinkIcon className="w-4 h-4 text-[#1A73E8]" />}
+                                  {linksArray.length > 0 && (
+                                    <span className="flex items-center gap-1 text-xs text-[#1A73E8]">
+                                      <LinkIcon className="w-3 h-3" />
+                                      {linksArray.length} קישורים
+                                    </span>
+                                  )}
                                 </div>
                                 <p className="text-sm text-muted-foreground line-clamp-1">{service.description_he}</p>
-                                {service.link_url && (
-                                  <p className="text-xs text-[#1A73E8] mt-1 truncate">{service.link_url}</p>
-                                )}
                               </div>
                               <div className="flex gap-2">
                                 <Button
@@ -282,7 +367,7 @@ export default function AdminServices() {
                                       title_en: service.title_en || '',
                                       description_he: service.description_he,
                                       description_en: service.description_en || '',
-                                      link_url: service.link_url || '',
+                                      links: linksArray,
                                       is_active: service.is_active
                                     });
                                   }}

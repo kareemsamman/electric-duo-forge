@@ -411,6 +411,7 @@ export type Database = {
           id: string
           is_active: boolean
           link_url: string | null
+          links: Json | null
           title_en: string | null
           title_he: string
           updated_at: string
@@ -424,6 +425,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           link_url?: string | null
+          links?: Json | null
           title_en?: string | null
           title_he: string
           updated_at?: string
@@ -437,6 +439,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           link_url?: string | null
+          links?: Json | null
           title_en?: string | null
           title_he?: string
           updated_at?: string
