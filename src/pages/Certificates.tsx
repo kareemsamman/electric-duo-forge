@@ -96,7 +96,7 @@ const Certificates = () => {
             {language === "he" ? "אין תעודות להצגה" : "No certificates to display"}
           </div>
         ) : (
-          <StaggerContainer className="flex flex-col items-center gap-12 md:gap-16" staggerDelay={0.1}>
+          <StaggerContainer className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10" staggerDelay={0.1}>
             {certificates.map((cert) => {
               const name = language === "he" ? cert.certificate_name : (cert.certificate_name_en || cert.certificate_name);
               const description = language === "he" ? cert.short_description : (cert.short_description_en || cert.short_description);
@@ -105,7 +105,7 @@ const Certificates = () => {
               const hasMultipleImages = (cert.images?.length || 0) > 0;
               
               return (
-                <StaggerItem key={cert.id} className="w-full max-w-3xl">
+                <StaggerItem key={cert.id} className="w-full">
                   <div
                     onClick={() => handleCertificateClick(cert)}
                     className="group cursor-pointer"
