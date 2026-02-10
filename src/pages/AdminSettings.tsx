@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -9,12 +9,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ArrowRight, ArrowLeft, Save, Info, Upload, Globe, Image } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 export default function AdminSettings() {
   const { language } = useLanguage();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingFavicon, setIsUploadingFavicon] = useState(false);
   const [isUploadingOgImage, setIsUploadingOgImage] = useState(false);
@@ -74,44 +75,6 @@ export default function AdminSettings() {
     }
   });
 
-  // Update document title and meta dynamically
-  useEffect(() => {
-    if (settings.site_title || settings.site_title_en) {
-      const title = language === 'he' 
-        ? settings.site_title || settings.site_title_en 
-        : settings.site_title_en || settings.site_title;
-      if (title) document.title = title;
-    }
-    
-    if (settings.meta_description || settings.meta_description_en) {
-      const desc = language === 'he' 
-        ? settings.meta_description || settings.meta_description_en 
-        : settings.meta_description_en || settings.meta_description;
-      const metaDesc = document.querySelector('meta[name="description"]');
-      if (metaDesc && desc) metaDesc.setAttribute('content', desc);
-    }
-
-    if (settings.favicon_url) {
-      let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
-      if (!link) {
-        link = document.createElement('link');
-        link.rel = 'icon';
-        document.head.appendChild(link);
-      }
-      link.href = settings.favicon_url;
-    }
-
-    // Update OG image meta tag
-    if (settings.og_image_url) {
-      let ogImage = document.querySelector('meta[property="og:image"]') as HTMLMetaElement;
-      if (!ogImage) {
-        ogImage = document.createElement('meta');
-        ogImage.setAttribute('property', 'og:image');
-        document.head.appendChild(ogImage);
-      }
-      ogImage.setAttribute('content', settings.og_image_url);
-    }
-  }, [settings, language]);
 
   const handleFaviconUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -191,6 +154,7 @@ export default function AdminSettings() {
         if (error) throw error;
       }
 
+      queryClient.invalidateQueries({ queryKey: ['seo-settings'] });
       toast.success(language === 'he' ? 'ההגדרות נשמרו בהצלחה' : 'Settings saved successfully');
     } catch (error) {
       console.error('Error saving settings:', error);

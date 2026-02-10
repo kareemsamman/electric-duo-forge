@@ -13,6 +13,7 @@ import { CartDrawer } from "@/components/cart/CartDrawer";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import FloatingWhatsApp from "@/components/FloatingWhatsApp";
+import SeoManager from "@/components/SeoManager";
 import Home from "./pages/Home";
 import About from "./pages/About";
 import Solutions from "./pages/Solutions";
@@ -64,6 +65,7 @@ const App = () => (
             <CartProvider>
             <Toaster />
             <Sonner />
+            <SeoManager />
             <BrowserRouter>
               <ScrollToTop />
             <div className="flex flex-col min-h-screen">
