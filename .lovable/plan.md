@@ -1,34 +1,29 @@
 
 
-## Make Header/Footer Logo Configurable from Admin
+## Add YouTube Background Option to Hero Section
 
-Currently the header and footer show a hardcoded text logo ("גלובל אלקטריק"). This plan adds the ability to upload a logo image from Admin Settings, which will replace the text in both header and footer.
+Currently the hero supports two background types: **video** (direct MP4 upload) and **image**. This plan adds a third option: **youtube** -- an embedded YouTube iframe that autoplays, loops, and hides all controls.
 
-### What Changes
+### Changes
 
-**1. Admin Settings -- Add Logo Upload**
-- Add a new "Logo" upload field in the SEO settings card (similar to the existing favicon upload)
-- Save the URL to `site_content` with key `header.logo_url`
-- Show a preview of the uploaded logo
-- Also include `header.logo_url` in the query key list and save logic
+**1. Admin Content (`src/pages/AdminContent.tsx`)**
+- Add a third option "YouTube" to the background type selector dropdown
+- When "youtube" is selected, show a text input for the YouTube URL/ID instead of a file upload
+- Store the YouTube URL in the existing `hero.video_url` content key (reuse the same field)
 
-**2. Header -- Show Logo Image**
-- In `src/components/Header.tsx`, check if `content["header.logo_url"]` exists
-- If it does, show an `<img>` tag with the uploaded logo instead of the text div
-- If no logo is uploaded, fall back to the existing text (`content["header.logo"]` or "Global Electric")
-
-**3. Footer -- Show Logo Image**
-- In `src/components/Footer.tsx`, same logic: if `content["header.logo_url"]` exists, show the logo image; otherwise show the text
-- Also use `content["header.logo"]` for the text fallback instead of the current hardcoded Hebrew/English strings
-
-**4. Database**
-- Insert a new row in `site_content` with key `header.logo_url`, section `seo`, so it's available immediately
+**2. Hero Section (`src/components/home/HeroSection.tsx`)**
+- Add a third branch for `backgroundType === "youtube"`
+- Extract the YouTube video ID from the URL
+- Render an iframe with YouTube embed parameters that disable controls and enable autoplay:
+  - `autoplay=1`, `mute=1`, `loop=1`, `controls=0`, `showinfo=0`, `modestbranding=1`, `disablekb=1`, `fs=0`, `rel=0`
+  - `playlist=VIDEO_ID` (required for looping)
+  - `playsinline=1`
+- Style the iframe to cover the full background (absolute positioned, scaled up slightly to hide black bars)
+- Add `pointer-events: none` so users can't interact with the YouTube player
 
 ### Technical Details
 
-- **Migration**: `INSERT INTO site_content (key, value_he, value_en, section, description) VALUES ('header.logo_url', '', '', 'seo', 'Logo image URL for header and footer')`
-- **AdminSettings.tsx**: Add `logo_url` to state, query, save logic, and a file upload UI identical to the favicon upload pattern
-- **Header.tsx**: Conditionally render `<img src={content["header.logo_url"]} alt="Logo" className="h-10 object-contain" />` or the text fallback
-- **Footer.tsx**: Same conditional rendering with appropriate sizing for the footer context
-- Invalidate `seo-settings` query after save so changes apply immediately
-
+- **YouTube ID extraction**: Parse URLs like `youtube.com/watch?v=ID`, `youtu.be/ID`, or raw IDs
+- **Iframe embed URL**: `https://www.youtube.com/embed/{ID}?autoplay=1&mute=1&loop=1&controls=0&showinfo=0&rel=0&playlist={ID}&playsinline=1&modestbranding=1&disablekb=1&fs=0`
+- **CSS**: The iframe needs `pointer-events-none` and a slight scale (e.g., `scale-110`) to ensure no YouTube UI elements are visible and the video fills the area edge-to-edge
+- No database migration needed -- reuses existing `hero.background_type` and `hero.video_url` keys
