@@ -34,9 +34,13 @@ const Header = () => {
       <div className="max-w-[1280px] w-full bg-background/60 backdrop-blur-xl border border-white/20 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] px-6 md:px-8 lg:px-10">
         <div className="flex items-center justify-between h-20">
           <Link to="/" className="flex items-center gap-3 transition-opacity hover:opacity-80">
-            <div className="text-2xl font-bold text-primary">
-              {content["header.logo"] || "Global Electric"}
-            </div>
+            {content["header.logo_url"] ? (
+              <img src={content["header.logo_url"]} alt={content["header.logo"] || "Logo"} className="h-10 object-contain" />
+            ) : (
+              <div className="text-2xl font-bold text-primary">
+                {content["header.logo"] || "Global Electric"}
+              </div>
+            )}
           </Link>
 
           {/* Desktop Navigation */}

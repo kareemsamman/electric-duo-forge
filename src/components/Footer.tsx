@@ -15,9 +15,13 @@ const Footer = () => {
       <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-[1360px]">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-16 mb-16">
           <div>
-            <h3 className="text-3xl font-bold mb-6">
-              {language === "he" ? "גלובל אלקטריק" : "Global Electric"}
-            </h3>
+            {content["header.logo_url"] ? (
+              <img src={content["header.logo_url"]} alt={content["header.logo"] || "Logo"} className="h-12 object-contain mb-6" />
+            ) : (
+              <h3 className="text-3xl font-bold mb-6">
+                {content["header.logo"] || (language === "he" ? "גלובל אלקטריק" : "Global Electric")}
+              </h3>
+            )}
             <p className="text-primary-foreground/80 leading-relaxed text-base">
               {language === "he"
                 ? "הנדסת חשמל, ייצור לוחות חשמל ופתרונות מקצועיים"
