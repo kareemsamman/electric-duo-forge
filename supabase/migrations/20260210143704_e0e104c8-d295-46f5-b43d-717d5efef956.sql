@@ -1,0 +1,1 @@
+INSERT INTO site_content (key, value_he, value_en, section, description) VALUES ('header.logo_url', '', '', 'seo', 'Logo image URL for header and footer') ON CONFLICT (key) DO NOTHING;

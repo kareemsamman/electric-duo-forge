@@ -19,6 +19,7 @@ export default function AdminSettings() {
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingFavicon, setIsUploadingFavicon] = useState(false);
   const [isUploadingOgImage, setIsUploadingOgImage] = useState(false);
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
 
   const [settings, setSettings] = useState({
     admin_email: '',
@@ -30,6 +31,7 @@ export default function AdminSettings() {
     meta_description_en: '',
     favicon_url: '',
     og_image_url: '',
+    logo_url: '',
   });
 
   // Fetch current settings
@@ -46,7 +48,8 @@ export default function AdminSettings() {
           'site_title',
           'meta_description',
           'favicon_url',
-          'og_image_url'
+          'og_image_url',
+          'header.logo_url'
         ]);
       
       if (error) throw error;
@@ -69,6 +72,7 @@ export default function AdminSettings() {
         meta_description_en: settingsMap.meta_description?.en || '',
         favicon_url: settingsMap.favicon_url?.he || '',
         og_image_url: settingsMap.og_image_url?.he || '',
+        logo_url: settingsMap['header.logo_url']?.he || '',
       });
       
       return settingsMap;
@@ -134,6 +138,36 @@ export default function AdminSettings() {
     }
   };
 
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingLogo(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `logo-${Date.now()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('gallery')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('gallery')
+        .getPublicUrl(fileName);
+
+      setSettings(prev => ({ ...prev, logo_url: publicUrl }));
+      toast.success(language === 'he' ? 'הלוגו הועלה בהצלחה' : 'Logo uploaded successfully');
+    } catch (error) {
+      console.error('Error uploading logo:', error);
+      toast.error(language === 'he' ? 'שגיאה בהעלאת הלוגו' : 'Error uploading logo');
+    } finally {
+      setIsUploadingLogo(false);
+    }
+  };
+
+
   const handleSave = async () => {
     setIsSaving(true);
     try {
@@ -145,6 +179,7 @@ export default function AdminSettings() {
         { key: 'meta_description', section: 'seo', value_he: settings.meta_description, value_en: settings.meta_description_en },
         { key: 'favicon_url', section: 'seo', value_he: settings.favicon_url, value_en: settings.favicon_url },
         { key: 'og_image_url', section: 'seo', value_he: settings.og_image_url, value_en: settings.og_image_url },
+        { key: 'header.logo_url', section: 'seo', value_he: settings.logo_url, value_en: settings.logo_url },
       ];
 
       for (const setting of settingsToSave) {
@@ -207,7 +242,51 @@ export default function AdminSettings() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            {/* Favicon */}
+            {/* Logo Upload */}
+            <div className="space-y-2">
+              <Label>{language === 'he' ? 'לוגו (הדר ופוטר)' : 'Logo (Header & Footer)'}</Label>
+              <div className="flex items-center gap-4">
+                {settings.logo_url && (
+                  <div className="h-16 border rounded-lg flex items-center justify-center bg-muted overflow-hidden px-3">
+                    <img 
+                      src={settings.logo_url} 
+                      alt="Logo" 
+                      className="h-10 object-contain"
+                    />
+                  </div>
+                )}
+                <div className="flex-1">
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleLogoUpload}
+                    disabled={isUploadingLogo}
+                    className="hidden"
+                    id="logo-upload"
+                  />
+                  <Label htmlFor="logo-upload" className="cursor-pointer">
+                    <Button 
+                      variant="outline" 
+                      disabled={isUploadingLogo}
+                      asChild
+                    >
+                      <span>
+                        <Upload className="mr-2 h-4 w-4" />
+                        {isUploadingLogo 
+                          ? (language === 'he' ? 'מעלה...' : 'Uploading...') 
+                          : (language === 'he' ? 'העלה לוגו' : 'Upload Logo')}
+                      </span>
+                    </Button>
+                  </Label>
+                </div>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {language === 'he' 
+                  ? 'הלוגו יוצג בהדר ובפוטר במקום הטקסט'
+                  : 'The logo will replace the text in header and footer'}
+              </p>
+            </div>
+
             <div className="space-y-2">
               <Label>{language === 'he' ? 'פביקון (אייקון האתר)' : 'Favicon (Site Icon)'}</Label>
               <div className="flex items-center gap-4">
