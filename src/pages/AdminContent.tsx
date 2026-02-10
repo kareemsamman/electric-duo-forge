@@ -174,8 +174,35 @@ export default function AdminContent() {
                                     תמונה
                                   </div>
                                 </SelectItem>
+                                <SelectItem value="youtube">
+                                  <div className="flex items-center gap-2">
+                                    <Video className="w-4 h-4" />
+                                    YouTube
+                                  </div>
+                                </SelectItem>
                               </SelectContent>
                             </Select>
+                          </div>
+                        ) : (isVideoUrl && content?.find(c => c.key === 'hero.background_type')?.value_he === 'youtube') ? (
+                          <div className="space-y-3">
+                            <div>
+                              <Label>קישור YouTube</Label>
+                              <Input
+                                value={currentHe}
+                                onChange={(e) => handleChange(item.id, 'he', e.target.value)}
+                                placeholder="https://www.youtube.com/watch?v=... או youtu.be/..."
+                                className="font-medium"
+                              />
+                            </div>
+                            {currentHe && (() => {
+                              const match = currentHe.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|shorts\/))([a-zA-Z0-9_-]{11})/);
+                              const vid = match ? match[1] : currentHe.length === 11 ? currentHe : null;
+                              return vid ? (
+                                <div className="mt-2 p-2 border rounded-lg">
+                                  <img src={`https://img.youtube.com/vi/${vid}/hqdefault.jpg`} alt="YouTube preview" className="w-full h-32 object-cover rounded" />
+                                </div>
+                              ) : null;
+                            })()}
                           </div>
                         ) : (isVideoUrl || isImageUrl) ? (
                           <div className="space-y-3">
