@@ -31,7 +31,7 @@ type GalleryCategory = {
 const Gallery = () => {
   const { t, language } = useLanguage();
   const [selectedImage, setSelectedImage] = useState<GalleryItem | null>(null);
-  const [activeTab, setActiveTab] = useState("all");
+  const [activeTab, setActiveTab] = useState<string | null>(null);
 
   const { data: categories = [] } = useQuery({
     queryKey: ["gallery-categories"],
@@ -58,9 +58,12 @@ const Gallery = () => {
     },
   });
 
-  const filteredGallery = activeTab === "all"
-    ? gallery
-    : gallery?.filter((item) => item.category === activeTab);
+  // Set default tab to first category once loaded
+  const effectiveTab = activeTab ?? (categories.length > 0 ? categories[0].name_he : null);
+
+  const filteredGallery = effectiveTab
+    ? gallery?.filter((item) => item.category === effectiveTab)
+    : gallery;
 
   return (
     <div className="min-h-screen pt-28 md:pt-32 pb-20">
@@ -80,13 +83,10 @@ const Gallery = () => {
         {categories.length > 0 && (
           <FadeIn delay={0.3}>
             <div className="flex justify-center mb-12">
-              <Tabs value={activeTab} onValueChange={setActiveTab} dir={language === "he" ? "rtl" : "ltr"}>
-                <TabsList className="flex-wrap h-auto gap-1 p-1">
-                  <TabsTrigger value="all">
-                    {language === "he" ? "הכל" : "All"}
-                  </TabsTrigger>
+              <Tabs value={effectiveTab || ""} onValueChange={setActiveTab} dir={language === "he" ? "rtl" : "ltr"}>
+                <TabsList className="flex-wrap h-auto gap-2 p-2 bg-secondary">
                   {categories.map((cat) => (
-                    <TabsTrigger key={cat.id} value={cat.name_he}>
+                    <TabsTrigger key={cat.id} value={cat.name_he} className="px-6 py-3 text-base font-semibold">
                       {language === "he" ? cat.name_he : cat.name_en || cat.name_he}
                     </TabsTrigger>
                   ))}
