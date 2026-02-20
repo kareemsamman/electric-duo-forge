@@ -1,19 +1,11 @@
 
 
-## Two Fixes
+## Fix: Stack Service Links Vertically
 
-### 1. Remove "מתוך העבודות שלנו" from Home Page
-The section visible on the home page is the `HeroGallerySlider` component (not the previously removed `ProjectsSection`). It will be removed from `src/pages/Home.tsx` by deleting its import and usage.
-
-### 2. Allow Empty Description in Services Admin
-In `src/pages/AdminServices.tsx`, the Save button is disabled when `description_he` is empty (line 456: `disabled={!formData.title_he || !formData.description_he}`). The fix removes `!formData.description_he` from the disabled condition, so only the title is required.
+Change the links container in `src/components/home/ServicesSection.tsx` (line 176) from horizontal wrapping to vertical column layout.
 
 ### Technical Details
 
-**File: `src/pages/Home.tsx`**
-- Remove `import HeroGallerySlider` (line 10)
-- Remove `<HeroGallerySlider />` from the JSX (line 16)
-
-**File: `src/pages/AdminServices.tsx`**
-- Change line 456 from `disabled={!formData.title_he || !formData.description_he}` to `disabled={!formData.title_he}`
+**File: `src/components/home/ServicesSection.tsx`**
+- Line 176: Change `className="flex flex-wrap gap-x-4 gap-y-1"` to `className="flex flex-col gap-y-1"` so links stack vertically instead of wrapping horizontally.
 
