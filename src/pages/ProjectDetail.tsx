@@ -27,7 +27,18 @@ type Project = {
   panel_current?: string | null;
   rich_content?: string | null;
   rich_content_en?: string | null;
+  has_multiple_panels?: boolean;
   created_at: string;
+};
+
+type ProjectPanel = {
+  id: string;
+  panel_name: string;
+  panel_name_en?: string | null;
+  panel_current?: string | null;
+  image?: string | null;
+  images?: string[] | null;
+  display_order: number;
 };
 
 const getImageUrl = (imagePath: string) => {
@@ -61,6 +72,7 @@ const ProjectDetail = () => {
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
   const [richContentGallery, setRichContentGallery] = useState<string[] | null>(null);
   const [richContentImageIndex, setRichContentImageIndex] = useState<number | null>(null);
+  const [selectedPanelIndex, setSelectedPanelIndex] = useState(0);
 
   const { data: project, isLoading, error } = useQuery({
     queryKey: ["project", id],
@@ -75,6 +87,20 @@ const ProjectDetail = () => {
       return data as Project;
     },
     enabled: !!id,
+  });
+
+  const { data: panels } = useQuery({
+    queryKey: ["project-panels", id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("project_panels")
+        .select("*")
+        .eq("project_id", id)
+        .order("display_order", { ascending: true });
+      if (error) throw error;
+      return data as ProjectPanel[];
+    },
+    enabled: !!id && !!project?.has_multiple_panels,
   });
 
   // Handle clicks on rich content images - MUST be before early returns
@@ -130,10 +156,22 @@ const ProjectDetail = () => {
   const description = isHebrew ? project.description : project.description_en || project.description;
   const location = isHebrew ? project.location : project.location_en || project.location;
   const tags = isHebrew ? project.tags : project.tags_en || project.tags;
-  const panelName = isHebrew ? project.panel_name : project.panel_name_en || project.panel_name;
   const richContent = isHebrew ? project.rich_content : project.rich_content_en || project.rich_content;
-  const mainImage = getImageUrl(project.image);
-  const allImages = [mainImage, ...(project.images || []).map(getImageUrl)].filter(Boolean);
+
+  // Determine panel info and images based on multi-panel mode
+  const hasMultiplePanels = project.has_multiple_panels && panels && panels.length > 0;
+  const selectedPanel = hasMultiplePanels ? panels[selectedPanelIndex] : null;
+  const panelName = selectedPanel
+    ? (isHebrew ? selectedPanel.panel_name : selectedPanel.panel_name_en || selectedPanel.panel_name)
+    : (isHebrew ? project.panel_name : project.panel_name_en || project.panel_name);
+  const panelCurrent = selectedPanel ? selectedPanel.panel_current : project.panel_current;
+
+  const mainImage = selectedPanel && selectedPanel.image
+    ? getImageUrl(selectedPanel.image)
+    : getImageUrl(project.image);
+  const allImages = selectedPanel
+    ? [selectedPanel.image, ...(selectedPanel.images || [])].filter(Boolean).map(getImageUrl)
+    : [project.image, ...(project.images || [])].filter(Boolean).map(getImageUrl);
 
   const navigateImage = (direction: 'prev' | 'next') => {
     if (selectedImageIndex === null) return;
@@ -171,6 +209,35 @@ const ProjectDetail = () => {
             </Link>
           </Button>
         </motion.div>
+
+        {/* Panel tabs */}
+        {hasMultiplePanels && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.05 }}
+            className="mb-6"
+          >
+            <div className="flex flex-wrap gap-2">
+              {panels.map((panel, index) => {
+                const name = isHebrew ? panel.panel_name : panel.panel_name_en || panel.panel_name;
+                return (
+                  <button
+                    key={panel.id}
+                    onClick={() => { setSelectedPanelIndex(index); setSelectedImageIndex(null); }}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                      selectedPanelIndex === index
+                        ? 'bg-primary text-primary-foreground shadow-md'
+                        : 'bg-muted hover:bg-muted/80 text-foreground'
+                    }`}
+                  >
+                    {name}
+                  </button>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
 
         {/* Main image */}
         <motion.div
@@ -236,7 +303,7 @@ const ProjectDetail = () => {
             </div>
 
             {/* Panel details */}
-            {(panelName || project.panel_current) && (
+            {(panelName || panelCurrent) && (
               <div className="bg-primary/5 rounded-2xl p-6 border border-primary/20">
                 <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
                   <Zap className="h-5 w-5 text-primary" />
@@ -249,10 +316,10 @@ const ProjectDetail = () => {
                       <p className="font-semibold text-lg">{panelName}</p>
                     </div>
                   )}
-                  {project.panel_current && (
+                  {panelCurrent && (
                     <div>
                       <span className="text-sm text-muted-foreground">{isHebrew ? "זרם הלוח:" : "Panel Current:"}</span>
-                      <p className="font-semibold text-lg">{project.panel_current}</p>
+                      <p className="font-semibold text-lg">{panelCurrent}</p>
                     </div>
                   )}
                 </div>

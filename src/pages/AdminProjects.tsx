@@ -14,6 +14,16 @@ import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { RichTextEditor } from '@/components/admin/RichTextEditor';
+import { Switch } from '@/components/ui/switch';
+
+interface PanelData {
+  id?: string;
+  panel_name: string;
+  panel_name_en: string;
+  panel_current: string;
+  image: string;
+  images: string[];
+}
 
 interface ProjectFormData {
   project_name: string;
@@ -38,6 +48,9 @@ export default function AdminProjects() {
   const [editingProject, setEditingProject] = useState<any>(null);
   const [galleryImages, setGalleryImages] = useState<string[]>([]);
   const [newImageUrl, setNewImageUrl] = useState('');
+  const [hasMultiplePanels, setHasMultiplePanels] = useState(false);
+  const [panels, setPanels] = useState<PanelData[]>([]);
+  const [panelNewImageUrls, setPanelNewImageUrls] = useState<Record<number, string>>({});
   const [formData, setFormData] = useState<ProjectFormData>({
     project_name: '',
     project_name_en: '',
@@ -92,6 +105,27 @@ export default function AdminProjects() {
         image_url: editingProject.image || '',
       });
       setGalleryImages(editingProject.images || []);
+      setHasMultiplePanels(editingProject.has_multiple_panels || false);
+      // Load panels from DB
+      if (editingProject.has_multiple_panels) {
+        supabase
+          .from('project_panels')
+          .select('*')
+          .eq('project_id', editingProject.id)
+          .order('display_order', { ascending: true })
+          .then(({ data }) => {
+            setPanels((data || []).map((p: any) => ({
+              id: p.id,
+              panel_name: p.panel_name || '',
+              panel_name_en: p.panel_name_en || '',
+              panel_current: p.panel_current || '',
+              image: p.image || '',
+              images: p.images || [],
+            })));
+          });
+      } else {
+        setPanels([]);
+      }
     } else {
       setFormData({
         project_name: '',
@@ -111,13 +145,35 @@ export default function AdminProjects() {
         image_url: '',
       });
       setGalleryImages([]);
+      setHasMultiplePanels(false);
+      setPanels([]);
     }
     setNewImageUrl('');
+    setPanelNewImageUrls({});
   }, [editingProject]);
+
+  const savePanels = async (projectId: string) => {
+    // Delete old panels
+    await supabase.from('project_panels').delete().eq('project_id', projectId);
+    // Insert new panels
+    if (hasMultiplePanels && panels.length > 0) {
+      const panelRows = panels.map((p, i) => ({
+        project_id: projectId,
+        panel_name: p.panel_name,
+        panel_name_en: p.panel_name_en || null,
+        panel_current: p.panel_current || null,
+        image: p.image || null,
+        images: p.images || [],
+        display_order: i,
+      }));
+      const { error } = await supabase.from('project_panels').insert(panelRows);
+      if (error) throw error;
+    }
+  };
 
   const createMutation = useMutation({
     mutationFn: async () => {
-      const projectData = {
+      const projectData: any = {
         project_name: formData.project_name,
         project_name_en: formData.project_name_en || null,
         location: formData.location,
@@ -128,16 +184,20 @@ export default function AdminProjects() {
         tags_en: formData.tags_en.split(',').map(t => t.trim()).filter(Boolean),
         image: formData.image_url,
         images: galleryImages,
-        panel_name: formData.panel_name || null,
-        panel_name_en: formData.panel_name_en || null,
-        panel_current: formData.panel_current || null,
+        panel_name: hasMultiplePanels ? null : (formData.panel_name || null),
+        panel_name_en: hasMultiplePanels ? null : (formData.panel_name_en || null),
+        panel_current: hasMultiplePanels ? null : (formData.panel_current || null),
         video_url: formData.video_url || null,
         rich_content: formData.rich_content || null,
         rich_content_en: formData.rich_content_en || null,
+        has_multiple_panels: hasMultiplePanels,
       };
 
-      const { error } = await supabase.from('projects').insert(projectData);
+      const { data, error } = await supabase.from('projects').insert(projectData).select('id').single();
       if (error) throw error;
+      if (hasMultiplePanels && data) {
+        await savePanels(data.id);
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-projects'] });
@@ -148,7 +208,7 @@ export default function AdminProjects() {
 
   const updateMutation = useMutation({
     mutationFn: async (id: string) => {
-      const projectData = {
+      const projectData: any = {
         project_name: formData.project_name,
         project_name_en: formData.project_name_en || null,
         location: formData.location,
@@ -159,16 +219,18 @@ export default function AdminProjects() {
         tags_en: formData.tags_en.split(',').map(t => t.trim()).filter(Boolean),
         image: formData.image_url,
         images: galleryImages,
-        panel_name: formData.panel_name || null,
-        panel_name_en: formData.panel_name_en || null,
-        panel_current: formData.panel_current || null,
+        panel_name: hasMultiplePanels ? null : (formData.panel_name || null),
+        panel_name_en: hasMultiplePanels ? null : (formData.panel_name_en || null),
+        panel_current: hasMultiplePanels ? null : (formData.panel_current || null),
         video_url: formData.video_url || null,
         rich_content: formData.rich_content || null,
         rich_content_en: formData.rich_content_en || null,
+        has_multiple_panels: hasMultiplePanels,
       };
 
       const { error } = await supabase.from('projects').update(projectData).eq('id', id);
       if (error) throw error;
+      await savePanels(id);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-projects'] });
@@ -465,33 +527,115 @@ export default function AdminProjects() {
                 </TabsContent>
 
                 <TabsContent value="panel" className="space-y-4 mt-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label>שם לוח (עברית)</Label>
-                      <Input 
-                        value={formData.panel_name} 
-                        onChange={(e) => setFormData(prev => ({ ...prev, panel_name: e.target.value }))} 
-                        placeholder="לוח חשמל ראשי A4000"
-                      />
-                    </div>
-                    <div>
-                      <Label>שם לוח (English)</Label>
-                      <Input 
-                        value={formData.panel_name_en} 
-                        onChange={(e) => setFormData(prev => ({ ...prev, panel_name_en: e.target.value }))} 
-                        placeholder="Main Electrical Panel A4000"
-                      />
-                    </div>
+                  {/* Multi-panel toggle */}
+                  <div className="flex items-center gap-3 mb-4">
+                    <Switch checked={hasMultiplePanels} onCheckedChange={setHasMultiplePanels} />
+                    <Label>מספר לוחות (Multiple Panels)</Label>
                   </div>
 
-                  <div>
-                    <Label>זרם הלוח</Label>
-                    <Input 
-                      value={formData.panel_current} 
-                      onChange={(e) => setFormData(prev => ({ ...prev, panel_current: e.target.value }))} 
-                      placeholder="A4000"
-                    />
-                  </div>
+                  {!hasMultiplePanels ? (
+                    <>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label>שם לוח (עברית)</Label>
+                          <Input 
+                            value={formData.panel_name} 
+                            onChange={(e) => setFormData(prev => ({ ...prev, panel_name: e.target.value }))} 
+                            placeholder="לוח חשמל ראשי A4000"
+                          />
+                        </div>
+                        <div>
+                          <Label>שם לוח (English)</Label>
+                          <Input 
+                            value={formData.panel_name_en} 
+                            onChange={(e) => setFormData(prev => ({ ...prev, panel_name_en: e.target.value }))} 
+                            placeholder="Main Electrical Panel A4000"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <Label>זרם הלוח</Label>
+                        <Input 
+                          value={formData.panel_current} 
+                          onChange={(e) => setFormData(prev => ({ ...prev, panel_current: e.target.value }))} 
+                          placeholder="A4000"
+                        />
+                      </div>
+                    </>
+                  ) : (
+                    <div className="space-y-4">
+                      {panels.map((panel, pIndex) => (
+                        <div key={pIndex} className="border rounded-lg p-4 space-y-3 bg-muted/30">
+                          <div className="flex items-center justify-between">
+                            <h4 className="font-semibold">לוח #{pIndex + 1}</h4>
+                            <Button type="button" variant="ghost" size="sm" className="text-destructive" onClick={() => setPanels(prev => prev.filter((_, i) => i !== pIndex))}>
+                              <X className="w-4 h-4" />
+                            </Button>
+                          </div>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <Label>שם לוח (עברית)*</Label>
+                              <Input value={panel.panel_name} onChange={(e) => setPanels(prev => prev.map((p, i) => i === pIndex ? { ...p, panel_name: e.target.value } : p))} />
+                            </div>
+                            <div>
+                              <Label>שם לוח (English)</Label>
+                              <Input value={panel.panel_name_en} onChange={(e) => setPanels(prev => prev.map((p, i) => i === pIndex ? { ...p, panel_name_en: e.target.value } : p))} />
+                            </div>
+                          </div>
+                          <div>
+                            <Label>זרם הלוח</Label>
+                            <Input value={panel.panel_current} onChange={(e) => setPanels(prev => prev.map((p, i) => i === pIndex ? { ...p, panel_current: e.target.value } : p))} />
+                          </div>
+                          <div>
+                            <Label>תמונה ראשית (URL)</Label>
+                            <Input value={panel.image} onChange={(e) => setPanels(prev => prev.map((p, i) => i === pIndex ? { ...p, image: e.target.value } : p))} placeholder="https://..." />
+                            {panel.image && <img src={panel.image} alt="Preview" className="w-24 h-16 object-cover rounded mt-1" />}
+                          </div>
+                          <div>
+                            <Label>גלריית תמונות</Label>
+                            <div className="flex gap-2 mb-2">
+                              <Input 
+                                value={panelNewImageUrls[pIndex] || ''} 
+                                onChange={(e) => setPanelNewImageUrls(prev => ({ ...prev, [pIndex]: e.target.value }))}
+                                placeholder="https://..."
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    const url = panelNewImageUrls[pIndex]?.trim();
+                                    if (url) {
+                                      setPanels(prev => prev.map((p, i) => i === pIndex ? { ...p, images: [...p.images, url] } : p));
+                                      setPanelNewImageUrls(prev => ({ ...prev, [pIndex]: '' }));
+                                    }
+                                  }
+                                }}
+                              />
+                              <Button type="button" size="sm" onClick={() => {
+                                const url = panelNewImageUrls[pIndex]?.trim();
+                                if (url) {
+                                  setPanels(prev => prev.map((p, i) => i === pIndex ? { ...p, images: [...p.images, url] } : p));
+                                  setPanelNewImageUrls(prev => ({ ...prev, [pIndex]: '' }));
+                                }
+                              }}>
+                                <Plus className="w-4 h-4" />
+                              </Button>
+                            </div>
+                            {panel.images.map((img, imgIndex) => (
+                              <div key={imgIndex} className="flex items-center gap-2 mb-1">
+                                <img src={img} alt="" className="w-12 h-8 object-cover rounded" />
+                                <span className="text-xs truncate flex-1">{img}</span>
+                                <Button type="button" variant="ghost" size="sm" onClick={() => setPanels(prev => prev.map((p, i) => i === pIndex ? { ...p, images: p.images.filter((_, ii) => ii !== imgIndex) } : p))}>
+                                  <X className="w-3 h-3" />
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                      <Button type="button" variant="outline" onClick={() => setPanels(prev => [...prev, { panel_name: '', panel_name_en: '', panel_current: '', image: '', images: [] }])}>
+                        <Plus className="w-4 h-4 ml-1" />הוסף לוח
+                      </Button>
+                    </div>
+                  )}
                 </TabsContent>
 
                 <TabsContent value="media" className="space-y-6 mt-4">
