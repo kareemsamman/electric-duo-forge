@@ -225,9 +225,9 @@ const ProjectDetail = () => {
                   <button
                     key={panel.id}
                     onClick={() => { setSelectedPanelIndex(index); setSelectedImageIndex(null); }}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                    className={`px-6 py-3.5 rounded-xl text-base md:text-lg font-bold transition-all ${
                       selectedPanelIndex === index
-                        ? 'bg-primary text-primary-foreground shadow-md'
+                        ? 'bg-primary text-primary-foreground shadow-lg scale-105'
                         : 'bg-muted hover:bg-muted/80 text-foreground'
                     }`}
                   >
