@@ -117,7 +117,7 @@ const Certificates = () => {
                         <img
                           src={mainImage}
                           alt={name}
-                          className="w-full h-full object-contain bg-white"
+                          className="w-full h-full object-cover bg-white"
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
