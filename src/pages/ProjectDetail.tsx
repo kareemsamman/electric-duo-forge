@@ -218,16 +218,16 @@ const ProjectDetail = () => {
             transition={{ duration: 0.4, delay: 0.05 }}
             className="mb-6"
           >
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-3 justify-center">
               {panels.map((panel, index) => {
                 const name = isHebrew ? panel.panel_name : panel.panel_name_en || panel.panel_name;
                 return (
                   <button
                     key={panel.id}
                     onClick={() => { setSelectedPanelIndex(index); setSelectedImageIndex(null); }}
-                    className={`px-6 py-3.5 rounded-xl text-base md:text-lg font-bold transition-all ${
+                    className={`px-5 py-2.5 rounded-lg text-sm md:text-base font-semibold transition-all ${
                       selectedPanelIndex === index
-                        ? 'bg-primary text-primary-foreground shadow-lg scale-105'
+                        ? 'bg-primary text-primary-foreground shadow-md'
                         : 'bg-muted hover:bg-muted/80 text-foreground'
                     }`}
                   >
