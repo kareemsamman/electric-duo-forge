@@ -356,12 +356,57 @@ export type Database = {
         }
         Relationships: []
       }
+      project_panels: {
+        Row: {
+          created_at: string | null
+          display_order: number | null
+          id: string
+          image: string | null
+          images: string[] | null
+          panel_current: string | null
+          panel_name: string
+          panel_name_en: string | null
+          project_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          image?: string | null
+          images?: string[] | null
+          panel_current?: string | null
+          panel_name: string
+          panel_name_en?: string | null
+          project_id: string
+        }
+        Update: {
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          image?: string | null
+          images?: string[] | null
+          panel_current?: string | null
+          panel_name?: string
+          panel_name_en?: string | null
+          project_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_panels_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       projects: {
         Row: {
           created_at: string
           description: string
           description_en: string | null
           display_order: number
+          has_multiple_panels: boolean
           id: string
           image: string
           images: string[] | null
@@ -384,6 +429,7 @@ export type Database = {
           description: string
           description_en?: string | null
           display_order?: number
+          has_multiple_panels?: boolean
           id?: string
           image: string
           images?: string[] | null
@@ -406,6 +452,7 @@ export type Database = {
           description?: string
           description_en?: string | null
           display_order?: number
+          has_multiple_panels?: boolean
           id?: string
           image?: string
           images?: string[] | null
