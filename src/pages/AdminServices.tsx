@@ -453,7 +453,7 @@ export default function AdminServices() {
         </div>
 
         <div className="flex gap-2">
-          <Button onClick={handleSave} disabled={!formData.title_he || !formData.description_he}>
+          <Button onClick={handleSave} disabled={!formData.title_he}>
             <Save className="w-4 h-4 ml-2" />שמור
           </Button>
           <Button variant="outline" onClick={() => { isNew ? setIsAdding(false) : setEditingId(null); resetForm(); }}>
