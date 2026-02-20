@@ -106,10 +106,11 @@ const HeroSection = () => {
       {backgroundType === "youtube" && youtubeId ? (
         <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
           <iframe
-            src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&loop=1&controls=0&showinfo=0&rel=0&playlist=${youtubeId}&playsinline=1&modestbranding=1&disablekb=1&fs=0`}
-            allow="autoplay; encrypted-media"
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] min-w-[120%] min-h-[120%] border-0"
+            src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&loop=1&controls=0&showinfo=0&rel=0&playlist=${youtubeId}&playsinline=1&modestbranding=1&disablekb=1&fs=0&enablejsapi=1&origin=${window.location.origin}`}
+            allow="autoplay; encrypted-media; accelerometer; gyroscope; picture-in-picture"
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[140%] h-[140%] min-w-[140%] min-h-[140%] border-0 scale-110"
             title="Hero background video"
+            frameBorder="0"
           />
         </div>
       ) : backgroundType === "video" ? (
