@@ -103,7 +103,7 @@ const Gallery = () => {
             ))}
           </div>
         ) : (
-          <StaggerContainer className="grid md:grid-cols-3 gap-6" staggerDelay={0.1}>
+          <StaggerContainer key={effectiveTab} className="grid md:grid-cols-3 gap-6" staggerDelay={0.1}>
             {filteredGallery?.map((item) => (
               <StaggerItem key={item.id}>
                 <motion.div
