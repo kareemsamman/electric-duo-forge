@@ -127,25 +127,18 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Get Gmail settings and admin email from database
-    const { data: dbSettings, error: dbError } = await supabase
+    // Get Gmail credentials from environment secrets (not database)
+    const gmailEmail = Deno.env.get('GMAIL_EMAIL');
+    const gmailPassword = Deno.env.get('GMAIL_APP_PASSWORD');
+
+    // Get admin email from database (non-sensitive)
+    const { data: adminSetting } = await supabase
       .from('site_content')
-      .select('key, value_he')
-      .in('key', ['admin_email', 'gmail_email', 'gmail_app_password']);
+      .select('value_he')
+      .eq('key', 'admin_email')
+      .single();
 
-    if (dbError) {
-      console.error('Error fetching settings:', dbError);
-      throw new Error('Failed to fetch email settings from database');
-    }
-
-    const settings: Record<string, string> = {};
-    dbSettings?.forEach(item => {
-      settings[item.key] = item.value_he || '';
-    });
-
-    const gmailEmail = settings.gmail_email;
-    const gmailPassword = settings.gmail_app_password;
-    const adminEmail = settings.admin_email || formData.email;
+    const adminEmail = adminSetting?.value_he || formData.email;
 
     if (!gmailEmail || !gmailPassword) {
       console.error('Gmail settings not configured');

@@ -1,3 +1,5 @@
+import DOMPurify from 'dompurify';
+
 /**
  * Parse rich content and convert shortcodes to proper HTML
  * Supports:
@@ -214,6 +216,12 @@ export const parseRichContent = (content: string): string => {
       `;
     }
   );
+
+  // Sanitize HTML to prevent XSS
+  parsed = DOMPurify.sanitize(parsed, {
+    ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'a', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div', 'span', 'img', 'video', 'iframe', 'source', 'table', 'thead', 'tbody', 'tr', 'td', 'th', 'blockquote', 'pre', 'code', 'hr', 'figure', 'figcaption', 'sub', 'sup'],
+    ALLOWED_ATTR: ['href', 'src', 'alt', 'class', 'controls', 'preload', 'allowfullscreen', 'allow', 'data-gallery', 'data-gallery-urls', 'data-index', 'loading', 'style', 'target', 'rel', 'width', 'height', 'type'],
+  });
 
   return parsed;
 };
