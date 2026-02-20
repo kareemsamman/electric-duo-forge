@@ -1,57 +1,81 @@
 
 
-## Gallery Categories with Tabs
+## Multi-Panel Support for Projects
 
-### What will change
+### Overview
 
-**Public Gallery page (`/gallery`)** will have tabs at the top. Each tab shows only the images assigned to that category. A "All" tab will show everything.
+Some projects (like "מלון אינטרקונטיננטל - ירושלים") have multiple electrical panels (לוחות). This feature adds the ability to toggle multi-panel mode on a project, where each panel has its own name, current rating, and set of images -- while the project text (description, tags, location, etc.) stays the same across all panels.
 
-**Admin Gallery page** will keep using the category dropdown, but categories will be dynamic -- managed from a new admin section instead of hardcoded.
+### How it will work
+
+**Admin side:**
+- In the project edit dialog, the "פרטי לוח" (Panel Details) tab gets a toggle: "מספר לוחות" (Multiple Panels)
+- When off (default): works exactly like today -- single panel name, current, and one image gallery
+- When on: shows a repeater where you can add multiple panels, each with its own name (HE/EN), current, and image gallery
+
+**Public side (ProjectDetail page):**
+- If a project has multiple panels, tabs appear in the panel details section
+- Clicking a panel tab switches the displayed images (main + gallery) to that panel's images
+- All text content (title, description, tags, rich content, video) stays the same regardless of selected panel
 
 ### Steps
 
-**1. Create a `gallery_categories` table**
-- Columns: `id`, `name_he`, `name_en`, `display_order`, `created_at`
-- RLS: public read, admin write
-- This replaces the hardcoded `CATEGORIES` array
+**1. Create `project_panels` table**
 
-**2. Update the public Gallery page (`src/pages/Gallery.tsx`)**
-- Fetch categories from `gallery_categories` table
-- Add a `Tabs` component at the top with one tab per category plus an "All" tab
-- Filter displayed images based on selected tab
-- Keep the existing lightbox and layout
+New table to store individual panels for a project:
 
-**3. Update Admin Gallery (`src/pages/AdminGallery.tsx`)**
-- Replace the hardcoded `CATEGORIES` array with data from `gallery_categories`
-- Add a small section at the top to manage categories (add/delete category names in Hebrew and English)
-- The category dropdown when adding/editing items will use the dynamic list
+```text
+project_panels
+  id              uuid PK
+  project_id      uuid FK -> projects.id (ON DELETE CASCADE)
+  panel_name      text NOT NULL
+  panel_name_en   text
+  panel_current   text
+  image           text (main image for this panel)
+  images          text[] (gallery images for this panel)
+  display_order   integer DEFAULT 0
+  created_at      timestamptz DEFAULT now()
+```
 
-**4. Update related components**
-- `GalleryPreview.tsx` and `ProjectsSlider.tsx` filter by category already -- they will continue working since they query by the category string value
+RLS: public SELECT, admin INSERT/UPDATE/DELETE via `has_role()`.
+
+**2. Add `has_multiple_panels` boolean to `projects` table**
+
+A simple flag (`DEFAULT false`) so the admin can toggle multi-panel mode. When false, the existing `panel_name`, `panel_current`, `image`, and `images` columns are used as before.
+
+**3. Update AdminProjects.tsx - Panel Details tab**
+
+- Add a Switch toggle for "מספר לוחות"
+- When toggled on, hide the single panel fields and show a repeater:
+  - Each panel entry: name (HE/EN), current, main image URL, gallery images
+  - Add/remove panel buttons
+- On save: if multi-panel is on, save panels to `project_panels` table and clear single panel fields; if off, use existing fields as before
+
+**4. Update ProjectDetail.tsx**
+
+- Query `project_panels` for the current project (only if `has_multiple_panels` is true)
+- If panels exist, show tabs (one per panel name) above the image area
+- Selecting a panel tab swaps `mainImage` and `allImages` to that panel's images
+- Panel details section shows the selected panel's name and current
+- Everything else (title, description, tags, video, rich content) remains unchanged
 
 ### Technical Details
 
-**New table: `gallery_categories`**
-```text
-id          uuid (PK, default gen_random_uuid())
-name_he     text NOT NULL
-name_en     text
-display_order integer DEFAULT 0
-created_at  timestamptz DEFAULT now()
-```
+**Migration SQL:**
+- `ALTER TABLE projects ADD COLUMN has_multiple_panels boolean NOT NULL DEFAULT false;`
+- `CREATE TABLE project_panels (...)` with foreign key to `projects.id` and cascade delete
+- RLS policies on `project_panels`: SELECT for public, ALL for admin
 
-RLS policies:
-- SELECT: public (true)
-- INSERT/UPDATE/DELETE: admin only via has_role()
+**AdminProjects.tsx changes:**
+- New state: `panels` array and `hasMultiplePanels` boolean
+- On edit: fetch panels from `project_panels` where `project_id = id`
+- On save: upsert panels (delete old, insert new) inside the mutation
+- Panel repeater UI with add/remove and image gallery per panel
 
-**Gallery.tsx changes:**
-- Import `Tabs, TabsList, TabsTrigger, TabsContent` from ui/tabs
-- Query `gallery_categories` ordered by `display_order`
-- State for active tab, default "all"
-- Filter gallery items by matching `category` to the selected category's `name_he`
-
-**AdminGallery.tsx changes:**
-- Add category management UI (inline add/delete)
-- Replace `CATEGORIES` constant with fetched categories
-- Category select dropdown uses `name_he` as value, shows `name_he` / `name_en`
+**ProjectDetail.tsx changes:**
+- Additional query for `project_panels` when `has_multiple_panels` is true
+- State for `selectedPanelIndex` (default 0)
+- Conditional tabs rendering above the main image
+- Dynamic `mainImage` and `allImages` based on selected panel
+- Panel details section updates to show selected panel info
 
