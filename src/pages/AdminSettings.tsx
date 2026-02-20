@@ -20,6 +20,7 @@ export default function AdminSettings() {
   const [isUploadingFavicon, setIsUploadingFavicon] = useState(false);
   const [isUploadingOgImage, setIsUploadingOgImage] = useState(false);
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const [isUploadingFooterLogo, setIsUploadingFooterLogo] = useState(false);
 
   const [settings, setSettings] = useState({
     admin_email: '',
@@ -32,6 +33,7 @@ export default function AdminSettings() {
     favicon_url: '',
     og_image_url: '',
     logo_url: '',
+    footer_logo_url: '',
   });
 
   // Fetch current settings
@@ -49,7 +51,8 @@ export default function AdminSettings() {
           'meta_description',
           'favicon_url',
           'og_image_url',
-          'header.logo_url'
+          'header.logo_url',
+          'footer.logo_url'
         ]);
       
       if (error) throw error;
@@ -73,6 +76,7 @@ export default function AdminSettings() {
         favicon_url: settingsMap.favicon_url?.he || '',
         og_image_url: settingsMap.og_image_url?.he || '',
         logo_url: settingsMap['header.logo_url']?.he || '',
+        footer_logo_url: settingsMap['footer.logo_url']?.he || '',
       });
       
       return settingsMap;
@@ -176,6 +180,43 @@ export default function AdminSettings() {
     }
   };
 
+  const handleFooterLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingFooterLogo(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `footer-logo-${Date.now()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('gallery')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('gallery')
+        .getPublicUrl(fileName);
+
+      setSettings(prev => ({ ...prev, footer_logo_url: publicUrl }));
+
+      const { error: saveError } = await supabase
+        .from('site_content')
+        .upsert({ key: 'footer.logo_url', section: 'seo', value_he: publicUrl, value_en: publicUrl }, { onConflict: 'key' });
+      if (saveError) throw saveError;
+
+      queryClient.invalidateQueries({ queryKey: ['admin-settings'] });
+      queryClient.invalidateQueries({ queryKey: ['site-content'] });
+      toast.success(language === 'he' ? 'לוגו הפוטר הועלה ונשמר בהצלחה' : 'Footer logo uploaded and saved');
+    } catch (error) {
+      console.error('Error uploading footer logo:', error);
+      toast.error(language === 'he' ? 'שגיאה בהעלאת לוגו הפוטר' : 'Error uploading footer logo');
+    } finally {
+      setIsUploadingFooterLogo(false);
+    }
+  };
+
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -189,6 +230,7 @@ export default function AdminSettings() {
         { key: 'favicon_url', section: 'seo', value_he: settings.favicon_url, value_en: settings.favicon_url },
         { key: 'og_image_url', section: 'seo', value_he: settings.og_image_url, value_en: settings.og_image_url },
         { key: 'header.logo_url', section: 'seo', value_he: settings.logo_url, value_en: settings.logo_url },
+        { key: 'footer.logo_url', section: 'seo', value_he: settings.footer_logo_url, value_en: settings.footer_logo_url },
       ];
 
       for (const setting of settingsToSave) {
@@ -251,48 +293,55 @@ export default function AdminSettings() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            {/* Logo Upload */}
+            {/* Header Logo Upload */}
             <div className="space-y-2">
-              <Label>{language === 'he' ? 'לוגו (הדר ופוטר)' : 'Logo (Header & Footer)'}</Label>
+              <Label>{language === 'he' ? 'לוגו הדר (Header)' : 'Header Logo'}</Label>
               <div className="flex items-center gap-4">
                 {settings.logo_url && (
                   <div className="h-16 border rounded-lg flex items-center justify-center bg-muted overflow-hidden px-3">
-                    <img 
-                      src={settings.logo_url} 
-                      alt="Logo" 
-                      className="h-10 object-contain"
-                    />
+                    <img src={settings.logo_url} alt="Header Logo" className="h-10 object-contain" />
                   </div>
                 )}
                 <div className="flex-1">
-                  <Input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleLogoUpload}
-                    disabled={isUploadingLogo}
-                    className="hidden"
-                    id="logo-upload"
-                  />
+                  <Input type="file" accept="image/*" onChange={handleLogoUpload} disabled={isUploadingLogo} className="hidden" id="logo-upload" />
                   <Label htmlFor="logo-upload" className="cursor-pointer">
-                    <Button 
-                      variant="outline" 
-                      disabled={isUploadingLogo}
-                      asChild
-                    >
+                    <Button variant="outline" disabled={isUploadingLogo} asChild>
                       <span>
                         <Upload className="mr-2 h-4 w-4" />
-                        {isUploadingLogo 
-                          ? (language === 'he' ? 'מעלה...' : 'Uploading...') 
-                          : (language === 'he' ? 'העלה לוגו' : 'Upload Logo')}
+                        {isUploadingLogo ? (language === 'he' ? 'מעלה...' : 'Uploading...') : (language === 'he' ? 'העלה לוגו הדר' : 'Upload Header Logo')}
                       </span>
                     </Button>
                   </Label>
                 </div>
               </div>
               <p className="text-sm text-muted-foreground">
-                {language === 'he' 
-                  ? 'הלוגו יוצג בהדר ובפוטר במקום הטקסט'
-                  : 'The logo will replace the text in header and footer'}
+                {language === 'he' ? 'הלוגו יוצג בהדר העליון במקום הטקסט' : 'This logo will appear in the top header'}
+              </p>
+            </div>
+
+            {/* Footer Logo Upload */}
+            <div className="space-y-2">
+              <Label>{language === 'he' ? 'לוגו פוטר (Footer)' : 'Footer Logo'}</Label>
+              <div className="flex items-center gap-4">
+                {settings.footer_logo_url && (
+                  <div className="h-16 border rounded-lg flex items-center justify-center bg-muted overflow-hidden px-3">
+                    <img src={settings.footer_logo_url} alt="Footer Logo" className="h-10 object-contain" />
+                  </div>
+                )}
+                <div className="flex-1">
+                  <Input type="file" accept="image/*" onChange={handleFooterLogoUpload} disabled={isUploadingFooterLogo} className="hidden" id="footer-logo-upload" />
+                  <Label htmlFor="footer-logo-upload" className="cursor-pointer">
+                    <Button variant="outline" disabled={isUploadingFooterLogo} asChild>
+                      <span>
+                        <Upload className="mr-2 h-4 w-4" />
+                        {isUploadingFooterLogo ? (language === 'he' ? 'מעלה...' : 'Uploading...') : (language === 'he' ? 'העלה לוגו פוטר' : 'Upload Footer Logo')}
+                      </span>
+                    </Button>
+                  </Label>
+                </div>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {language === 'he' ? 'הלוגו יוצג בפוטר התחתון במקום הטקסט' : 'This logo will appear in the footer'}
               </p>
             </div>
 
