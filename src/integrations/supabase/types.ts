@@ -122,6 +122,30 @@ export type Database = {
         }
         Relationships: []
       }
+      gallery_categories: {
+        Row: {
+          created_at: string | null
+          display_order: number | null
+          id: string
+          name_en: string | null
+          name_he: string
+        }
+        Insert: {
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          name_en?: string | null
+          name_he: string
+        }
+        Update: {
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          name_en?: string | null
+          name_he?: string
+        }
+        Relationships: []
+      }
       orders: {
         Row: {
           cart_items: Json

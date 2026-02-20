@@ -7,6 +7,7 @@ import { FadeIn } from "@/components/animations/FadeIn";
 import { StaggerContainer } from "@/components/animations/StaggerContainer";
 import { StaggerItem } from "@/components/animations/StaggerItem";
 import { motion } from "framer-motion";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 type GalleryItem = {
   id: string;
@@ -20,9 +21,29 @@ type GalleryItem = {
   video_url: string | null;
 };
 
+type GalleryCategory = {
+  id: string;
+  name_he: string;
+  name_en: string | null;
+  display_order: number;
+};
+
 const Gallery = () => {
   const { t, language } = useLanguage();
   const [selectedImage, setSelectedImage] = useState<GalleryItem | null>(null);
+  const [activeTab, setActiveTab] = useState("all");
+
+  const { data: categories = [] } = useQuery({
+    queryKey: ["gallery-categories"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("gallery_categories")
+        .select("*")
+        .order("display_order", { ascending: true });
+      if (error) throw error;
+      return data as GalleryCategory[];
+    },
+  });
 
   const { data: gallery, isLoading } = useQuery({
     queryKey: ["gallery"],
@@ -37,6 +58,10 @@ const Gallery = () => {
     },
   });
 
+  const filteredGallery = activeTab === "all"
+    ? gallery
+    : gallery?.filter((item) => item.category === activeTab);
+
   return (
     <div className="min-h-screen pt-28 md:pt-32 pb-20">
       <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-[1360px]">
@@ -46,10 +71,30 @@ const Gallery = () => {
           </h1>
         </FadeIn>
         <FadeIn delay={0.2}>
-          <p className="text-xl text-muted-foreground text-center mb-16 max-w-3xl mx-auto">
+          <p className="text-xl text-muted-foreground text-center mb-10 max-w-3xl mx-auto">
             {t("gallery.description")}
           </p>
         </FadeIn>
+
+        {/* Category Tabs */}
+        {categories.length > 0 && (
+          <FadeIn delay={0.3}>
+            <div className="flex justify-center mb-12">
+              <Tabs value={activeTab} onValueChange={setActiveTab} dir={language === "he" ? "rtl" : "ltr"}>
+                <TabsList className="flex-wrap h-auto gap-1 p-1">
+                  <TabsTrigger value="all">
+                    {language === "he" ? "הכל" : "All"}
+                  </TabsTrigger>
+                  {categories.map((cat) => (
+                    <TabsTrigger key={cat.id} value={cat.name_he}>
+                      {language === "he" ? cat.name_he : cat.name_en || cat.name_he}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+              </Tabs>
+            </div>
+          </FadeIn>
+        )}
 
         {isLoading ? (
           <div className="grid md:grid-cols-3 gap-6">
@@ -59,7 +104,7 @@ const Gallery = () => {
           </div>
         ) : (
           <StaggerContainer className="grid md:grid-cols-3 gap-6" staggerDelay={0.1}>
-            {gallery?.map((item) => (
+            {filteredGallery?.map((item) => (
               <StaggerItem key={item.id}>
                 <motion.div
                   className="relative aspect-square overflow-hidden rounded-lg cursor-pointer group"
