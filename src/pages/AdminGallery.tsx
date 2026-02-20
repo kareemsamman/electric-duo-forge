@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Plus, Trash2, GripVertical, Upload, X, Edit, Save, Image, Video } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, GripVertical, Upload, X, Edit, Save, Image, Video, FolderPlus } from 'lucide-react';
 import { toast } from 'sonner';
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 
@@ -25,7 +25,12 @@ interface GalleryItem {
   display_order: number;
 }
 
-const CATEGORIES = ['panels', 'installations', 'equipment', 'team', 'other'];
+interface GalleryCategory {
+  id: string;
+  name_he: string;
+  name_en: string | null;
+  display_order: number;
+}
 
 export default function AdminGallery() {
   const { language } = useLanguage();
@@ -33,6 +38,8 @@ export default function AdminGallery() {
   const queryClient = useQueryClient();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
+  const [newCatHe, setNewCatHe] = useState('');
+  const [newCatEn, setNewCatEn] = useState('');
   const [formData, setFormData] = useState({
     image: '',
     video_url: '',
@@ -40,7 +47,20 @@ export default function AdminGallery() {
     title_en: '',
     description: '',
     description_en: '',
-    category: 'panels',
+    category: '',
+  });
+
+  // Fetch categories
+  const { data: categories = [] } = useQuery({
+    queryKey: ['gallery-categories'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('gallery_categories')
+        .select('*')
+        .order('display_order', { ascending: true });
+      if (error) throw error;
+      return data as GalleryCategory[];
+    },
   });
 
   const { data: gallery = [], isLoading } = useQuery({
@@ -52,6 +72,36 @@ export default function AdminGallery() {
         .order('display_order', { ascending: true });
       if (error) throw error;
       return data as GalleryItem[];
+    },
+  });
+
+  // Category mutations
+  const addCategoryMutation = useMutation({
+    mutationFn: async ({ name_he, name_en }: { name_he: string; name_en: string }) => {
+      const maxOrder = categories.reduce((max, c) => Math.max(max, c.display_order || 0), 0);
+      const { error } = await supabase.from('gallery_categories').insert({
+        name_he,
+        name_en: name_en || null,
+        display_order: maxOrder + 1,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['gallery-categories'] });
+      toast.success(language === 'he' ? 'קטגוריה נוספה' : 'Category added');
+      setNewCatHe('');
+      setNewCatEn('');
+    },
+  });
+
+  const deleteCategoryMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('gallery_categories').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['gallery-categories'] });
+      toast.success(language === 'he' ? 'קטגוריה נמחקה' : 'Category deleted');
     },
   });
 
@@ -155,7 +205,7 @@ export default function AdminGallery() {
   };
 
   const resetForm = () => {
-    setFormData({ image: '', video_url: '', title: '', title_en: '', description: '', description_en: '', category: 'panels' });
+    setFormData({ image: '', video_url: '', title: '', title_en: '', description: '', description_en: '', category: categories[0]?.name_he || '' });
     setIsAdding(false);
     setEditingId(null);
   };
@@ -212,9 +262,7 @@ export default function AdminGallery() {
     }
   };
 
-  const isVideo = (url: string) => {
-    return url.includes('youtube') || url.includes('vimeo') || url.endsWith('.mp4') || url.endsWith('.webm');
-  };
+  const categorySelectItems = categories.map(c => c.name_he);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background py-12 px-4 pt-32">
@@ -237,11 +285,50 @@ export default function AdminGallery() {
               {language === 'he' ? 'הוספה, עריכה ומחיקה של תמונות וסרטונים' : 'Add, edit and delete images and videos'}
             </p>
           </div>
-          <Button onClick={() => setIsAdding(true)} disabled={isAdding}>
+          <Button onClick={() => { setFormData(prev => ({ ...prev, category: categories[0]?.name_he || '' })); setIsAdding(true); }} disabled={isAdding}>
             <Plus className="w-4 h-4 mr-2" />
             {language === 'he' ? 'הוסף פריט' : 'Add Item'}
           </Button>
         </div>
+
+        {/* Category Management */}
+        <Card className="p-4 mb-8">
+          <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+            <FolderPlus className="w-5 h-5" />
+            {language === 'he' ? 'ניהול קטגוריות' : 'Manage Categories'}
+          </h3>
+          <div className="flex flex-wrap gap-2 mb-4">
+            {categories.map((cat) => (
+              <div key={cat.id} className="flex items-center gap-1 bg-secondary rounded-full px-3 py-1 text-sm">
+                <span>{cat.name_he}{cat.name_en ? ` / ${cat.name_en}` : ''}</span>
+                <button
+                  onClick={() => deleteCategoryMutation.mutate(cat.id)}
+                  className="text-muted-foreground hover:text-destructive transition-colors ml-1"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+            ))}
+          </div>
+          <div className="flex gap-2 items-end">
+            <div>
+              <Label className="text-xs">{language === 'he' ? 'שם בעברית' : 'Name (Hebrew)'}</Label>
+              <Input value={newCatHe} onChange={(e) => setNewCatHe(e.target.value)} className="h-9 w-40" placeholder="עברית" />
+            </div>
+            <div>
+              <Label className="text-xs">{language === 'he' ? 'שם באנגלית' : 'Name (English)'}</Label>
+              <Input value={newCatEn} onChange={(e) => setNewCatEn(e.target.value)} className="h-9 w-40" placeholder="English" />
+            </div>
+            <Button
+              size="sm"
+              disabled={!newCatHe.trim() || addCategoryMutation.isPending}
+              onClick={() => addCategoryMutation.mutate({ name_he: newCatHe.trim(), name_en: newCatEn.trim() })}
+            >
+              <Plus className="w-4 h-4 mr-1" />
+              {language === 'he' ? 'הוסף' : 'Add'}
+            </Button>
+          </div>
+        </Card>
 
         {/* Add New Form */}
         {isAdding && (
@@ -294,7 +381,7 @@ export default function AdminGallery() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {CATEGORIES.map(cat => (
+                        {categorySelectItems.map(cat => (
                           <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                         ))}
                       </SelectContent>
@@ -357,7 +444,7 @@ export default function AdminGallery() {
                 </Button>
                 <Button
                   onClick={() => createMutation.mutate(formData)}
-                  disabled={(!formData.image && !formData.video_url) || createMutation.isPending}
+                  disabled={(!formData.image && !formData.video_url) || !formData.category || createMutation.isPending}
                 >
                   {language === 'he' ? 'שמור' : 'Save'}
                 </Button>
@@ -431,7 +518,7 @@ export default function AdminGallery() {
                                         <SelectValue />
                                       </SelectTrigger>
                                       <SelectContent>
-                                        {CATEGORIES.map(cat => (
+                                        {categorySelectItems.map(cat => (
                                           <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                                         ))}
                                       </SelectContent>
