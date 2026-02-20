@@ -158,7 +158,16 @@ export default function AdminSettings() {
         .getPublicUrl(fileName);
 
       setSettings(prev => ({ ...prev, logo_url: publicUrl }));
-      toast.success(language === 'he' ? 'הלוגו הועלה בהצלחה' : 'Logo uploaded successfully');
+
+      // Auto-save logo URL to database immediately
+      const { error: saveError } = await supabase
+        .from('site_content')
+        .upsert({ key: 'header.logo_url', section: 'seo', value_he: publicUrl, value_en: publicUrl }, { onConflict: 'key' });
+      if (saveError) throw saveError;
+
+      queryClient.invalidateQueries({ queryKey: ['admin-settings'] });
+      queryClient.invalidateQueries({ queryKey: ['site-content'] });
+      toast.success(language === 'he' ? 'הלוגו הועלה ונשמר בהצלחה' : 'Logo uploaded and saved successfully');
     } catch (error) {
       console.error('Error uploading logo:', error);
       toast.error(language === 'he' ? 'שגיאה בהעלאת הלוגו' : 'Error uploading logo');
