@@ -12,19 +12,28 @@ serve(async (req) => {
   }
 
   try {
-    const payload = await req.json();
-    console.log('Grow webhook payload:', payload);
-
     // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
+    const payload = await req.json();
+    console.log('Grow webhook payload received');
+
     // Get Grow webhook key from environment variables (Supabase Secrets)
     const growWebhookKey = Deno.env.get('GROW_WEBHOOK_KEY');
 
-    // Validate webhook key
-    if (!payload.webhookKey || payload.webhookKey !== growWebhookKey) {
+    // Validate webhook key using timing-safe comparison
+    const encoder = new TextEncoder();
+    const keyA = encoder.encode(String(payload.webhookKey || ''));
+    const keyB = encoder.encode(String(growWebhookKey || ''));
+    
+    const isValidKey = keyA.byteLength === keyB.byteLength && 
+      crypto.subtle.timingSafeEqual 
+        ? await (async () => { try { return crypto.subtle.timingSafeEqual(keyA, keyB); } catch { return false; } })()
+        : false;
+
+    if (!isValidKey) {
       console.warn('Invalid Grow webhook key');
       return new Response(
         JSON.stringify({ error: 'Unauthorized' }),
