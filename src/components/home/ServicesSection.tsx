@@ -173,7 +173,7 @@ const ServicesSection = () => {
                           {description}
                         </p>
                         {links.length > 0 && (
-                          <div className="flex flex-wrap gap-x-4 gap-y-1">
+                          <div className="flex flex-col gap-y-1">
                             {links.map((link, index) => renderLink(link, index))}
                           </div>
                         )}
