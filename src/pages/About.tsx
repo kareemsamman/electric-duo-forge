@@ -18,6 +18,9 @@ const About = () => {
             <p className="text-lg text-muted-foreground leading-relaxed text-center">
               {t("hero.subtitle")}
             </p>
+            <p className="text-muted-foreground leading-relaxed text-center mt-4">
+              {t("about.commitment")}
+            </p>
           </div>
         </FadeIn>
 
