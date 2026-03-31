@@ -129,7 +129,7 @@ const HeroSection = () => {
       )}
 
       {/* Dark overlay */}
-      <div className="absolute inset-0 bg-black/60 z-0" />
+      <div className="absolute inset-0 bg-black/40 z-0" />
 
       {/* Social Media Links - Fixed Left Side */}
       <motion.div

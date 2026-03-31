@@ -104,43 +104,41 @@ const Gallery = () => {
           </div>
         ) : (
           <StaggerContainer key={effectiveTab} className="grid md:grid-cols-3 gap-6" staggerDelay={0.1}>
-            {filteredGallery?.map((item) => (
-              <StaggerItem key={item.id}>
-                <motion.div
-                  className="relative aspect-square overflow-hidden rounded-lg cursor-pointer group"
-                  onClick={() => !item.video_url && setSelectedImage(item)}
-                  whileHover={{ scale: 1.02 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  {item.video_url ? (
-                    <video
-                      src={item.video_url}
-                      controls
-                      className="w-full h-full object-cover"
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                  ) : (
-                    <img
-                      src={item.image}
-                      alt={language === "he" ? item.title : item.title_en || item.title}
-                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-                    />
-                  )}
-                  <div className={`absolute inset-0 bg-gradient-to-t from-black/70 to-transparent ${item.video_url ? 'opacity-0 pointer-events-none' : 'opacity-0 group-hover:opacity-100'} transition-opacity duration-300`}>
-                    <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-                      <h3 className="font-semibold mb-1">
-                        {language === "he" ? item.title : item.title_en || item.title}
-                      </h3>
-                      {item.description && (
-                        <p className="text-sm text-white/80">
-                          {language === "he" ? item.description : item.description_en || item.description}
-                        </p>
+            {filteredGallery?.map((item) => {
+              const title = language === "he" ? item.title : item.title_en || item.title;
+              return (
+                <StaggerItem key={item.id}>
+                  <div>
+                    <motion.div
+                      className="relative aspect-square overflow-hidden rounded-lg cursor-pointer group"
+                      onClick={() => !item.video_url && setSelectedImage(item)}
+                      whileHover={{ scale: 1.02 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      {item.video_url ? (
+                        <video
+                          src={item.video_url}
+                          controls
+                          className="w-full h-full object-cover"
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      ) : (
+                        <img
+                          src={item.image}
+                          alt={title}
+                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                        />
                       )}
-                    </div>
+                    </motion.div>
+                    {title && (
+                      <p className="mt-2 text-sm font-medium text-foreground text-center">
+                        {title}
+                      </p>
+                    )}
                   </div>
-                </motion.div>
-              </StaggerItem>
-            ))}
+                </StaggerItem>
+              );
+            })}
           </StaggerContainer>
         )}
       </div>
