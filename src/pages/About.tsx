@@ -33,6 +33,9 @@ const About = () => {
               <p className="text-muted-foreground">
                 {t("hero.subtitle")}
               </p>
+              <p className="text-muted-foreground mt-4">
+                {t("about.commitment")}
+              </p>
             </CardContent>
           </Card>
         </FadeIn>
