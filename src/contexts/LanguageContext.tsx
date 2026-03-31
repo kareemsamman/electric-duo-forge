@@ -105,6 +105,7 @@ const translations = {
     "about.founder.name": "אסם עודה",
     "about.founder.title": "מהנדס חשמל, מייסד ומנכ״ל",
     "about.team.title": "צוות הנהלה",
+    "about.commitment": "אנו מתחייבים לסטנדרט השירות הגבוה ביותר בכל פרויקט. מקצועיות, אמינות ודיוק – הם הערכים שמובילים אותנו בכל שלב. שביעות רצון הלקוח היא לא רק מטרה – היא ההתחייבות שלנו.",
     
     // Store
     "store.title": "חנות",
@@ -228,6 +229,7 @@ const translations = {
     "about.founder.name": "Assem Ouda",
     "about.founder.title": "Electrical Engineer, Founder & CEO",
     "about.team.title": "Management Team",
+    "about.commitment": "We are committed to the highest standard of service in every project. Professionalism, reliability, and precision are the values that guide us at every step. Customer satisfaction is not just a goal – it is our commitment.",
     
     // Store
     "store.title": "Store",
