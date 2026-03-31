@@ -35,7 +35,7 @@ const Header = () => {
         <div className="flex items-center justify-between h-20">
           <Link to="/" className="flex items-center gap-3 transition-opacity hover:opacity-80">
             {content["header.logo_url"] ? (
-              <img src={content["header.logo_url"]} alt={content["header.logo"] || "Logo"} className="h-10 object-contain" />
+              <img src={content["header.logo_url"]} alt={content["header.logo"] || "Logo"} className="h-14 object-contain" />
             ) : (
               <div className="text-2xl font-bold text-primary">
                 {content["header.logo"] || "Global Electric"}
