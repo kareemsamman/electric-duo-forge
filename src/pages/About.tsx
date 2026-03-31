@@ -13,13 +13,8 @@ const About = () => {
           <h1 className="text-4xl md:text-5xl font-bold mb-8 text-center">{t("about.title")}</h1>
         </FadeIn>
         
-        <FadeIn delay={0.2}>
-          <div className="prose prose-lg max-w-4xl mx-auto mb-16">
-            <p className="text-lg text-muted-foreground leading-relaxed text-center">
-              {t("hero.subtitle")}
-            </p>
-          </div>
-        </FadeIn>
+
+
 
         <FadeIn delay={0.3}>
           <Card className="max-w-2xl mx-auto hover:shadow-xl transition-shadow">
