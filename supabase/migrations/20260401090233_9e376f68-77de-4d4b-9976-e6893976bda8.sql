@@ -1,0 +1,1 @@
+CREATE POLICY "Admins can manage client logos" ON public.client_logos FOR ALL TO authenticated USING (has_role(auth.uid(), 'admin'::app_role)) WITH CHECK (has_role(auth.uid(), 'admin'::app_role));
