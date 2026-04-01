@@ -250,7 +250,7 @@ const HeroSection = () => {
           {/* Subtitle */}
           <motion.p
             variants={wordVariants}
-            className="text-xl md:text-2xl lg:text-3xl leading-relaxed max-w-3xl"
+            className="text-xl md:text-2xl lg:text-3xl leading-relaxed max-w-3xl whitespace-pre-line"
             style={{ color: "#E0E0E0" }}
           >
             {content["hero.subtitle"] || ""}
