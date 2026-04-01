@@ -15,6 +15,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { RichTextEditor } from '@/components/admin/RichTextEditor';
 import { Switch } from '@/components/ui/switch';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface PanelData {
   id?: string;
@@ -84,6 +85,42 @@ export default function AdminProjects() {
       return data;
     }
   });
+
+  const { data: categories } = useQuery({
+    queryKey: ['admin-project-categories'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('project_categories')
+        .select('*')
+        .order('display_order', { ascending: true });
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: categoryAssignments, refetch: refetchAssignments } = useQuery({
+    queryKey: ['admin-category-assignments'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('project_category_assignments')
+        .select('*');
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const getProjectCategories = (projectId: string) => {
+    return categoryAssignments?.filter(a => a.project_id === projectId).map(a => a.category_id) || [];
+  };
+
+  const toggleCategory = async (projectId: string, categoryId: string, isAssigned: boolean) => {
+    if (isAssigned) {
+      await supabase.from('project_category_assignments').delete().eq('project_id', projectId).eq('category_id', categoryId);
+    } else {
+      await supabase.from('project_category_assignments').insert({ project_id: projectId, category_id: categoryId });
+    }
+    refetchAssignments();
+  };
 
   useEffect(() => {
     if (editingProject) {
@@ -524,6 +561,28 @@ export default function AdminProjects() {
                       />
                     </div>
                   </div>
+
+                  {/* Category Assignment */}
+                  {editingProject && categories && categories.length > 0 && (
+                    <div>
+                      <Label className="mb-2 block">קטגוריות / Categories</Label>
+                      <div className="grid grid-cols-2 gap-2 border rounded-lg p-3">
+                        {categories.map((cat) => {
+                          const isAssigned = getProjectCategories(editingProject.id).includes(cat.id);
+                          return (
+                            <label key={cat.id} className="flex items-center gap-2 p-2 rounded hover:bg-secondary/50 cursor-pointer">
+                              <Checkbox
+                                checked={isAssigned}
+                                onCheckedChange={() => toggleCategory(editingProject.id, cat.id, isAssigned)}
+                              />
+                              <span className="font-medium">{cat.name_he}</span>
+                              {cat.name_en && <span className="text-sm text-muted-foreground">({cat.name_en})</span>}
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </TabsContent>
 
                 <TabsContent value="panel" className="space-y-4 mt-4">
