@@ -227,7 +227,7 @@ const translations = {
     
     // About
     "about.title": "About Us",
-    "about.founder.name": "Assem Ouda",
+    "about.founder.name": "Assim Odeh",
     "about.founder.title": "Electrical Engineer, Founder & CEO",
     "about.team.title": "Management Team",
     "about.commitment": "We are committed to the highest standard of service in every project. Professionalism, reliability, and precision are the values that guide us at every step. Customer satisfaction is not just a goal – it is our commitment.",
