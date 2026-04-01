@@ -22,11 +22,8 @@ const About = () => {
               <img src={founderPhoto} alt="עאצם עודה" className="w-[20rem] h-[24rem] rounded-2xl mx-auto mb-6 object-cover" />
               <h3 className="text-2xl font-bold mb-2">עאצם עודה</h3>
               <p className="text-accent mb-4">{t("about.founder.title")}</p>
-              <p className="text-muted-foreground">
-                {t("hero.subtitle")}
-              </p>
-              <p className="text-muted-foreground mt-4">
-                {t("about.commitment")}
+              <p className="text-muted-foreground whitespace-pre-line text-start leading-relaxed">
+                {t("about.company_description")}
               </p>
             </CardContent>
           </Card>
