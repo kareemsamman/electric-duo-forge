@@ -24,23 +24,15 @@ type Project = {
 const getImageUrl = (imagePath: string) => {
   try {
     if (!imagePath) return "";
-
-    // Full URL from DB
     if (imagePath.startsWith("http")) return imagePath;
-
-    // DB path like /projects/xxx.jpg → assets
     if (imagePath.startsWith("/projects/")) {
       const fileName = imagePath.replace("/projects/", "");
-      // ⚠️ If this breaks, just switch ../assets → ../../assets
       return new URL(`../assets/projects/${fileName}`, import.meta.url).href;
     }
-
-    // Already in /src/assets
     if (imagePath.startsWith("/src/assets/")) {
       const relativePath = imagePath.replace("/src/", "../");
       return new URL(relativePath, import.meta.url).href;
     }
-
     return imagePath;
   } catch (error) {
     console.error("Error loading image:", imagePath, error);
@@ -51,8 +43,34 @@ const getImageUrl = (imagePath: string) => {
 const Projects = () => {
   const { language, t } = useLanguage();
   const isHebrew = language === "he";
-  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null);
 
+  // Fetch categories
+  const { data: categories } = useQuery({
+    queryKey: ["project-categories"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("project_categories")
+        .select("*")
+        .order("display_order", { ascending: true });
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  // Fetch category assignments
+  const { data: assignments } = useQuery({
+    queryKey: ["project-category-assignments"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("project_category_assignments")
+        .select("*");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  // Fetch projects
   const {
     data: projects,
     isLoading,
@@ -60,38 +78,27 @@ const Projects = () => {
   } = useQuery({
     queryKey: ["projects-page"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("projects").select("*").eq("is_visible", true).order("display_order", { ascending: true });
-
+      const { data, error } = await supabase
+        .from("projects")
+        .select("*")
+        .eq("is_visible", true)
+        .order("display_order", { ascending: true });
       if (error) throw error;
       return data as Project[];
     },
   });
 
-  // Extract unique categories from project tags
-  const categories = useMemo(() => {
-    if (!projects) return [];
-    const tagSet = new Map<string, string>();
-    projects.forEach((project) => {
-      const heTags = project.tags || [];
-      const enTags = project.tags_en || [];
-      heTags.forEach((tag, i) => {
-        if (!tagSet.has(tag)) {
-          tagSet.set(tag, enTags[i] || tag);
-        }
-      });
-    });
-    return Array.from(tagSet.entries()).map(([he, en]) => ({ he, en }));
-  }, [projects]);
-
   // Filter projects by selected category
   const filteredProjects = useMemo(() => {
     if (!projects) return [];
-    if (!activeCategory) return projects;
-    return projects.filter((project) => {
-      const tags = project.tags || [];
-      return tags.includes(activeCategory);
-    });
-  }, [projects, activeCategory]);
+    if (!activeCategoryId || !assignments) return projects;
+    const projectIdsInCategory = new Set(
+      assignments
+        .filter((a) => a.category_id === activeCategoryId)
+        .map((a) => a.project_id)
+    );
+    return projects.filter((p) => projectIdsInCategory.has(p.id));
+  }, [projects, activeCategoryId, assignments]);
 
   return (
     <div className="min-h-screen pt-28 md:pt-32 pb-20 bg-background" dir={isHebrew ? "rtl" : "ltr"}>
@@ -110,12 +117,12 @@ const Projects = () => {
             {t("projects.subtitle") ||
               (isHebrew
                 ? "מבחר פרויקטים שביצענו עבור לקוחות במגזרים שונים."
-                : "A selection of projects we’ve successfully completed across different sectors.")}
+                : "A selection of projects we've successfully completed across different sectors.")}
           </p>
         </motion.div>
 
         {/* Category Tabs */}
-        {categories.length > 0 && (
+        {categories && categories.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -123,9 +130,9 @@ const Projects = () => {
             className="flex flex-wrap justify-center gap-3 mb-12"
           >
             <button
-              onClick={() => setActiveCategory(null)}
+              onClick={() => setActiveCategoryId(null)}
               className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-300 ${
-                activeCategory === null
+                activeCategoryId === null
                   ? "bg-primary text-primary-foreground shadow-md"
                   : "bg-secondary text-muted-foreground hover:bg-secondary/80 hover:text-foreground"
               }`}
@@ -134,15 +141,15 @@ const Projects = () => {
             </button>
             {categories.map((cat) => (
               <button
-                key={cat.he}
-                onClick={() => setActiveCategory(cat.he)}
+                key={cat.id}
+                onClick={() => setActiveCategoryId(cat.id)}
                 className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-300 ${
-                  activeCategory === cat.he
+                  activeCategoryId === cat.id
                     ? "bg-primary text-primary-foreground shadow-md"
                     : "bg-secondary text-muted-foreground hover:bg-secondary/80 hover:text-foreground"
                 }`}
               >
-                {isHebrew ? cat.he : cat.en}
+                {isHebrew ? cat.name_he : cat.name_en || cat.name_he}
               </button>
             ))}
           </motion.div>
@@ -189,19 +196,16 @@ const Projects = () => {
                     transition={{ duration: 0.35, delay: index * 0.03 }}
                     className="relative aspect-[4/5] overflow-hidden rounded-2xl"
                   >
-                    {/* Image */}
                     <img
                       src={imgSrc}
                       alt={title}
                       loading="lazy"
                       className="w-full h-full object-cover"
                       onError={(e) => {
-                        console.error("Failed to load image:", project.image);
                         e.currentTarget.src = "https://via.placeholder.com/800x600?text=Image+Not+Found";
                       }}
                     />
 
-                    {/* Floating info panel */}
                     <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-[85%] bg-background/95 backdrop-blur-md rounded-xl p-5 shadow-lg">
                       <h3 className="text-lg font-bold mb-2 text-foreground text-center">{title}</h3>
 
