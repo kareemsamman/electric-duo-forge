@@ -77,6 +77,7 @@ const ServicesSection = () => {
   };
 
   const renderLink = (link: ServiceLink, index: number) => {
+    const linkText = language === 'he' ? link.text : (link.text_en || link.text);
     // Handle popup type
     if (link.type === 'popup' && link.images && link.images.length > 0) {
       return (
