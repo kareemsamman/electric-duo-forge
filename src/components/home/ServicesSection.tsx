@@ -185,8 +185,11 @@ const ServicesSection = () => {
                         <h3 className="text-xl font-bold mb-2 tracking-tight">
                           {title}
                         </h3>
-                        <p className="text-muted-foreground leading-relaxed mb-2">
-                          {description}
+                        {description && (
+                          <p className="text-muted-foreground leading-relaxed mb-2">
+                            {description}
+                          </p>
+                        )}
                         </p>
                         {links.length > 0 && (
                           <div className="flex flex-col gap-y-1">
