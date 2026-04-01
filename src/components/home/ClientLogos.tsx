@@ -27,10 +27,10 @@ const ClientLogos = () => {
     },
   });
 
-  // Organize logos into rows of 6
+  // Organize logos into rows of 5
   const logoRows = [];
-  for (let i = 0; i < logos.length; i += 6) {
-    logoRows.push(logos.slice(i, i + 6));
+  for (let i = 0; i < logos.length; i += 5) {
+    logoRows.push(logos.slice(i, i + 5));
   }
 
   return (
