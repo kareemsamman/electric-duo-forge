@@ -84,7 +84,7 @@ const ServicesSection = () => {
         <button 
           key={index}
           onClick={() => openPopup(link.images!)}
-          className="text-[#1A73E8] hover:underline font-medium text-right"
+          className={`text-[#1A73E8] hover:underline font-medium ${language === 'he' ? 'text-right' : 'text-left'}`}
         >
           {linkText}
         </button>
