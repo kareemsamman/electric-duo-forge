@@ -1,9 +1,9 @@
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 
 type Project = {
@@ -43,32 +43,8 @@ const getImageUrl = (imagePath: string) => {
 const Projects = () => {
   const { language, t } = useLanguage();
   const isHebrew = language === "he";
-  const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null);
-
-  // Fetch categories
-  const { data: categories } = useQuery({
-    queryKey: ["project-categories"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("project_categories")
-        .select("*")
-        .order("display_order", { ascending: true });
-      if (error) throw error;
-      return data;
-    },
-  });
-
-  // Fetch category assignments
-  const { data: assignments } = useQuery({
-    queryKey: ["project-category-assignments"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("project_category_assignments")
-        .select("*");
-      if (error) throw error;
-      return data;
-    },
-  });
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get("tab");
 
   // Fetch projects
   const {
@@ -88,17 +64,50 @@ const Projects = () => {
     },
   });
 
-  // Filter projects by selected category
+  // Extract unique tags from all projects
+  const uniqueTags = useMemo(() => {
+    if (!projects) return [];
+    const tagSet = new Set<string>();
+    projects.forEach((p) => {
+      if (p.tags) {
+        p.tags.forEach((tag) => tagSet.add(tag.trim()));
+      }
+    });
+    return Array.from(tagSet);
+  }, [projects]);
+
+  // Build a map from Hebrew tag to English tag
+  const tagEnMap = useMemo(() => {
+    if (!projects) return new Map<string, string>();
+    const map = new Map<string, string>();
+    projects.forEach((p) => {
+      if (p.tags && p.tags_en) {
+        p.tags.forEach((tag, i) => {
+          if (p.tags_en && p.tags_en[i]) {
+            map.set(tag.trim(), p.tags_en[i].trim());
+          }
+        });
+      }
+    });
+    return map;
+  }, [projects]);
+
+  // Filter projects by selected tag
   const filteredProjects = useMemo(() => {
     if (!projects) return [];
-    if (!activeCategoryId || !assignments) return projects;
-    const projectIdsInCategory = new Set(
-      assignments
-        .filter((a) => a.category_id === activeCategoryId)
-        .map((a) => a.project_id)
-    );
-    return projects.filter((p) => projectIdsInCategory.has(p.id));
-  }, [projects, activeCategoryId, assignments]);
+    if (!activeTab) return projects;
+    const selectedTag = uniqueTags[parseInt(activeTab) - 1];
+    if (!selectedTag) return projects;
+    return projects.filter((p) => p.tags?.map((t) => t.trim()).includes(selectedTag));
+  }, [projects, activeTab, uniqueTags]);
+
+  const handleTabClick = (index: number | null) => {
+    if (index === null) {
+      setSearchParams({});
+    } else {
+      setSearchParams({ tab: String(index + 1) });
+    }
+  };
 
   return (
     <div className="min-h-screen pt-28 md:pt-32 pb-20 bg-background" dir={isHebrew ? "rtl" : "ltr"}>
@@ -121,8 +130,8 @@ const Projects = () => {
           </p>
         </motion.div>
 
-        {/* Category Tabs */}
-        {categories && categories.length > 0 && (
+        {/* Tag Filter Tabs */}
+        {uniqueTags.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -130,26 +139,26 @@ const Projects = () => {
             className="flex flex-wrap justify-center gap-3 mb-12"
           >
             <button
-              onClick={() => setActiveCategoryId(null)}
+              onClick={() => handleTabClick(null)}
               className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-300 ${
-                activeCategoryId === null
+                !activeTab
                   ? "bg-primary text-primary-foreground shadow-md"
                   : "bg-secondary text-muted-foreground hover:bg-secondary/80 hover:text-foreground"
               }`}
             >
               {isHebrew ? "הכל" : "All"}
             </button>
-            {categories.map((cat) => (
+            {uniqueTags.map((tag, index) => (
               <button
-                key={cat.id}
-                onClick={() => setActiveCategoryId(cat.id)}
+                key={tag}
+                onClick={() => handleTabClick(index)}
                 className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-300 ${
-                  activeCategoryId === cat.id
+                  activeTab === String(index + 1)
                     ? "bg-primary text-primary-foreground shadow-md"
                     : "bg-secondary text-muted-foreground hover:bg-secondary/80 hover:text-foreground"
                 }`}
               >
-                {isHebrew ? cat.name_he : cat.name_en || cat.name_he}
+                {isHebrew ? tag : tagEnMap.get(tag) || tag}
               </button>
             ))}
           </motion.div>
