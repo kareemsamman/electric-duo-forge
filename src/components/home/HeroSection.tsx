@@ -231,7 +231,7 @@ const HeroSection = () => {
       </motion.div>
 
       {/* Content Container */}
-      <div className="container relative z-10 mx-auto px-6 md:px-12 lg:px-16 py-32 md:py-40">
+      <div className="relative z-10 w-full mx-auto px-6 md:px-12 lg:px-20 py-32 md:py-40">
         <motion.div
           variants={containerVariants}
           initial="hidden"
