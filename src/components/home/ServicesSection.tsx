@@ -25,6 +25,7 @@ const iconMap: Record<string, LucideIcon> = {
 
 interface ServiceLink {
   text: string;
+  text_en?: string;
   type: 'url' | 'popup';
   url?: string;
   images?: string[];
@@ -76,6 +77,7 @@ const ServicesSection = () => {
   };
 
   const renderLink = (link: ServiceLink, index: number) => {
+    const linkText = language === 'he' ? link.text : (link.text_en || link.text);
     // Handle popup type
     if (link.type === 'popup' && link.images && link.images.length > 0) {
       return (
@@ -84,7 +86,7 @@ const ServicesSection = () => {
           onClick={() => openPopup(link.images!)}
           className="text-[#1A73E8] hover:underline font-medium text-right"
         >
-          {link.text}
+          {linkText}
         </button>
       );
     }
@@ -102,7 +104,7 @@ const ServicesSection = () => {
           rel="noopener noreferrer"
           className="text-[#1A73E8] hover:underline font-medium"
         >
-          {link.text}
+          {linkText}
         </a>
       );
     }
@@ -113,7 +115,7 @@ const ServicesSection = () => {
         to={url}
         className="text-[#1A73E8] hover:underline font-medium"
       >
-        {link.text}
+        {linkText}
       </Link>
     );
   };

@@ -36,6 +36,7 @@ const getIconComponent = (iconName: string) => {
 
 interface ServiceLink {
   text: string;
+  text_en?: string;
   type: 'url' | 'popup';
   url?: string;
   images?: string[];
@@ -170,7 +171,7 @@ export default function AdminServices() {
   const addLink = () => {
     setFormData(prev => ({
       ...prev,
-      links: [...prev.links, { text: '', type: 'url', url: '' }]
+      links: [...prev.links, { text: '', text_en: '', type: 'url', url: '' }]
     }));
   };
 
@@ -333,13 +334,23 @@ export default function AdminServices() {
                   <div className="flex items-start gap-3">
                     <div className="flex-1 space-y-3">
                       {/* Link Text */}
-                      <div>
-                        <Label className="text-xs">טקסט הקישור</Label>
-                        <Input 
-                          value={link.text} 
-                          onChange={(e) => updateLink(index, 'text', e.target.value)}
-                          placeholder="לדוגמה: לוחות חשמל"
-                        />
+                      <div className="grid sm:grid-cols-2 gap-3">
+                        <div>
+                          <Label className="text-xs">טקסט הקישור (עברית)</Label>
+                          <Input 
+                            value={link.text} 
+                            onChange={(e) => updateLink(index, 'text', e.target.value)}
+                            placeholder="לדוגמה: לוחות חשמל"
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-xs">טקסט הקישור (English)</Label>
+                          <Input 
+                            value={link.text_en || ''} 
+                            onChange={(e) => updateLink(index, 'text_en', e.target.value)}
+                            placeholder="e.g. Electrical Panels"
+                          />
+                        </div>
                       </div>
                       
                       {/* Link Type */}
