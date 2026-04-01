@@ -171,7 +171,7 @@ const translations = {
     // Services
     "services.title": "Our Services",
     "services.subtitle": "End-to-end electrical solutions – from planning stage to on-site implementation.",
-    "services.viewAll": "View All Solutions",
+    "services.viewAll": "How to arrive to our factory",
     "services.planning.title": "Electrical Panel Planning",
     "services.planning.desc": "Full engineering support, adaptation of standard panels and custom solutions according to project requirements and standards.",
     "services.manufacturing.title": "Manufacturing & Assembly",
