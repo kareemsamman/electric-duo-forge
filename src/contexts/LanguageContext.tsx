@@ -46,7 +46,7 @@ const translations = {
     // Services
     "services.title": "השירותים שלנו",
     "services.subtitle": "פתרונות חשמל מקצה לקצה – משלב התכנון ועד ההפעלה באתר הלקוח.",
-    "services.viewAll": "לצפייה בכל הפתרונות שלנו",
+    "services.viewAll": "איך להגיע למפעלנו",
     "services.planning.title": "תכנון לוחות חשמל",
     "services.planning.desc": "ליווי הנדסי מלא, התאמת לוחות סטנדרטיים ופתרונות מותאמים אישית לפי דרישות הפרויקט והתקנים.",
     "services.manufacturing.title": "ייצור והרכבה במפעל",
