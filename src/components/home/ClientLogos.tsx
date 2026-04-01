@@ -27,18 +27,11 @@ const ClientLogos = () => {
     },
   });
 
-  // Organize logos into rows: Row 1: 5, Row 2: 4, Row 3: 5, Row 4: 3
+  // Organize logos into rows of 6
   const logoRows = [];
-  let currentIndex = 0;
-  const rowSizes = [5, 4, 5, 3];
-  
-  rowSizes.forEach((size) => {
-    const row = logos.slice(currentIndex, currentIndex + size);
-    if (row.length > 0) {
-      logoRows.push(row);
-    }
-    currentIndex += size;
-  });
+  for (let i = 0; i < logos.length; i += 6) {
+    logoRows.push(logos.slice(i, i + 6));
+  }
 
   return (
     <section className="py-32 md:py-40 bg-secondary/50">
