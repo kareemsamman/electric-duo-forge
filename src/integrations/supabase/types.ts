@@ -296,6 +296,66 @@ export type Database = {
         }
         Relationships: []
       }
+      project_categories: {
+        Row: {
+          created_at: string | null
+          display_order: number | null
+          id: string
+          name_en: string | null
+          name_he: string
+        }
+        Insert: {
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          name_en?: string | null
+          name_he: string
+        }
+        Update: {
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          name_en?: string | null
+          name_he?: string
+        }
+        Relationships: []
+      }
+      project_category_assignments: {
+        Row: {
+          category_id: string
+          created_at: string | null
+          id: string
+          project_id: string
+        }
+        Insert: {
+          category_id: string
+          created_at?: string | null
+          id?: string
+          project_id: string
+        }
+        Update: {
+          category_id?: string
+          created_at?: string | null
+          id?: string
+          project_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_category_assignments_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "project_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_category_assignments_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_inquiries: {
         Row: {
           accountant_name: string | null
