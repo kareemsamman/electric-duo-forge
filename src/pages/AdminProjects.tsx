@@ -86,6 +86,42 @@ export default function AdminProjects() {
     }
   });
 
+  const { data: categories } = useQuery({
+    queryKey: ['admin-project-categories'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('project_categories')
+        .select('*')
+        .order('display_order', { ascending: true });
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: categoryAssignments, refetch: refetchAssignments } = useQuery({
+    queryKey: ['admin-category-assignments'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('project_category_assignments')
+        .select('*');
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const getProjectCategories = (projectId: string) => {
+    return categoryAssignments?.filter(a => a.project_id === projectId).map(a => a.category_id) || [];
+  };
+
+  const toggleCategory = async (projectId: string, categoryId: string, isAssigned: boolean) => {
+    if (isAssigned) {
+      await supabase.from('project_category_assignments').delete().eq('project_id', projectId).eq('category_id', categoryId);
+    } else {
+      await supabase.from('project_category_assignments').insert({ project_id: projectId, category_id: categoryId });
+    }
+    refetchAssignments();
+  };
+
   useEffect(() => {
     if (editingProject) {
       setFormData({
