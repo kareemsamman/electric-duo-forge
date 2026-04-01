@@ -128,7 +128,7 @@ const Projects = () => {
         </motion.div>
 
         {/* Tag Filter Tabs */}
-        {uniqueTags.length > 0 && (
+        {tagGroups.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -145,9 +145,9 @@ const Projects = () => {
             >
               {isHebrew ? "הכל" : "All"}
             </button>
-            {uniqueTags.map((tag, index) => (
+            {tagGroups.map((group, index) => (
               <button
-                key={tag}
+                key={group.key}
                 onClick={() => handleTabClick(index)}
                 className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-300 ${
                   activeTab === String(index + 1)
@@ -155,7 +155,7 @@ const Projects = () => {
                     : "bg-secondary text-muted-foreground hover:bg-secondary/80 hover:text-foreground"
                 }`}
               >
-                {isHebrew ? tag : tagEnMap.get(tag) || tag}
+                {isHebrew ? group.labelHe : group.labelEn}
               </button>
             ))}
           </motion.div>
