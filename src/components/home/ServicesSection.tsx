@@ -122,7 +122,7 @@ const ServicesSection = () => {
 
   return (
     <>
-      <section className="py-20 md:py-28 bg-gradient-to-b from-secondary/20 to-background" dir="rtl">
+      <section className="py-20 md:py-28 bg-gradient-to-b from-secondary/20 to-background" dir={language === 'he' ? 'rtl' : 'ltr'}>
         <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-[1360px]">
           <div className="grid lg:grid-cols-2 gap-16 lg:gap-20 items-start">
             {/* Right Column - Text (Sticky on desktop) */}
