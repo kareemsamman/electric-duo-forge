@@ -36,6 +36,7 @@ const getIconComponent = (iconName: string) => {
 
 interface ServiceLink {
   text: string;
+  text_en?: string;
   type: 'url' | 'popup';
   url?: string;
   images?: string[];
