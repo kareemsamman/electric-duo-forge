@@ -19,7 +19,7 @@ const Home = () => {
       <WhyUsSection />
       <VideoSection />
       <ClientLogos />
-      <YouTubeSection />
+      
       <CTASection />
     </div>
   );
