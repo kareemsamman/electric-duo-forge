@@ -582,6 +582,7 @@ export default function AdminProjects() {
                         })}
                       </div>
                     </div>
+                  )}
                 </TabsContent>
 
                 <TabsContent value="panel" className="space-y-4 mt-4">
