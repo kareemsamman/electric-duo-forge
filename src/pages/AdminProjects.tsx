@@ -561,9 +561,28 @@ export default function AdminProjects() {
                       />
                     </div>
                   </div>
-                </TabsContent>
 
-                <TabsContent value="panel" className="space-y-4 mt-4">
+                  {/* Category Assignment */}
+                  {editingProject && categories && categories.length > 0 && (
+                    <div>
+                      <Label className="mb-2 block">קטגוריות / Categories</Label>
+                      <div className="grid grid-cols-2 gap-2 border rounded-lg p-3">
+                        {categories.map((cat) => {
+                          const isAssigned = getProjectCategories(editingProject.id).includes(cat.id);
+                          return (
+                            <label key={cat.id} className="flex items-center gap-2 p-2 rounded hover:bg-secondary/50 cursor-pointer">
+                              <Checkbox
+                                checked={isAssigned}
+                                onCheckedChange={() => toggleCategory(editingProject.id, cat.id, isAssigned)}
+                              />
+                              <span className="font-medium">{cat.name_he}</span>
+                              {cat.name_en && <span className="text-sm text-muted-foreground">({cat.name_en})</span>}
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                   {/* Multi-panel toggle */}
                   <div className="flex items-center gap-3 mb-4">
                     <Switch checked={hasMultiplePanels} onCheckedChange={setHasMultiplePanels} />
