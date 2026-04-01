@@ -31,7 +31,7 @@ const Header = () => {
 
   return (
     <header className="fixed top-0 w-full z-50 flex justify-center pt-6 px-4 md:px-8">
-      <div className="max-w-[1400px] w-full backdrop-blur-xl border border-white/20 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] px-6 md:px-8 lg:px-10" style={{ background: 'linear-gradient(to left, rgba(255,255,255,1) 0%, rgba(255,255,255,1) 15%, rgba(255,255,255,0.85) 35%, hsl(var(--background) / 0.6) 100%)' }}>
+      <div className="max-w-[1400px] w-full backdrop-blur-xl border border-white/20 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] px-6 md:px-8 lg:px-10" style={{ background: 'linear-gradient(to left, rgba(255,255,255,1) 0%, rgba(255,255,255,1) 25%, rgba(255,255,255,0.95) 45%, hsl(var(--background) / 0.6) 100%)' }}>
         <div className="flex items-center justify-between h-20">
           <Link to="/" className="flex items-center gap-3 transition-opacity hover:opacity-80 ml-8">
             {content["header.logo_url"] ? (
