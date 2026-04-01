@@ -80,7 +80,20 @@ const Projects = () => {
         }
       }
     });
-    return Array.from(seen.entries()).map(([key, val]) => ({ key, ...val }));
+    // Fixed display order for tabs
+    const tabOrder = [
+      "לוחות חשמל חלוקה, לוחות שנאיים, לוחות גנרטורים",
+      "לוחות חשמל פיקוד ובקרה",
+      "לוחות חשמל מיזוג אוויר",
+      "לוחות חשמל לאתרי בנייה (חשמל זמני)",
+    ];
+    const entries = Array.from(seen.entries()).map(([key, val]) => ({ key, ...val }));
+    entries.sort((a, b) => {
+      const idxA = tabOrder.indexOf(a.labelHe);
+      const idxB = tabOrder.indexOf(b.labelHe);
+      return (idxA === -1 ? 999 : idxA) - (idxB === -1 ? 999 : idxB);
+    });
+    return entries;
   }, [projects]);
 
   // Filter projects by selected tag group
