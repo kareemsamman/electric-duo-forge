@@ -64,42 +64,39 @@ const Projects = () => {
     },
   });
 
-  // Extract unique tags from all projects
-  const uniqueTags = useMemo(() => {
-    if (!projects) return [];
-    const tagSet = new Set<string>();
+  // Extract unique tag groups (full tags array as one tab label)
+  const tagGroups = useMemo(() => {
+    if (!projects) return [] as { key: string; labelHe: string; labelEn: string }[];
+    const seen = new Map<string, { labelHe: string; labelEn: string }>();
     projects.forEach((p) => {
-      if (p.tags) {
-        p.tags.forEach((tag) => tagSet.add(tag.trim()));
+      if (p.tags && p.tags.length > 0) {
+        const key = p.tags.map((t) => t.trim()).sort().join("|||");
+        if (!seen.has(key)) {
+          const labelHe = p.tags.map((t) => t.trim()).join(", ");
+          const labelEn = p.tags_en?.length
+            ? p.tags_en.map((t) => t.trim()).join(", ")
+            : labelHe;
+          seen.set(key, { labelHe, labelEn });
+        }
       }
     });
-    return Array.from(tagSet);
+    return Array.from(seen.entries()).map(([key, val]) => ({ key, ...val }));
   }, [projects]);
 
-  // Build a map from Hebrew tag to English tag
-  const tagEnMap = useMemo(() => {
-    if (!projects) return new Map<string, string>();
-    const map = new Map<string, string>();
-    projects.forEach((p) => {
-      if (p.tags && p.tags_en) {
-        p.tags.forEach((tag, i) => {
-          if (p.tags_en && p.tags_en[i]) {
-            map.set(tag.trim(), p.tags_en[i].trim());
-          }
-        });
-      }
-    });
-    return map;
-  }, [projects]);
-
-  // Filter projects by selected tag
+  // Filter projects by selected tag group
   const filteredProjects = useMemo(() => {
     if (!projects) return [];
     if (!activeTab) return projects;
-    const selectedTag = uniqueTags[parseInt(activeTab) - 1];
-    if (!selectedTag) return projects;
-    return projects.filter((p) => p.tags?.map((t) => t.trim()).includes(selectedTag));
-  }, [projects, activeTab, uniqueTags]);
+    const group = tagGroups[parseInt(activeTab) - 1];
+    if (!group) return projects;
+    const groupTags = new Set(group.key.split("|||"));
+    return projects.filter((p) => {
+      if (!p.tags) return false;
+      const projectTags = p.tags.map((t) => t.trim()).sort().join("|||");
+      const projectTagSet = new Set(projectTags.split("|||"));
+      return [...groupTags].some((gt) => projectTagSet.has(gt));
+    });
+  }, [projects, activeTab, tagGroups]);
 
   const handleTabClick = (index: number | null) => {
     if (index === null) {
@@ -131,7 +128,7 @@ const Projects = () => {
         </motion.div>
 
         {/* Tag Filter Tabs */}
-        {uniqueTags.length > 0 && (
+        {tagGroups.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -148,9 +145,9 @@ const Projects = () => {
             >
               {isHebrew ? "הכל" : "All"}
             </button>
-            {uniqueTags.map((tag, index) => (
+            {tagGroups.map((group, index) => (
               <button
-                key={tag}
+                key={group.key}
                 onClick={() => handleTabClick(index)}
                 className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-300 ${
                   activeTab === String(index + 1)
@@ -158,7 +155,7 @@ const Projects = () => {
                     : "bg-secondary text-muted-foreground hover:bg-secondary/80 hover:text-foreground"
                 }`}
               >
-                {isHebrew ? tag : tagEnMap.get(tag) || tag}
+                {isHebrew ? group.labelHe : group.labelEn}
               </button>
             ))}
           </motion.div>
