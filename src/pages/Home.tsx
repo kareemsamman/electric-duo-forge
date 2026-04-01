@@ -6,7 +6,7 @@ import WhyUsSection from "@/components/home/WhyUsSection";
 import VideoSection from "@/components/home/VideoSection";
 
 import ClientLogos from "@/components/home/ClientLogos";
-import YouTubeSection from "@/components/home/YouTubeSection";
+
 import CTASection from "@/components/home/CTASection";
 
 const Home = () => {
@@ -19,7 +19,7 @@ const Home = () => {
       <WhyUsSection />
       <VideoSection />
       <ClientLogos />
-      <YouTubeSection />
+      
       <CTASection />
     </div>
   );
