@@ -42,6 +42,7 @@ import AdminCertificates from "./pages/AdminCertificates";
 import AdminTeam from "./pages/AdminTeam";
 import AdminGallery from "./pages/AdminGallery";
 import AdminServices from "./pages/AdminServices";
+import AdminProjectCategories from "./pages/AdminProjectCategories";
 import NewProject from "./pages/NewProject";
 
 const queryClient = new QueryClient();
