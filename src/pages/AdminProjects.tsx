@@ -582,7 +582,9 @@ export default function AdminProjects() {
                         })}
                       </div>
                     </div>
-                  )}
+                </TabsContent>
+
+                <TabsContent value="panel" className="space-y-4 mt-4">
                   {/* Multi-panel toggle */}
                   <div className="flex items-center gap-3 mb-4">
                     <Switch checked={hasMultiplePanels} onCheckedChange={setHasMultiplePanels} />
