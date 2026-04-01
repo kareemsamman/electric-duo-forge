@@ -25,6 +25,7 @@ const iconMap: Record<string, LucideIcon> = {
 
 interface ServiceLink {
   text: string;
+  text_en?: string;
   type: 'url' | 'popup';
   url?: string;
   images?: string[];
