@@ -125,8 +125,8 @@ const ServicesSection = () => {
       <section className="py-20 md:py-28 bg-gradient-to-b from-secondary/20 to-background" dir={language === 'he' ? 'rtl' : 'ltr'}>
         <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-[1360px]">
           <div className="grid lg:grid-cols-2 gap-16 lg:gap-20 items-start">
-            {/* Right Column - Text (Sticky on desktop) */}
-            <FadeIn>
+            {/* Video/Text Column - always on the right side visually */}
+            <FadeIn className={language === 'he' ? 'lg:order-1' : 'lg:order-2'}>
               <div className="lg:sticky lg:top-28 lg:pb-16 relative">
                 <h2 className="text-4xl md:text-5xl font-bold mb-6 tracking-tight">
                   {t("services.title")}
@@ -164,8 +164,8 @@ const ServicesSection = () => {
               </div>
             </FadeIn>
 
-            {/* Left Column - Services List */}
-            <StaggerContainer className="space-y-1" staggerDelay={0.1}>
+            {/* Services List - always on the left side visually */}
+            <StaggerContainer className={`space-y-1 ${language === 'he' ? 'lg:order-2' : 'lg:order-1'}`} staggerDelay={0.1}>
               {services?.map((service) => {
                 const Icon = iconMap[service.icon] || ClipboardCheck;
                 const title = language === "he" ? service.title_he : (service.title_en || service.title_he);
@@ -185,9 +185,11 @@ const ServicesSection = () => {
                         <h3 className="text-xl font-bold mb-2 tracking-tight">
                           {title}
                         </h3>
-                        <p className="text-muted-foreground leading-relaxed mb-2">
-                          {description}
-                        </p>
+                        {description && (
+                          <p className="text-muted-foreground leading-relaxed mb-2">
+                            {description}
+                          </p>
+                        )}
                         {links.length > 0 && (
                           <div className="flex flex-col gap-y-1">
                             {links.map((link, index) => renderLink(link, index))}
