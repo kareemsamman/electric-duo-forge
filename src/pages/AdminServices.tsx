@@ -171,7 +171,7 @@ export default function AdminServices() {
   const addLink = () => {
     setFormData(prev => ({
       ...prev,
-      links: [...prev.links, { text: '', type: 'url', url: '' }]
+      links: [...prev.links, { text: '', text_en: '', type: 'url', url: '' }]
     }));
   };
 
