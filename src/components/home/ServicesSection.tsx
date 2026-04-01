@@ -115,7 +115,7 @@ const ServicesSection = () => {
         to={url}
         className="text-[#1A73E8] hover:underline font-medium"
       >
-        {link.text}
+        {linkText}
       </Link>
     );
   };
