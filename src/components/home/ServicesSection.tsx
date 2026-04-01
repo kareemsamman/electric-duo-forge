@@ -86,7 +86,7 @@ const ServicesSection = () => {
           onClick={() => openPopup(link.images!)}
           className="text-[#1A73E8] hover:underline font-medium text-right"
         >
-          {link.text}
+          {linkText}
         </button>
       );
     }
