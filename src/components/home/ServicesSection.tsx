@@ -143,6 +143,18 @@ const ServicesSection = () => {
                     <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                   )}
                 </Link>
+
+                {/* YouTube Video */}
+                <div className="mt-8 rounded-2xl overflow-hidden aspect-video shadow-lg">
+                  <iframe
+                    src="https://www.youtube.com/embed/wmMEvXiZQbA?rel=0&modestbranding=1"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    className="w-full h-full border-0"
+                    title="Global Electric Video"
+                  />
+                </div>
+
                 {/* Subtle fade indicator at bottom - desktop only */}
                 <div className="hidden lg:block absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-background/80 via-background/40 to-transparent pointer-events-none" />
               </div>
