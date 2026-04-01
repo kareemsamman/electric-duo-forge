@@ -46,7 +46,7 @@ const translations = {
     // Services
     "services.title": "השירותים שלנו",
     "services.subtitle": "פתרונות חשמל מקצה לקצה – משלב התכנון ועד ההפעלה באתר הלקוח.",
-    "services.viewAll": "לצפייה בכל הפתרונות שלנו",
+    "services.viewAll": "איך להגיע למפעלנו",
     "services.planning.title": "תכנון לוחות חשמל",
     "services.planning.desc": "ליווי הנדסי מלא, התאמת לוחות סטנדרטיים ופתרונות מותאמים אישית לפי דרישות הפרויקט והתקנים.",
     "services.manufacturing.title": "ייצור והרכבה במפעל",
@@ -171,7 +171,7 @@ const translations = {
     // Services
     "services.title": "Our Services",
     "services.subtitle": "End-to-end electrical solutions – from planning stage to on-site implementation.",
-    "services.viewAll": "View All Solutions",
+    "services.viewAll": "How to arrive to our factory",
     "services.planning.title": "Electrical Panel Planning",
     "services.planning.desc": "Full engineering support, adaptation of standard panels and custom solutions according to project requirements and standards.",
     "services.manufacturing.title": "Manufacturing & Assembly",

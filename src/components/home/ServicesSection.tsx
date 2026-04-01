@@ -132,8 +132,10 @@ const ServicesSection = () => {
                 <p className="text-lg md:text-xl text-muted-foreground leading-relaxed mb-8">
                   {t("services.subtitle")}
                 </p>
-                <Link 
-                  to="/solutions" 
+                <a 
+                  href="https://www.youtube.com/watch?v=wmMEvXiZQbA"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 text-[#1A73E8] hover:text-[#155BB7] font-medium transition-colors group"
                 >
                   <span>{t("services.viewAll")}</span>
@@ -142,7 +144,7 @@ const ServicesSection = () => {
                   ) : (
                     <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                   )}
-                </Link>
+                </a>
 
                 {/* YouTube Video */}
                 <div className="mt-8 rounded-2xl overflow-hidden aspect-video shadow-lg">
