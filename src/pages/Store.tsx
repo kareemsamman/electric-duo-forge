@@ -111,6 +111,9 @@ const Store = () => {
                       />
                     </div>
                     <CardContent className="pt-6 pb-6">
+                      <p className="text-destructive font-semibold text-xs mb-1">
+                        {language === 'he' ? '* הזמנה מינימלית: 100 יחידות' : '* Minimum order: 100 units'}
+                      </p>
                       <h3 className="text-xl font-semibold mb-2">
                         {language === "he" ? product.product_name : product.product_name_en || product.product_name}
                       </h3>
