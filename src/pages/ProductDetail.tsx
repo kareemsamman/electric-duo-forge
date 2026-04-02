@@ -201,6 +201,9 @@ export default function ProductDetail() {
           <FadeIn delay={0.2}>
             <div className="space-y-6">
               <div>
+                <p className="text-destructive font-semibold text-sm mb-2">
+                  {language === 'he' ? '* הזמנה מינימלית: 100 יחידות' : '* Minimum order: 100 units'}
+                </p>
                 <h1 className="text-4xl font-bold mb-4">
                   {language === 'he' ? product.product_name : product.product_name_en || product.product_name}
                 </h1>
