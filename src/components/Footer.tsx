@@ -24,8 +24,8 @@ const Footer = () => {
             )}
             <p className="text-primary-foreground/80 leading-relaxed text-base">
               {language === "he"
-                ? "הנדסת חשמל, ייצור לוחות חשמל ופתרונות מקצועיים"
-                : "Electrical engineering, panel manufacturing and professional solutions"}
+                ? "ייצור לוחות חשמל ופתרונות מקצועיים"
+                : "Panel manufacturing and professional solutions"}
             </p>
           </div>
 
