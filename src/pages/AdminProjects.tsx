@@ -61,6 +61,12 @@ export default function AdminProjects() {
   const [hasMultiplePanels, setHasMultiplePanels] = useState(false);
   const [panels, setPanels] = useState<PanelData[]>([]);
   const [panelNewImageUrls, setPanelNewImageUrls] = useState<Record<number, string>>({});
+  const [uploadingMain, setUploadingMain] = useState(false);
+  const [uploadingGallery, setUploadingGallery] = useState(false);
+  const [uploadingPanel, setUploadingPanel] = useState<Record<number, boolean>>({});
+  const [uploadingPanelGallery, setUploadingPanelGallery] = useState<Record<number, boolean>>({});
+  const mainImageInputRef = useRef<HTMLInputElement>(null);
+  const galleryImageInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState<ProjectFormData>({
     project_name: '',
     project_name_en: '',
