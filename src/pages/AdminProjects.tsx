@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Pencil, Trash2, GripVertical, ArrowRight, ArrowLeft, X, Video, Image as ImageIcon, Copy, Eye, EyeOff } from 'lucide-react';
+import { Plus, Pencil, Trash2, GripVertical, ArrowRight, ArrowLeft, X, Video, Image as ImageIcon, Copy, Eye, EyeOff, Upload, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -16,6 +16,15 @@ import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { RichTextEditor } from '@/components/admin/RichTextEditor';
 import { Switch } from '@/components/ui/switch';
 import { Checkbox } from '@/components/ui/checkbox';
+
+const uploadProjectImage = async (file: File): Promise<string> => {
+  const fileExt = file.name.split('.').pop();
+  const fileName = `project-${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
+  const { error } = await supabase.storage.from('project-images').upload(fileName, file);
+  if (error) throw error;
+  const { data: urlData } = supabase.storage.from('project-images').getPublicUrl(fileName);
+  return urlData.publicUrl;
+};
 
 interface PanelData {
   id?: string;
@@ -52,6 +61,12 @@ export default function AdminProjects() {
   const [hasMultiplePanels, setHasMultiplePanels] = useState(false);
   const [panels, setPanels] = useState<PanelData[]>([]);
   const [panelNewImageUrls, setPanelNewImageUrls] = useState<Record<number, string>>({});
+  const [uploadingMain, setUploadingMain] = useState(false);
+  const [uploadingGallery, setUploadingGallery] = useState(false);
+  const [uploadingPanel, setUploadingPanel] = useState<Record<number, boolean>>({});
+  const [uploadingPanelGallery, setUploadingPanelGallery] = useState<Record<number, boolean>>({});
+  const mainImageInputRef = useRef<HTMLInputElement>(null);
+  const galleryImageInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState<ProjectFormData>({
     project_name: '',
     project_name_en: '',
@@ -646,8 +661,34 @@ export default function AdminProjects() {
                             <Input value={panel.panel_current} onChange={(e) => setPanels(prev => prev.map((p, i) => i === pIndex ? { ...p, panel_current: e.target.value } : p))} />
                           </div>
                           <div>
-                            <Label>תמונה ראשית (URL)</Label>
-                            <Input value={panel.image} onChange={(e) => setPanels(prev => prev.map((p, i) => i === pIndex ? { ...p, image: e.target.value } : p))} placeholder="https://..." />
+                            <Label>תמונה ראשית</Label>
+                            <div className="flex gap-2">
+                              <Input value={panel.image} onChange={(e) => setPanels(prev => prev.map((p, i) => i === pIndex ? { ...p, image: e.target.value } : p))} placeholder="https://..." className="flex-1" />
+                              <input
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                id={`panel-main-upload-${pIndex}`}
+                                onChange={async (e) => {
+                                  const file = e.target.files?.[0];
+                                  if (!file) return;
+                                  setUploadingPanel(prev => ({ ...prev, [pIndex]: true }));
+                                  try {
+                                    const url = await uploadProjectImage(file);
+                                    setPanels(prev => prev.map((p, i) => i === pIndex ? { ...p, image: url } : p));
+                                    toast.success('תמונה הועלתה בהצלחה');
+                                  } catch (err) {
+                                    toast.error('שגיאה בהעלאת תמונה');
+                                  } finally {
+                                    setUploadingPanel(prev => ({ ...prev, [pIndex]: false }));
+                                    e.target.value = '';
+                                  }
+                                }}
+                              />
+                              <Button type="button" variant="outline" size="sm" onClick={() => document.getElementById(`panel-main-upload-${pIndex}`)?.click()} disabled={uploadingPanel[pIndex]}>
+                                {uploadingPanel[pIndex] ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                              </Button>
+                            </div>
                             {panel.image && <img src={panel.image} alt="Preview" className="w-24 h-16 object-cover rounded mt-1" />}
                           </div>
                           <div>
@@ -657,6 +698,7 @@ export default function AdminProjects() {
                                 value={panelNewImageUrls[pIndex] || ''} 
                                 onChange={(e) => setPanelNewImageUrls(prev => ({ ...prev, [pIndex]: e.target.value }))}
                                 placeholder="https://..."
+                                className="flex-1"
                                 onKeyDown={(e) => {
                                   if (e.key === 'Enter') {
                                     e.preventDefault();
@@ -676,6 +718,35 @@ export default function AdminProjects() {
                                 }
                               }}>
                                 <Plus className="w-4 h-4" />
+                              </Button>
+                              <input
+                                type="file"
+                                accept="image/*"
+                                multiple
+                                className="hidden"
+                                id={`panel-gallery-upload-${pIndex}`}
+                                onChange={async (e) => {
+                                  const files = e.target.files;
+                                  if (!files || files.length === 0) return;
+                                  setUploadingPanelGallery(prev => ({ ...prev, [pIndex]: true }));
+                                  try {
+                                    const urls: string[] = [];
+                                    for (const file of Array.from(files)) {
+                                      const url = await uploadProjectImage(file);
+                                      urls.push(url);
+                                    }
+                                    setPanels(prev => prev.map((p, i) => i === pIndex ? { ...p, images: [...p.images, ...urls] } : p));
+                                    toast.success(`${urls.length} תמונות הועלו בהצלחה`);
+                                  } catch (err) {
+                                    toast.error('שגיאה בהעלאת תמונות');
+                                  } finally {
+                                    setUploadingPanelGallery(prev => ({ ...prev, [pIndex]: false }));
+                                    e.target.value = '';
+                                  }
+                                }}
+                              />
+                              <Button type="button" variant="outline" size="sm" onClick={() => document.getElementById(`panel-gallery-upload-${pIndex}`)?.click()} disabled={uploadingPanelGallery[pIndex]}>
+                                {uploadingPanelGallery[pIndex] ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
                               </Button>
                             </div>
                             {panel.images.map((img, imgIndex) => (
@@ -698,15 +769,42 @@ export default function AdminProjects() {
                 </TabsContent>
 
                 <TabsContent value="media" className="space-y-6 mt-4">
-                  {/* Main image URL */}
+                  {/* Main image URL + Upload */}
                   <div>
-                    <Label className="text-lg font-semibold">תמונה ראשית (URL)</Label>
-                    <Input 
-                      value={formData.image_url} 
-                      onChange={(e) => setFormData(prev => ({ ...prev, image_url: e.target.value }))} 
-                      placeholder="https://cdn.example.com/image.jpg"
-                      className="mt-2"
-                    />
+                    <Label className="text-lg font-semibold">תמונה ראשית</Label>
+                    <div className="flex gap-2 mt-2">
+                      <Input 
+                        value={formData.image_url} 
+                        onChange={(e) => setFormData(prev => ({ ...prev, image_url: e.target.value }))} 
+                        placeholder="https://cdn.example.com/image.jpg"
+                        className="flex-1"
+                      />
+                      <input
+                        type="file"
+                        accept="image/*"
+                        ref={mainImageInputRef}
+                        className="hidden"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          setUploadingMain(true);
+                          try {
+                            const url = await uploadProjectImage(file);
+                            setFormData(prev => ({ ...prev, image_url: url }));
+                            toast.success('תמונה הועלתה בהצלחה');
+                          } catch (err) {
+                            toast.error('שגיאה בהעלאת תמונה');
+                            console.error(err);
+                          } finally {
+                            setUploadingMain(false);
+                            e.target.value = '';
+                          }
+                        }}
+                      />
+                      <Button type="button" variant="outline" onClick={() => mainImageInputRef.current?.click()} disabled={uploadingMain}>
+                        {uploadingMain ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                      </Button>
+                    </div>
                     {formData.image_url && (
                       <div className="mt-3">
                         <img 
@@ -734,18 +832,49 @@ export default function AdminProjects() {
                   {/* Gallery images repeater */}
                   <div>
                     <Label className="text-lg font-semibold">גלריית תמונות</Label>
-                    <p className="text-sm text-muted-foreground mb-3">הוסף קישורים לתמונות וגרור לשינוי סדר</p>
+                    <p className="text-sm text-muted-foreground mb-3">הוסף קישורים לתמונות או העלה מהמחשב, וגרור לשינוי סדר</p>
                     
-                    {/* Add new image URL */}
+                    {/* Add new image URL + Upload */}
                     <div className="flex gap-2 mb-4">
                       <Input 
                         value={newImageUrl}
                         onChange={(e) => setNewImageUrl(e.target.value)}
                         placeholder="https://cdn.example.com/gallery-image.jpg"
                         onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addGalleryImage(); } }}
+                        className="flex-1"
                       />
                       <Button type="button" onClick={addGalleryImage} disabled={!newImageUrl.trim()}>
                         <Plus className="w-4 h-4 ml-1" />הוסף
+                      </Button>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        ref={galleryImageInputRef}
+                        className="hidden"
+                        onChange={async (e) => {
+                          const files = e.target.files;
+                          if (!files || files.length === 0) return;
+                          setUploadingGallery(true);
+                          try {
+                            const urls: string[] = [];
+                            for (const file of Array.from(files)) {
+                              const url = await uploadProjectImage(file);
+                              urls.push(url);
+                            }
+                            setGalleryImages(prev => [...prev, ...urls]);
+                            toast.success(`${urls.length} תמונות הועלו בהצלחה`);
+                          } catch (err) {
+                            toast.error('שגיאה בהעלאת תמונות');
+                            console.error(err);
+                          } finally {
+                            setUploadingGallery(false);
+                            e.target.value = '';
+                          }
+                        }}
+                      />
+                      <Button type="button" variant="outline" onClick={() => galleryImageInputRef.current?.click()} disabled={uploadingGallery}>
+                        {uploadingGallery ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
                       </Button>
                     </div>
 
@@ -795,7 +924,7 @@ export default function AdminProjects() {
 
                     {galleryImages.length === 0 && (
                       <div className="text-center py-8 text-muted-foreground border-2 border-dashed rounded-lg">
-                        אין תמונות בגלריה. הוסף קישורים לתמונות למעלה.
+                        אין תמונות בגלריה. הוסף קישורים לתמונות או העלה מהמחשב.
                       </div>
                     )}
                   </div>
