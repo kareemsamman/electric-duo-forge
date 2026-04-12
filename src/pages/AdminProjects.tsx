@@ -713,15 +713,42 @@ export default function AdminProjects() {
                 </TabsContent>
 
                 <TabsContent value="media" className="space-y-6 mt-4">
-                  {/* Main image URL */}
+                  {/* Main image URL + Upload */}
                   <div>
-                    <Label className="text-lg font-semibold">תמונה ראשית (URL)</Label>
-                    <Input 
-                      value={formData.image_url} 
-                      onChange={(e) => setFormData(prev => ({ ...prev, image_url: e.target.value }))} 
-                      placeholder="https://cdn.example.com/image.jpg"
-                      className="mt-2"
-                    />
+                    <Label className="text-lg font-semibold">תמונה ראשית</Label>
+                    <div className="flex gap-2 mt-2">
+                      <Input 
+                        value={formData.image_url} 
+                        onChange={(e) => setFormData(prev => ({ ...prev, image_url: e.target.value }))} 
+                        placeholder="https://cdn.example.com/image.jpg"
+                        className="flex-1"
+                      />
+                      <input
+                        type="file"
+                        accept="image/*"
+                        ref={mainImageInputRef}
+                        className="hidden"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          setUploadingMain(true);
+                          try {
+                            const url = await uploadProjectImage(file);
+                            setFormData(prev => ({ ...prev, image_url: url }));
+                            toast.success('תמונה הועלתה בהצלחה');
+                          } catch (err) {
+                            toast.error('שגיאה בהעלאת תמונה');
+                            console.error(err);
+                          } finally {
+                            setUploadingMain(false);
+                            e.target.value = '';
+                          }
+                        }}
+                      />
+                      <Button type="button" variant="outline" onClick={() => mainImageInputRef.current?.click()} disabled={uploadingMain}>
+                        {uploadingMain ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                      </Button>
+                    </div>
                     {formData.image_url && (
                       <div className="mt-3">
                         <img 
@@ -749,18 +776,49 @@ export default function AdminProjects() {
                   {/* Gallery images repeater */}
                   <div>
                     <Label className="text-lg font-semibold">גלריית תמונות</Label>
-                    <p className="text-sm text-muted-foreground mb-3">הוסף קישורים לתמונות וגרור לשינוי סדר</p>
+                    <p className="text-sm text-muted-foreground mb-3">הוסף קישורים לתמונות או העלה מהמחשב, וגרור לשינוי סדר</p>
                     
-                    {/* Add new image URL */}
+                    {/* Add new image URL + Upload */}
                     <div className="flex gap-2 mb-4">
                       <Input 
                         value={newImageUrl}
                         onChange={(e) => setNewImageUrl(e.target.value)}
                         placeholder="https://cdn.example.com/gallery-image.jpg"
                         onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addGalleryImage(); } }}
+                        className="flex-1"
                       />
                       <Button type="button" onClick={addGalleryImage} disabled={!newImageUrl.trim()}>
                         <Plus className="w-4 h-4 ml-1" />הוסף
+                      </Button>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        ref={galleryImageInputRef}
+                        className="hidden"
+                        onChange={async (e) => {
+                          const files = e.target.files;
+                          if (!files || files.length === 0) return;
+                          setUploadingGallery(true);
+                          try {
+                            const urls: string[] = [];
+                            for (const file of Array.from(files)) {
+                              const url = await uploadProjectImage(file);
+                              urls.push(url);
+                            }
+                            setGalleryImages(prev => [...prev, ...urls]);
+                            toast.success(`${urls.length} תמונות הועלו בהצלחה`);
+                          } catch (err) {
+                            toast.error('שגיאה בהעלאת תמונות');
+                            console.error(err);
+                          } finally {
+                            setUploadingGallery(false);
+                            e.target.value = '';
+                          }
+                        }}
+                      />
+                      <Button type="button" variant="outline" onClick={() => galleryImageInputRef.current?.click()} disabled={uploadingGallery}>
+                        {uploadingGallery ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
                       </Button>
                     </div>
 
@@ -810,7 +868,7 @@ export default function AdminProjects() {
 
                     {galleryImages.length === 0 && (
                       <div className="text-center py-8 text-muted-foreground border-2 border-dashed rounded-lg">
-                        אין תמונות בגלריה. הוסף קישורים לתמונות למעלה.
+                        אין תמונות בגלריה. הוסף קישורים לתמונות או העלה מהמחשב.
                       </div>
                     )}
                   </div>
