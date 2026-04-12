@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Plus, Pencil, Trash2, GripVertical, ArrowRight, ArrowLeft, Copy, X, Image } from 'lucide-react';
+import { Plus, Pencil, Trash2, GripVertical, ArrowRight, ArrowLeft, Copy, X, Image, Upload, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -19,6 +19,8 @@ export default function AdminProducts() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [galleryUrls, setGalleryUrls] = useState<string[]>([]);
   const [newGalleryUrl, setNewGalleryUrl] = useState('');
+  const [uploadingMain, setUploadingMain] = useState(false);
+  const [uploadingGallery, setUploadingGallery] = useState(false);
   const [mainImageUrl, setMainImageUrl] = useState('');
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -349,25 +351,57 @@ export default function AdminProducts() {
                 </div>
               </div>
 
-              {/* Main Image URL */}
+              {/* Main Image */}
               <div>
-                <Label>תמונה ראשית (URL)</Label>
-                <Input 
-                  value={mainImageUrl} 
-                  onChange={(e) => setMainImageUrl(e.target.value)} 
-                  placeholder="https://example.com/image.jpg"
-                />
+                <Label>תמונה ראשית</Label>
+                <div className="flex gap-2">
+                  <Input 
+                    value={mainImageUrl} 
+                    onChange={(e) => setMainImageUrl(e.target.value)} 
+                    placeholder="https://example.com/image.jpg"
+                    className="flex-1"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={uploadingMain}
+                    onClick={() => document.getElementById('main-image-upload')?.click()}
+                  >
+                    {uploadingMain ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                  </Button>
+                  <input
+                    id="main-image-upload"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      setUploadingMain(true);
+                      try {
+                        const url = await uploadImage(file);
+                        setMainImageUrl(url);
+                        toast.success('תמונה הועלתה בהצלחה');
+                      } catch {
+                        toast.error('שגיאה בהעלאת תמונה');
+                      } finally {
+                        setUploadingMain(false);
+                        e.target.value = '';
+                      }
+                    }}
+                  />
+                </div>
                 {mainImageUrl && (
                   <img src={mainImageUrl} alt="Preview" className="w-20 h-20 object-cover rounded mt-2" />
                 )}
                 <input type="hidden" name="product_image" value={mainImageUrl || editingProduct?.product_image || ''} />
               </div>
 
-              {/* Gallery URLs */}
+              {/* Gallery */}
               <div className="space-y-4">
                 <Label className="flex items-center gap-2">
                   <Image className="w-4 h-4" />
-                  גלריית תמונות (URLs)
+                  גלריית תמונות
                 </Label>
                 
                 <div className="flex gap-2">
@@ -375,6 +409,7 @@ export default function AdminProducts() {
                     value={newGalleryUrl}
                     onChange={(e) => setNewGalleryUrl(e.target.value)}
                     placeholder="הוסף URL לתמונה"
+                    className="flex-1"
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         e.preventDefault();
@@ -397,6 +432,40 @@ export default function AdminProducts() {
                   >
                     <Plus className="w-4 h-4" />
                   </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={uploadingGallery}
+                    onClick={() => document.getElementById('gallery-image-upload')?.click()}
+                  >
+                    {uploadingGallery ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                  </Button>
+                  <input
+                    id="gallery-image-upload"
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    onChange={async (e) => {
+                      const files = e.target.files;
+                      if (!files || files.length === 0) return;
+                      setUploadingGallery(true);
+                      try {
+                        const urls: string[] = [];
+                        for (const file of Array.from(files)) {
+                          const url = await uploadImage(file);
+                          urls.push(url);
+                        }
+                        setGalleryUrls(prev => [...prev, ...urls]);
+                        toast.success(`${urls.length} תמונות הועלו בהצלחה`);
+                      } catch {
+                        toast.error('שגיאה בהעלאת תמונות');
+                      } finally {
+                        setUploadingGallery(false);
+                        e.target.value = '';
+                      }
+                    }}
+                  />
                 </div>
 
                 {galleryUrls.length > 0 && (
