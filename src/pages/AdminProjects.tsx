@@ -661,8 +661,34 @@ export default function AdminProjects() {
                             <Input value={panel.panel_current} onChange={(e) => setPanels(prev => prev.map((p, i) => i === pIndex ? { ...p, panel_current: e.target.value } : p))} />
                           </div>
                           <div>
-                            <Label>תמונה ראשית (URL)</Label>
-                            <Input value={panel.image} onChange={(e) => setPanels(prev => prev.map((p, i) => i === pIndex ? { ...p, image: e.target.value } : p))} placeholder="https://..." />
+                            <Label>תמונה ראשית</Label>
+                            <div className="flex gap-2">
+                              <Input value={panel.image} onChange={(e) => setPanels(prev => prev.map((p, i) => i === pIndex ? { ...p, image: e.target.value } : p))} placeholder="https://..." className="flex-1" />
+                              <input
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                id={`panel-main-upload-${pIndex}`}
+                                onChange={async (e) => {
+                                  const file = e.target.files?.[0];
+                                  if (!file) return;
+                                  setUploadingPanel(prev => ({ ...prev, [pIndex]: true }));
+                                  try {
+                                    const url = await uploadProjectImage(file);
+                                    setPanels(prev => prev.map((p, i) => i === pIndex ? { ...p, image: url } : p));
+                                    toast.success('תמונה הועלתה בהצלחה');
+                                  } catch (err) {
+                                    toast.error('שגיאה בהעלאת תמונה');
+                                  } finally {
+                                    setUploadingPanel(prev => ({ ...prev, [pIndex]: false }));
+                                    e.target.value = '';
+                                  }
+                                }}
+                              />
+                              <Button type="button" variant="outline" size="sm" onClick={() => document.getElementById(`panel-main-upload-${pIndex}`)?.click()} disabled={uploadingPanel[pIndex]}>
+                                {uploadingPanel[pIndex] ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                              </Button>
+                            </div>
                             {panel.image && <img src={panel.image} alt="Preview" className="w-24 h-16 object-cover rounded mt-1" />}
                           </div>
                           <div>
@@ -672,6 +698,7 @@ export default function AdminProjects() {
                                 value={panelNewImageUrls[pIndex] || ''} 
                                 onChange={(e) => setPanelNewImageUrls(prev => ({ ...prev, [pIndex]: e.target.value }))}
                                 placeholder="https://..."
+                                className="flex-1"
                                 onKeyDown={(e) => {
                                   if (e.key === 'Enter') {
                                     e.preventDefault();
@@ -691,6 +718,35 @@ export default function AdminProjects() {
                                 }
                               }}>
                                 <Plus className="w-4 h-4" />
+                              </Button>
+                              <input
+                                type="file"
+                                accept="image/*"
+                                multiple
+                                className="hidden"
+                                id={`panel-gallery-upload-${pIndex}`}
+                                onChange={async (e) => {
+                                  const files = e.target.files;
+                                  if (!files || files.length === 0) return;
+                                  setUploadingPanelGallery(prev => ({ ...prev, [pIndex]: true }));
+                                  try {
+                                    const urls: string[] = [];
+                                    for (const file of Array.from(files)) {
+                                      const url = await uploadProjectImage(file);
+                                      urls.push(url);
+                                    }
+                                    setPanels(prev => prev.map((p, i) => i === pIndex ? { ...p, images: [...p.images, ...urls] } : p));
+                                    toast.success(`${urls.length} תמונות הועלו בהצלחה`);
+                                  } catch (err) {
+                                    toast.error('שגיאה בהעלאת תמונות');
+                                  } finally {
+                                    setUploadingPanelGallery(prev => ({ ...prev, [pIndex]: false }));
+                                    e.target.value = '';
+                                  }
+                                }}
+                              />
+                              <Button type="button" variant="outline" size="sm" onClick={() => document.getElementById(`panel-gallery-upload-${pIndex}`)?.click()} disabled={uploadingPanelGallery[pIndex]}>
+                                {uploadingPanelGallery[pIndex] ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
                               </Button>
                             </div>
                             {panel.images.map((img, imgIndex) => (
