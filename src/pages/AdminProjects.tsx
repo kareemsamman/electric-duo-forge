@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Pencil, Trash2, GripVertical, ArrowRight, ArrowLeft, X, Video, Image as ImageIcon, Copy, Eye, EyeOff } from 'lucide-react';
+import { Plus, Pencil, Trash2, GripVertical, ArrowRight, ArrowLeft, X, Video, Image as ImageIcon, Copy, Eye, EyeOff, Upload, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -16,6 +16,15 @@ import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { RichTextEditor } from '@/components/admin/RichTextEditor';
 import { Switch } from '@/components/ui/switch';
 import { Checkbox } from '@/components/ui/checkbox';
+
+const uploadProjectImage = async (file: File): Promise<string> => {
+  const fileExt = file.name.split('.').pop();
+  const fileName = `project-${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
+  const { error } = await supabase.storage.from('project-images').upload(fileName, file);
+  if (error) throw error;
+  const { data: urlData } = supabase.storage.from('project-images').getPublicUrl(fileName);
+  return urlData.publicUrl;
+};
 
 interface PanelData {
   id?: string;
